@@ -1,0 +1,60 @@
+# =====================================================================
+# LogoMind .gitignore
+# =====================================================================
+# LogoMind is primarily a knowledge repository (Markdown, diagrams).
+# This .gitignore excludes OS/editor cruft and reserves space for
+# future software build artifacts without committing them.
+# =====================================================================
+
+# --- OS-generated files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# --- Editor / IDE temp files ---
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# --- ZCode / agent working files ---
+.zcode/
+
+# --- Temporary / scratch ---
+*.tmp
+*.bak
+*.log
+tmp/
+temp/
+
+# --- Future: application build artifacts (reserved, not used yet) ---
+# When Phase 5 (Technical Build) begins, these will keep software
+# dependencies out of the knowledge repository.
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.local
+.venv/
+venv/
+dist/
+build/
+.next/
+.cache/
+*.egg-info/
+
+# --- Future: uploads / user-generated content ---
+uploads/
+media/
+
+# --- Keep these (do NOT ignore) ---
+!.gitignore
+!.gitattributes
