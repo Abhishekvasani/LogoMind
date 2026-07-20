@@ -1,7 +1,7 @@
 ---
 doc_id: LM-ROAD-001
 title: LogoMind Complete Roadmap
-version: 2.0
+version: 2.1
 status: Living Document
 governance_level: L1 — Planning
 last_reviewed: 2026-07-17
@@ -20,18 +20,19 @@ last_reviewed: 2026-07-17
 ```
 ✅ Phase 0 — Foundation              COMPLETE
 ✅ Phase 1 — Repository Governance   COMPLETE
-✅ Phase 2 — Knowledge Production    COMPLETE — Philosophy Series (10/10 LICs)
-🔄 Phase 3 — LOGOS Engine Specs      NEXT (core specs already in place)
+✅ Phase 2 — Knowledge Production    IN PROGRESS
+   ✅ Philosophy Series (10/10 LICs)
+   ✅ Brand Strategy Series (5/5 LICs)
+   📋 Further volumes pending (Symbol, Typography, Color, Identity)
+🔄 Phase 3 — LOGOS Engine Specs      NEXT — knowledge foundation now sufficient
 ⬜ Phase 4 — Product Specification
 ⬜ Phase 5 — Technical Build
 ⬜ Phase 6 — Launch
 ```
 
-**As of 2026-07-17 (v2.0):** The Philosophy Series is complete. All ten Reference Standard LICs are approved: Meaning, Purpose, Simplicity, Clarity, Originality, Memorability, Authenticity, Timelessness, Relevance, Consistency. Each was drafted, put through the 7-pass editorial review, corrected against findings, and approved at Reference Standard quality.
+**As of 2026-07-17 (v2.1):** Two knowledge volumes are now complete — Philosophy Series (10 LICs) and Brand Strategy Series (5 LICs). **15 Reference Standard LICs approved**, each introducing operational tools (audits, tests, frameworks, failure-mode taxonomies) that make its concept enforceable. The template has been applied 15 times with consistent results; the 7-pass editorial review has proven reliable across all applications.
 
-The template has now been applied ten times with consistent results — the production process is reliable and repeatable. A consistent pattern emerged across the series: **every LIC introduces operational tools that make its concept enforceable, not just definable.** The Philosophy Series forms a complete foundational knowledge layer: what a logo must *be* and *do*. Phase 3 (LOGOS engines — how the system *reasons* using this knowledge) is the next major body of work.
-
-**Note on composite cases:** Several LICs (Purpose, Clarity, Originality, Memorability, Authenticity, Timelessness, Relevance, Consistency) include composite case studies flagged for replacement with specific documented examples in their respective v1.1 revisions. This is tracked improvement work, not a quality blocker — every composite case is clearly labelled and the pattern it illustrates is sound.
+The knowledge foundation is now sufficient to support Phase 3 (LOGOS Engine Specifications). The Strategy Engine — which builds Brand DNA from discovery output — has its knowledge base: Positioning, Differentiation, Target Audience, Personality, Archetypes. Further knowledge volumes (Symbol, Typography, Color, Identity) can be built in parallel with or after engine specification.
 
 ---
 
@@ -95,11 +96,35 @@ The template has now been applied ten times with consistent results — the prod
 
 | Deliverable | Status |
 |-------------|--------|
-| Replace composite case studies with documented examples across LICs (Purpose bakery, Clarity abstract-tech, Originality restaurant, Memorability SaaS, Authenticity craftsman, Timelessness gradient-tech, Relevance youth-rebrand + postal, Consistency rigid-guidelines) | 📋 v1.1 cycle |
+| Replace composite case studies with documented examples across LICs (Purpose bakery, Clarity abstract-tech, Originality restaurant, Memorability SaaS, Authenticity craftsman, Timelessness gradient-tech, Relevance youth-rebrand + postal, Consistency rigid-guidelines, plus Brand Strategy composites) | 📋 v1.1 cycle |
 | RS-LIC-001 Reasoning Gallery expansion (Apple, IBM, WWF, Airbnb, Target, Mastercard) | 📋 |
-| LIC-BS-001 Brand Positioning (upgrade blueprint → full RS-LIC) — opens Brand Strategy volume | 📋 Next volume |
 | Canonical Vocabulary expansion (TERM-011 through ~025) | 📋 |
 | LogoMind Knowledge Graph (LKG) — implementation spec | 📋 |
+
+### Brand Strategy Series — ✅ COMPLETE (v2.1)
+
+| # | LIC ID | Title | Status | Operational Tool Introduced |
+|---|--------|-------|--------|-----------------------------|
+| 11 | RS-LIC-BS-001 | **Brand Positioning** | ✅ Approved | Positioning Statement template; Positioning Audit; 4 Failure Modes |
+| 12 | RS-LIC-BS-002 | **Brand Differentiation** | ✅ Approved | Three Tests (Valued/Defensible/Aligned); Five Dimensions; False Differentiation Detector |
+| 13 | RS-LIC-BS-003 | **Target Audience** | ✅ Approved | Audience Definition framework; Configuration model; Calibration matrix |
+| 14 | RS-LIC-BS-004 | **Brand Personality** | ✅ Approved | Personality Definition framework; "Describe as a person" method |
+| 15 | RS-LIC-BS-005 | **Brand Archetypes** | ✅ Approved | Archetype Audit; Twelve Classical Archetypes (diagnostic vocabulary) |
+
+The Brand Strategy Series forms a coherent strategic foundation: Positioning (the slot) ← Differentiation (what makes it defensible) + Target Audience (who it's for) → Personality (the character) → Archetypes (the deep pattern beneath personality). Together with the Philosophy Series, LogoMind now has both *what a logo must be* and *how to understand the brand it's for*.
+
+### Future Volumes (planned, not yet started)
+
+The original Foundation Library envisioned 6 volumes. Two are complete (Philosophy, Brand Strategy). Four remain:
+
+| Volume | Purpose | Priority |
+|--------|---------|----------|
+| **Identity Thinking** | How identity systems work as systems | Medium — supports Phase 3 engine design |
+| **Symbol Intelligence** | Symbols, meanings, cultural considerations | High — large content volume; supports Create Engine |
+| **Typography Intelligence** | Type personality, pairing, industry suitability | Medium |
+| **Color Intelligence** | Emotional/cultural associations, accessibility | Medium |
+
+These volumes can proceed in parallel with Phase 3 engine specification — they do not need to block each other.
 
 ### Phase 2 Success Criteria
 - [x] 10 Philosophy Series LICs published as Reference Standards ✅
@@ -251,42 +276,55 @@ Everything shares the same intelligence core (LOGOS + LMKC).
 
 ## Immediate Next Steps (Recommended)
 
-> **Updated 2026-07-17 (v2.0). Philosophy Series complete. The foundation knowledge layer is done; the next phase is reasoning engines and additional knowledge volumes.**
+> **Updated 2026-07-17 (v2.1). Two knowledge volumes complete (Philosophy + Brand Strategy). The strategic foundation is now sufficient to support LOGOS engine specification.**
 
 ### 1. 🟢 Push the latest commits to GitHub
-The repository is under local git control with 11+ commits (initial + 10 LICs + roadmap updates). To sync the canonical remote:
+Repository is at 16+ commits with both volumes complete. Sync to canonical remote:
 ```
 git push origin main
 ```
-(If the remote was set up earlier, this is a single command. If not, set up the remote first per GitHub's instructions.)
 
-### 2. 🟢 Decide the next major body of work
+### 2. 🟢 Move to Phase 3 — LOGOS Engine Specifications *(recommended next major body of work)*
 
-The Philosophy Series is complete — you now have a choice of three productive directions. Each advances the project meaningfully; pick based on what serves your immediate goals:
+With 15 LICs now approved across two volumes, the knowledge foundation is rich enough to specify how LOGOS *reasons over* that knowledge. The core engine specs already exist (`04_LOGOS_Engines/`): LOGOS Architecture, Creative Council (9 minds), LRL v1.0, Discovery Engine v1.0, and the engine summary.
 
-| Option | What It Is | Why Choose It |
-|--------|-----------|---------------|
-| **A. Brand Strategy Volume** (RS-LIC-BS series) | The next knowledge volume — Brand Positioning, Brand DNA, Archetypes, etc. | Expands the knowledge core into the next-most-important domain; keeps the LIC production rhythm going |
-| **B. LOGOS Engine Specifications** (Phase 3) | Full specs for the remaining engines (Strategy, Insight, Create, Judge) | Advances the reasoning layer; necessary before any product/software work |
-| **C. v1.1 LIC refinement cycle** | Replace composite cases across the Philosophy Series with documented examples | Tightens evidence quality; closes all open improvement findings from the reviews |
+The remaining engines need full specifications following the established Engine Blueprint Standard:
 
-**My recommendation as your custodian:** Option A (Brand Strategy Volume). The LIC production rhythm is now proven and fast — riding that momentum produces the most knowledge value per session. Phase 3 (engines) is important but can wait until you have 2–3 knowledge volumes to inform the engine design. Option C is valuable but is improvement work, not new production — better batched after the next volume.
+| Engine | Status | Priority |
+|--------|--------|----------|
+| **Strategy Engine** (Brand DNA Builder) | Architecture only — needs full spec | 🔴 High — directly uses the Brand Strategy Series just completed |
+| **Insight Engine** (Research + Trends) | Architecture only | 🟠 Medium |
+| **Create Engine** (Concept Families) | Architecture only | 🔴 High — the creative output engine |
+| **Judge Engine** (Design Jury scoring) | Partial — Council done, Jury scoring framework only | 🟠 Medium |
+| **Sketch Coach** | Concept only | 🟡 Low |
+| **Presentation Builder** | Concept only | 🟡 Low |
 
-### 3. 🟠 Validate the Philosophy Series on a real project *(highest-value reflection)*
-You now have a complete foundational knowledge layer. The highest-value reflection activity available is to take a real (or past) client brief and apply all ten Philosophy LICs to it in sequence. Does the chain — Meaning → Purpose → Simplicity → Clarity → Originality → Memorability → Authenticity → Timelessness → Relevance → Consistency — produce better thinking than any subset? The Knowledge Graph relationships are now testable hypotheses; validating them on real work produces evidence for future refinement and for the LOGOS engine design.
+The **Strategy Engine** is the natural first full spec — it consumes the Brand Strategy Series output (Positioning, Differentiation, Audience, Personality, Archetypes) and produces Brand DNA. Specifying it now, while the Brand Strategy knowledge is fresh, produces the tightest integration between knowledge and reasoning.
 
-### 4. 🟡 Begin the LOGOS Knowledge Graph (LKG) implementation spec
-The LKG has been specified conceptually (CTO Decision #027–028) but not implemented. With 10 LICs now existing as nodes, the graph has real content to connect. Specifying how the graph is stored, queried, and traversed is the bridge between knowledge (LICs) and reasoning (engines).
+### 3. 🟠 Begin a parallel knowledge volume *(optional, can run alongside Phase 3)*
+
+If you prefer to continue knowledge production while engine specs proceed, the highest-value next volume is **Symbol Intelligence** — the largest content domain and the one the Create Engine most needs. This volume can run in parallel with engine specification without blocking it.
+
+### 4. 🟠 Validate the 15-LIC knowledge base on a real project *(highest-value reflection)*
+
+Take a real client brief and apply the full chain: Philosophy (Meaning → Purpose → ... → Consistency) followed by Brand Strategy (Positioning → Differentiation → Audience → Personality → Archetypes). Does the integrated chain produce dramatically better strategic understanding than either volume alone? This is the highest-value reflection activity available — it produces evidence for engine design and validates the Knowledge Graph relationships.
 
 ---
 
-## A Note on Pace
+## A Note on Pace and Direction
 
-The Philosophy Series took 10 LICs to complete — but only ~3 sessions of actual production time (Meaning required architecture first; the other 9 followed the proven template rapidly). **The pattern is now clear: investment in architecture pays back in production speed.** The Architecture Freeze exists to protect this — resist the temptation to re-examine the foundation between production runs. The next volume (Brand Strategy) should proceed at the same one-LIC-per-session rhythm.
+Two volumes in ~4 sessions of production time. The pattern is clear: **architecture investment pays back in production speed**, and the production engine is now both reliable and fast.
 
-The Philosophy Series milestone is significant: LogoMind now has a complete foundational knowledge layer that did not exist in this form before. Whatever comes next — more volumes, engine specs, product work — builds on a base that is genuinely world-class in its structure and discipline.
+The decision point at v2.1 is whether to:
+- **Continue knowledge production** (more volumes) — keeps the proven rhythm going; expands the knowledge base
+- **Pivot to reasoning specification** (Phase 3 engines) — converts the knowledge base into a reasoning system; advances toward product/software
+
+**My recommendation as your custodian:** Pivot to Phase 3 (engine specs). The knowledge foundation is now sufficient to support it; further volumes can proceed in parallel without blocking. Specifying the Strategy Engine next — directly consuming the Brand Strategy Series just completed — produces the tightest possible integration between what we know and how we reason.
+
+The two-volume milestone is significant: LogoMind now has both *what a logo must be* (Philosophy) and *how to understand the brand it's for* (Brand Strategy). Whatever comes next builds on a strategic foundation that did not exist in this form before this project.
 
 ---
 
 *Reason. Create. Refine.*
+
 
