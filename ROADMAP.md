@@ -1,7 +1,7 @@
 ---
 doc_id: LM-ROAD-001
 title: LogoMind Complete Roadmap
-version: 3.0
+version: 4.0
 status: Living Document
 governance_level: L1 — Planning
 last_reviewed: 2026-07-17
@@ -25,20 +25,22 @@ last_reviewed: 2026-07-17
    ✅ Brand Strategy Series (5/5 LICs)
    📋 4 future volumes pending (Symbol, Typography, Color, Identity)
 ✅ Phase 3 — LOGOS Engine Specs      COMPLETE (9 engines fully specified)
-⬜ Phase 4 — Product Specification   NEXT
-⬜ Phase 5 — Technical Build
+✅ Phase 4 — Product Specification   COMPLETE (7 deliverables, 23 MVP features defined)
+⬜ Phase 5 — Technical Build         NEXT
 ⬜ Phase 6 — Launch
 ```
 
-**As of 2026-07-17 (v3.0):** Three major phases complete. The project now has:
+**As of 2026-07-17 (v4.0):** Four major phases complete. The project now has:
 - **15 Reference Standard LICs** across two knowledge volumes (Philosophy + Brand Strategy)
 - **9 fully specified LOGOS engines** covering the complete reasoning pipeline
 - **LRL v1.0** — the proprietary reasoning language
 - **6 governing LKOS standards** (frozen v1.0)
+- **7 product specification documents** defining the complete designer experience
+- **23 MVP features** scoped for v1.0, with a clear critical path
 - A complete Charter, Constitution, and Philosophy foundation
-- All under git version control, ~22 commits, on GitHub
+- All under git version control, ~30 commits, on GitHub
 
-The "thinking system" is now structurally complete: LogoMind knows what good identity design *is* (Philosophy), how to *understand a brand* (Brand Strategy), and *how to reason over both* (LOGOS engines). Phase 4 (Product Specification — what the designer actually experiences) is the next major body of work.
+The full intellectual infrastructure is complete: what good identity design *is* (Philosophy), how to *understand a brand* (Brand Strategy), how to *reason over both* (LOGOS engines), and *what the designer experiences* (Product Specification). Phase 5 (Technical Build) is the next major body of work — actual software implementation.
 
 ---
 
@@ -208,6 +210,42 @@ The complete reasoning pipeline — from raw brief to client presentation — is
 
 ---
 
+## Phase 4 — Product Specification ✅ COMPLETE
+
+*Goal:* Define what designers actually experience — before any code is written.
+
+### The 7 Phase 4 Deliverables
+
+| # | Deliverable | Doc ID | What It Defines |
+|---|-------------|--------|-----------------|
+| 1 | **Product Vision** | PROD-VISION-001 | What LogoMind is, who it's for, what it promises |
+| 2 | **User Personas** | PROD-PERSONA-001 | Maya (solo freelancer — primary), Marcus (studio lead), Elena (entrepreneur) |
+| 3 | **User Journey** | PROD-JOURNEY-001 | 9-stage project arc from the designer's perspective |
+| 4 | **Screen Architecture** | PROD-SCREEN-001 | 8 major screens, each with single responsibility |
+| 5 | **Brand Discovery Workshop** | PROD-DW-001 | The hero feature — full UX spec, 7 stages, adaptive branching |
+| 6 | **Strategic Sketch Brief** | PROD-SSB-001 | The flagship output — 7-section template, 5-minute rule |
+| 7 | **Feature Backlog** | PROD-BACKLOG-001 | 23 Must-Have, 11 Should-Have, 12 Nice-to-Have, 17 Future |
+
+### Phase 4 Success Criteria — All Met
+- [x] Product Vision articulates what LogoMind is and is not
+- [x] Personas define the v1 user (Maya) with configurations, not demographics
+- [x] User Journey maps every stage with emotional arc and engine mapping
+- [x] Each of 8 screens has a single responsibility and primary action
+- [x] Discovery Workshop fully specified (the hero feature)
+- [x] SSB fully specified (the flagship output)
+- [x] Feature Backlog scoped with MVP (23 features), critical path, and governance
+
+### The v1 Critical Path
+
+```
+Brief Analysis → Discovery Workshop → Brand DNA → Insight Report
+→ Concept Families → Creative Council + Judge → SSB → Sketch Coach
+```
+
+8 steps. 23 Must-Have features. Two defining differentiators: the Discovery Workshop (no competitor does this) and the SSB (no competitor produces this).
+
+---
+
 ## Phase 4 — Product Specification
 
 *Goal:* Define what designers actually experience — before writing code.
@@ -311,54 +349,63 @@ Everything shares the same intelligence core (LOGOS + LMKC).
 
 ## Immediate Next Steps (Recommended)
 
-> **Updated 2026-07-17 (v3.0). Three phases complete. LogoMind now has knowledge (15 LICs), reasoning (9 engines), and governance (6 standards + Charter + Constitution). Phase 4 (Product Specification) is next.**
+> **Updated 2026-07-17 (v4.0). Four phases complete. LogoMind now has knowledge, reasoning, governance, AND product specification. Phase 5 (Technical Build) — actual software — is next.**
 
 ### 1. 🟢 Push the latest commits to GitHub
-Repository is at ~22 commits. Sync to canonical remote:
+Repository is at ~30 commits. Sync to canonical remote:
 ```
 git push origin main
 ```
 
-### 2. 🟢 Move to Phase 4 — Product Specification *(recommended next major body of work)*
+### 2. 🟢 Begin Phase 5 — Technical Build *(next major body of work)*
 
-Three phases of intellectual infrastructure are complete. Phase 4 is where that infrastructure meets the designer's actual experience. The goal: define what designers *see, do, and feel* when they use LogoMind — before any code is written.
+The intellectual infrastructure is complete. The product specification is complete. Phase 5 is where it becomes software.
 
-Phase 4 deliverables (from the roadmap):
+**Phase 5 Build Order (per PROD-BACKLOG-001, Build From the Inside Out):**
 
-| Deliverable | What It Defines |
-|-------------|-----------------|
-| **Product Vision Document** | What the product is, who it's for, what it promises |
-| **User Personas** | Freelancer, Agency, Entrepreneur (refined) |
-| **User Journey** | Project → Discovery → SSB → Sketch → Critique → Presentation |
-| **Screen Architecture** | Dashboard, Project, Discovery Workshop, SSB Viewer, Sketch Workspace, Presentation Builder |
-| **Brand Discovery Workshop — full UX spec** | Adaptive branching, question bank, fallback paths |
-| **Strategic Sketch Brief — output template** | The final form of the flagship output |
-| **Feature Backlog** | Must Have / Should Have / Nice to Have / Future |
+| Step | What | Depends On |
+|------|------|-----------|
+| 5.1 | **Database schema** (Project, Brief, Brand DNA, Concept Families, SSB, Sketches) | Data model design |
+| 5.2 | **API contracts** (REST/GraphQL endpoints for each engine) | Schema + engine specs |
+| 5.3 | **AI orchestration layer** (model-independent; calls engines in sequence) | Engine specs (Phase 3) |
+| 5.4 | **LMKC/LKG storage + query** (knowledge graph backend) | LKG spec |
+| 5.5 | **Backend services** (Project Engine, Prompt Engine, Knowledge Base) | 5.1–5.4 |
+| 5.6 | **Frontend — Dashboard + Project creation** | Backend APIs |
+| 5.7 | **Frontend — Discovery Workshop** (the hero feature) | 5.6 |
+| 5.8 | **Frontend — Strategy + Insight views** | 5.6 |
+| 5.9 | **Frontend — Concept Families + Judge** | 5.6 |
+| 5.10 | **Frontend — SSB + Sketch Workspace** | 5.6 |
+| 5.11 | **Frontend — Presentation View** (Should-Have; may defer to v1.1) | 5.6 |
+| 5.12 | **Auth + User accounts** | Backend |
+| 5.13 | **Deploy + Hosting** | All above |
 
-The Brand Discovery Workshop is the natural first deliverable — it is the designer's entry-point experience and the feature most likely to differentiate LogoMind from competitors.
+**Tech Stack (decided):** React + Next.js (frontend), Python + FastAPI (backend), PostgreSQL (database), model-independent AI orchestration.
 
-### 3. 🟠 Begin a parallel knowledge volume *(optional, alongside Phase 4)*
+The natural first technical deliverable is the **database schema** (5.1) — because every screen, engine, and API depends on it.
 
-If knowledge production should continue in parallel, the highest-value next volume is **Symbol Intelligence** — the largest content domain and the one the Create Engine most needs. The volume can proceed without blocking Phase 4.
+### 3. 🟠 Continue knowledge production *(parallel, optional)*
+
+The Symbol Intelligence volume is the highest-value next knowledge volume — it's the largest content domain and the one the Create Engine most needs. Can proceed in parallel with Phase 5.
 
 ### 4. 🟠 Validate the complete system on a real project *(highest-value reflection)*
 
-Take a real client brief and walk it through the entire pipeline — Discovery → Strategy → Insight → Create → Judge → SSB → Coach → Present. Does the full chain produce dramatically better outcomes than traditional workflow? This is now the highest-value validation activity available: the whole system is structurally complete and can be end-to-end tested.
+Take a real client brief and walk it through the entire pipeline manually (using the specs as scripts). Does the full chain produce dramatically better outcomes than traditional workflow? This validates the system before significant engineering investment.
 
 ---
 
-## A Note on the v3.0 Milestone
+## A Note on the v4.0 Milestone
 
-Three phases complete in a remarkably compressed timeframe. The pattern held throughout: **architecture investment pays back in production speed.** The Architecture Freeze protected the foundation; the production engine ran reliably; the editorial process caught what mattered.
+Four phases complete. The full intellectual infrastructure of LogoMind is now specified end-to-end:
 
-At v3.0, LogoMind is no longer an "emerging project." It is a structurally complete knowledge-and-reasoning system with:
-- A defensible strategic foundation (Charter, Constitution, Philosophy)
-- Six frozen governing standards (LKOS)
-- Two complete knowledge volumes (15 Reference Standard LICs)
-- A complete reasoning pipeline (9 engines + LRL)
-- Documented operational tools at every layer (~40+ frameworks, audits, tests, failure-mode taxonomies)
+- **Phase 0 (Foundation):** Why LogoMind exists; the charter, constitution, philosophy
+- **Phase 1 (Governance):** How knowledge is governed; 6 frozen LKOS standards
+- **Phase 2 (Knowledge):** What good identity design *is*; 15 Reference Standard LICs
+- **Phase 3 (Reasoning):** How LOGOS thinks; 9 engines + LRL
+- **Phase 4 (Product):** What the designer experiences; 7 product specs, 23 MVP features
 
-Whatever comes next — Phase 4 (product), more knowledge volumes, or real-project validation — builds on infrastructure that is genuinely world-class in its structure and discipline. The project has crossed from "being built" to "being ready to apply."
+What remains is implementation (Phase 5), launch (Phase 6), and ongoing knowledge production (more volumes). The hard architectural and intellectual work is done. Phase 5 is substantial but primarily execution — translating specifications into running software.
+
+The project has crossed from "being designed" to "being ready to build."
 
 ---
 
