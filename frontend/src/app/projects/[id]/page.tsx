@@ -10,6 +10,7 @@ import { ConceptFamiliesView } from "@/components/ConceptFamiliesView";
 import { SSBView } from "@/components/SSBView";
 import { WorkshopView } from "@/components/WorkshopView";
 import { PresentationView } from "@/components/PresentationView";
+import { runStrategy as runStrategyApi } from "@/lib/api";
 
 const STAGE_ORDER = ["entry", "discovery", "workshop", "strategy", "insight", "create", "judge", "ssb", "sketch", "presentation", "complete"];
 
@@ -117,6 +118,19 @@ function DiscoveryStage({ project, onUpdate }: { project: Project; onUpdate: () 
   const discovery = project.discovery_summary;
   const score = project.brand_confidence_score;
   const level = project.brand_confidence_level;
+  const [proceeding, setProceeding] = useState(false);
+
+  const handleProceed = async () => {
+    setProceeding(true);
+    try {
+      await runStrategyApi(project.id);
+      onUpdate(); // reload — project.stage will now be "strategy"
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setProceeding(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -172,10 +186,11 @@ function DiscoveryStage({ project, onUpdate }: { project: Project; onUpdate: () 
             <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
               {score >= 70 ? (
                 <button
-                  onClick={onUpdate}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700"
+                  onClick={handleProceed}
+                  disabled={proceeding}
+                  className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
                 >
-                  Proceed to Strategy →
+                  {proceeding ? "Generating Brand DNA…" : "Proceed to Strategy →"}
                 </button>
               ) : (
                 <p className="text-sm text-gray-500">
