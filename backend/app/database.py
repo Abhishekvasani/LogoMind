@@ -3,9 +3,9 @@ Database configuration and session management.
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 
-from . import Base  # re-export for convenience
+from .models import Base  # noqa: F401 (re-export Base for migrations)
 
 DATABASE_URL = "sqlite:///./logomind.db"  # dev default; production: PostgreSQL
 
@@ -29,4 +29,7 @@ def get_db():
 
 def init_db():
     """Create all tables. Called on app startup."""
+    # Import models so they register with Base.metadata before create_all.
+    from . import models  # noqa: F401
+
     Base.metadata.create_all(bind=engine)
