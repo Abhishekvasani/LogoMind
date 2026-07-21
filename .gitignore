@@ -35,21 +35,48 @@ desktop.ini
 tmp/
 temp/
 
-# --- Future: application build artifacts (reserved, not used yet) ---
-# When Phase 5 (Technical Build) begins, these will keep software
-# dependencies out of the knowledge repository.
-node_modules/
+# --- Python ---
 __pycache__/
 *.pyc
-.env
-.env.local
+*.pyo
+*.egg-info/
 .venv/
 venv/
-dist/
-build/
+env/
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Node / Next.js ---
+node_modules/
 .next/
+out/
+build/
+dist/
 .cache/
-*.egg-info/
+.vercel/
+
+# --- Environment files ---
+.env
+.env.local
+.env.*.local
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Keep these (do NOT ignore) ---
+!.gitignore
+!.gitattributes
+!.env.example
 
 # --- Future: uploads / user-generated content ---
 uploads/

@@ -1,0 +1,27 @@
+# LogoMind Backend Dependencies
+# Phase 5 — Technical Build v1.0
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Database
+sqlalchemy>=2.0.0
+# psycopg2-binary>=2.9.0  # PostgreSQL (uncomment for production)
+alembic>=1.12.0          # Database migrations
+
+# Validation (bundled with FastAPI, but explicit for clarity)
+pydantic>=2.0.0
+
+# AI providers (install the ones you use)
+openai>=1.0.0
+# anthropic>=0.18.0  # Optional alternative provider
+
+# Utilities
+python-multipart>=0.0.6  # File uploads (sketches)
+python-dotenv>=1.0.0     # Environment variables
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0  # For testing FastAPI
