@@ -61,23 +61,26 @@ class MockAIProvider(AIProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> str:
-        # Detect engine from the system prompt and return a sensible mock
+        # Detect engine from the system prompt. Order matters — check
+        # the most specific identifiers first to avoid false matches.
+        # (E.g., the Strategy prompt mentions "Discovery output" but
+        # must not be caught by the Discovery check.)
         sp_lower = system_prompt.lower()
 
-        if "discovery" in sp_lower or "brief analysis" in sp_lower:
-            return self._mock_discovery(user_prompt)
-        elif "strategy" in sp_lower or "brand dna" in sp_lower:
+        if "brand dna" in sp_lower or "strategy engine" in sp_lower or "brand dna builder" in sp_lower:
             return self._mock_strategy(user_prompt)
-        elif "insight" in sp_lower or "trend" in sp_lower:
-            return self._mock_insight(user_prompt)
-        elif "create" in sp_lower or "concept famil" in sp_lower:
-            return self._mock_create(user_prompt)
-        elif "judge" in sp_lower or "jury" in sp_lower:
-            return self._mock_judge(user_prompt)
         elif "sketch coach" in sp_lower:
             return self._mock_coach(user_prompt)
         elif "presentation" in sp_lower:
             return self._mock_presentation(user_prompt)
+        elif "concept famil" in sp_lower or "create engine" in sp_lower or "logos create" in sp_lower:
+            return self._mock_create(user_prompt)
+        elif "design jury" in sp_lower or "judge engine" in sp_lower or "logos judge" in sp_lower:
+            return self._mock_judge(user_prompt)
+        elif "insight" in sp_lower or "trend intelligence" in sp_lower or "logos insight" in sp_lower:
+            return self._mock_insight(user_prompt)
+        elif "discovery engine" in sp_lower or "brief analysis" in sp_lower or "logos discover" in sp_lower:
+            return self._mock_discovery(user_prompt)
         else:
             return json.dumps({"note": "Mock provider — no specific engine detected."})
 
