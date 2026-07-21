@@ -87,7 +87,7 @@ class ProjectSummary(BaseModel):
     id: int
     company_name: str
     industry: str
-    stage: PipelineStage
+    stage: str  # stored as string; PipelineStage enum values
     brand_confidence_score: float = 0.0
     created_at: datetime
     updated_at: datetime

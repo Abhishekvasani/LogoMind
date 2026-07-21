@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import User, Project, Sketch, DecisionLog, ConceptFamily
+from ..models import User as UserModel, Project as ProjectModel, Sketch as SketchModel, DecisionLog as DecisionLogModel, ConceptFamily as ConceptFamilyModel
 from ..schemas import (
     ProjectCreate, Project, ProjectSummary,
     BriefAnalysisResult, BrandDNA, InsightReport,
@@ -33,15 +33,15 @@ router = APIRouter()
 
 # ─── Helper ────────────────────────────────────────────────────────────
 
-def _get_project(db: Session, project_id: int) -> Project:
-    project = db.query(Project).filter(Project.id == project_id).first()
+def _get_project(db: Session, project_id: int) -> ProjectModel:
+    project = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail=f"Project {project_id} not found")
     return project
 
 
 def _log_decision(db: Session, project_id: int, decision: str, reason: str = None, stage: str = None):
-    entry = DecisionLog(project_id=project_id, decision=decision, reason=reason, stage=stage)
+    entry = DecisionLogModel(project_id=project_id, decision=decision, reason=reason, stage=stage)
     db.add(entry)
     db.commit()
 
@@ -53,21 +53,21 @@ def _log_decision(db: Session, project_id: int, decision: str, reason: str = Non
 @router.get("/projects", response_model=List[ProjectSummary])
 def list_projects(db: Session = Depends(get_db)):
     """Dashboard — list all projects (Stage 1 entry)."""
-    return db.query(Project).order_by(Project.updated_at.desc()).all()
+    return db.query(ProjectModel).order_by(ProjectModel.updated_at.desc()).all()
 
 
 @router.post("/projects", response_model=Project, status_code=201)
 def create_project(project_in: ProjectCreate, db: Session = Depends(get_db)):
     """Create a new project (Stage 1 — PROD-SCREEN-001 Screen 2)."""
     # In production, get the authenticated user. For now, use user 1 if exists.
-    user = db.query(User).first()
+    user = db.query(UserModel).first()
     if not user:
-        user = User(email="demo@logomind.ai", name="Demo User")
+        user = UserModel(email="demo@logomind.ai", name="Demo User")
         db.add(user)
         db.commit()
         db.refresh(user)
 
-    project = Project(
+    project = ProjectModel(
         owner_id=user.id,
         company_name=project_in.company_name,
         industry=project_in.industry,
@@ -138,7 +138,7 @@ def generate_workshop_link(project_id: int, db: Session = Depends(get_db)):
 @router.get("/workshop/{token}", response_model=Project)
 def get_workshop_by_token(token: str, db: Session = Depends(get_db)):
     """Client accesses the Workshop via share token."""
-    project = db.query(Project).filter(Project.workshop_share_token == token).first()
+    project = db.query(ProjectModel).filter(ProjectModel.workshop_share_token == token).first()
     if not project:
         raise HTTPException(status_code=404, detail="Workshop link invalid or expired")
     return project
@@ -253,7 +253,7 @@ async def run_create(project_id: int, db: Session = Depends(get_db)):
 
     # Persist as separate rows for queryability
     for family_data in project.concept_families:
-        cf = ConceptFamily(
+        cf = ConceptFamilyModel(
             project_id=project_id,
             family_label=family_data.get("family_label", "?"),
             theme=family_data.get("theme", ""),
@@ -287,8 +287,8 @@ async def run_judge(project_id: int, db: Session = Depends(get_db)):
         results.append(result)
 
         # Update the ConceptFamily row
-        cf = db.query(ConceptFamily).filter(
-            ConceptFamily.project_id == project_id,
+        cf = db.query(ConceptFamilyModel).filter(
+            ConceptFamilyModel.project_id == project_id,
             ConceptFamily.family_label == family.get("family_label"),
         ).first()
         if cf:
@@ -308,15 +308,15 @@ def select_family(project_id: int, family_label: str, db: Session = Depends(get_
     """Designer selects a Concept Family to develop."""
     project = _get_project(db, project_id)
 
-    cf = db.query(ConceptFamily).filter(
-        ConceptFamily.project_id == project_id,
+    cf = db.query(ConceptFamilyModel).filter(
+        ConceptFamilyModel.project_id == project_id,
         ConceptFamily.family_label == family_label,
     ).first()
     if not cf:
         raise HTTPException(status_code=404, detail=f"Family {family_label} not found")
 
     # Clear previous selection
-    db.query(ConceptFamily).filter(ConceptFamily.project_id == project_id).update({ConceptFamily.is_selected: False})
+    db.query(ConceptFamilyModel).filter(ConceptFamilyModel.project_id == project_id).update({ConceptFamilyModel.is_selected: False})
     cf.is_selected = True
     db.commit()
 
@@ -354,7 +354,7 @@ async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Dep
     project = _get_project(db, project_id)
 
     # Count existing sketches for numbering
-    existing = db.query(Sketch).filter(Sketch.project_id == project_id).count()
+    existing = db.query(SketchModel).filter(SketchModel.project_id == project_id).count()
     sketch_number = existing + 1
 
     # Get Sketch Coach feedback
@@ -370,7 +370,7 @@ async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Dep
     )
 
     # Persist the sketch
-    sketch_record = Sketch(
+    sketch_record = SketchModel(
         project_id=project_id,
         sketch_number=sketch_number,
         description=sketch.description,
@@ -418,7 +418,7 @@ async def build_project_presentation(project_id: int, db: Session = Depends(get_
 @router.get("/projects/{project_id}/decisions", response_model=List[DecisionLogEntry])
 def get_decision_log(project_id: int, db: Session = Depends(get_db)):
     """Retrieve the project's decision log."""
-    entries = db.query(DecisionLog).filter(DecisionLog.project_id == project_id).all()
+    entries = db.query(DecisionLogModel).filter(DecisionLogModel.project_id == project_id).all()
     return [DecisionLogEntry(decision=e.decision, reason=e.reason, stage=e.stage, made_by=e.made_by) for e in entries]
 
 
