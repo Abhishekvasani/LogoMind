@@ -81,7 +81,7 @@ export const runStrategy = (projectId: number) =>
 
 // Stage 5: Insight
 export const runInsight = (projectId: number) =>
-  apiCall<any>(`projects/${projectId}/insight`, { method: "POST" });
+  apiCall<any>(`/projects/${projectId}/insight`, { method: "POST" });
 
 // Stage 6: Create
 export const runCreate = (projectId: number) =>

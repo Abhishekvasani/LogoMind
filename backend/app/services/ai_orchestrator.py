@@ -61,28 +61,33 @@ class MockAIProvider(AIProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> str:
-        # Detect engine from the system prompt. Order matters — check
-        # the most specific identifiers first to avoid false matches.
-        # (E.g., the Strategy prompt mentions "Discovery output" but
-        # must not be caught by the Discovery check.)
-        sp_lower = system_prompt.lower()
+        # Detect engine from the system prompt's FIRST LINE (the identity
+        # statement), not from keywords that might appear anywhere in
+        # the prompt. Each engine's prompt starts with:
+        #   "You are LOGOS <Name>, the <description>."
+        # We match on that identity, which is unique per engine.
+        first_line = system_prompt.lower().split("\n")[0]
 
-        if "brand dna" in sp_lower or "strategy engine" in sp_lower or "brand dna builder" in sp_lower:
+        if "logos strategy" in first_line or "brand dna builder" in first_line:
             return self._mock_strategy(user_prompt)
-        elif "sketch coach" in sp_lower:
-            return self._mock_coach(user_prompt)
-        elif "presentation" in sp_lower:
-            return self._mock_presentation(user_prompt)
-        elif "concept famil" in sp_lower or "create engine" in sp_lower or "logos create" in sp_lower:
+        elif "logos create" in first_line or "concept families engine" in first_line:
             return self._mock_create(user_prompt)
-        elif "design jury" in sp_lower or "judge engine" in sp_lower or "logos judge" in sp_lower:
+        elif "logos judge" in first_line or "design jury" in first_line:
             return self._mock_judge(user_prompt)
-        elif "insight" in sp_lower or "trend intelligence" in sp_lower or "logos insight" in sp_lower:
+        elif "logos insight" in first_line or "trend intelligence" in first_line:
             return self._mock_insight(user_prompt)
-        elif "discovery engine" in sp_lower or "brief analysis" in sp_lower or "logos discover" in sp_lower:
+        elif "logos sketch coach" in first_line or "sketch coach" in first_line:
+            return self._mock_coach(user_prompt)
+        elif "logos presentation" in first_line or "presentation builder" in first_line:
+            return self._mock_presentation(user_prompt)
+        elif "ssb composer" in first_line or "strategic sketch brief" in first_line:
+            return self._mock_ssb(user_prompt)
+        elif "logos discover" in first_line or "discovery engine" in first_line or "brief analysis" in first_line:
             return self._mock_discovery(user_prompt)
+        elif "intent extraction" in first_line:
+            return json.dumps({"preference": "unknown", "intent": "unknown", "reasoning": "mock"})
         else:
-            return json.dumps({"note": "Mock provider — no specific engine detected."})
+            return json.dumps({"note": "Mock provider — no specific engine detected.", "first_line": first_line})
 
     def _mock_discovery(self, brief: str) -> str:
         # Naive heuristic: longer briefs score higher
@@ -206,6 +211,58 @@ class MockAIProvider(AIProvider):
                 "strategic_confidence": 0.94,
             },
             "refinement_recommendations": ["Strengthen memorability — current silhouette not distinctive enough."],
+        })
+
+    def _mock_ssb(self, brief: str) -> str:
+        return json.dumps({
+            "project_essence": "A strategically grounded identity project with clear meaning, audience, and differentiation.",
+            "brand_dna_snapshot": {
+                "purpose": "To serve a specific need in the market that competitors underserve.",
+                "positioning": "For [audience] who [need], [brand] is the [category] that [distinctive].",
+                "differentiation": "Behavioural differentiation through service quality.",
+                "personality": "A confident, plain-spoken presence that treats newcomers as equals.",
+                "archetype": "None identified",
+                "emotional_goal": "Confidence and trust.",
+            },
+            "creative_north_star": "The logo must make the audience feel confident and trusting by expressing the brand's core meaning through distinctive, simple, clear forms.",
+            "creative_territories": [
+                {"family_label": "A", "theme": "Trust + Precision", "recommendation": "recommended"},
+            ],
+            "opportunities_and_warnings": {
+                "explore": ["Negative space", "Abstract geometry", "Hand-crafted signals"],
+                "avoid": ["Generic globes", "Overused shields", "Trendy gradient effects"],
+            },
+            "creative_council_advice": {
+                "meaning_mind": "Ensure every element serves the brand's core meaning.",
+                "simplicity_mind": "Apply the Reduction Sequence before finalising.",
+                "boldness_mind": "Be appropriately courageous, not reckless.",
+            },
+            "sketch_missions": [
+                {
+                    "mission_name": "Keystone + Monogram",
+                    "core_idea": "Explore the keystone form integrated with the brand initial.",
+                    "combine": ["Keystone", "Letter mark", "Negative space"],
+                    "why_it_works": "Keystone signals stability; the monogram personalises it.",
+                    "potential_pitfalls": ["Forced integration", "Illegibility at small scale"],
+                    "start_with": "Begin with a circular grid. Sketch 10 keystone variations.",
+                },
+                {
+                    "mission_name": "Abstract Horizon",
+                    "core_idea": "Explore an abstract horizon line suggesting growth and direction.",
+                    "combine": ["Horizon line", "Geometric form", "Open negative space"],
+                    "why_it_works": "Horizon suggests forward movement and possibility.",
+                    "potential_pitfalls": ["Too generic", "Lacks distinctiveness"],
+                    "start_with": "Draw horizontal lines at various weights. Test which feel right.",
+                },
+                {
+                    "mission_name": "Organic Form",
+                    "core_idea": "Explore an organic, flowing form suggesting warmth and approachability.",
+                    "combine": ["Curved line", "Natural form", "Soft geometry"],
+                    "why_it_works": "Organic forms feel human and approachable.",
+                    "potential_pitfalls": ["Too decorative", "Hard to reproduce"],
+                    "start_with": "Sketch flowing lines from observation. Don't stylise yet.",
+                },
+            ],
         })
 
     def _mock_coach(self, brief: str) -> str:

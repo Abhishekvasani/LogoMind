@@ -289,7 +289,7 @@ async def run_judge(project_id: int, db: Session = Depends(get_db)):
         # Update the ConceptFamily row
         cf = db.query(ConceptFamilyModel).filter(
             ConceptFamilyModel.project_id == project_id,
-            ConceptFamily.family_label == family.get("family_label"),
+            ConceptFamilyModel.family_label == family.get("family_label"),
         ).first()
         if cf:
             cf.composite_score = result.composite
@@ -310,7 +310,7 @@ def select_family(project_id: int, family_label: str, db: Session = Depends(get_
 
     cf = db.query(ConceptFamilyModel).filter(
         ConceptFamilyModel.project_id == project_id,
-        ConceptFamily.family_label == family_label,
+        ConceptFamilyModel.family_label == family_label,
     ).first()
     if not cf:
         raise HTTPException(status_code=404, detail=f"Family {family_label} not found")
