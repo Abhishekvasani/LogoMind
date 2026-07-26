@@ -106,7 +106,7 @@ class Project(ProjectSummary):
     brand_dna: Optional[Dict[str, Any]] = None
     insight_report: Optional[Dict[str, Any]] = None
     concept_families: Optional[List[Dict[str, Any]]] = None
-    judge_report: Optional[Dict[str, Any]] = None
+    judge_report: Optional[List[Dict[str, Any]]] = None
     ssb: Optional[Dict[str, Any]] = None
     presentation: Optional[Dict[str, Any]] = None
     workshop_state: Optional[Dict[str, Any]] = None
