@@ -349,11 +349,23 @@ def get_ai_orchestrator() -> AIProvider:
 
     provider_name = os.environ.get("LOGOMIND_AI_PROVIDER", "").lower()
 
-    if provider_name == "mock" or not os.environ.get("OPENAI_API_KEY"):
+    # Explicit OpenAI selection without a key is a configuration error,
+    # not a reason to silently fall back to the mock provider.
+    if provider_name == "openai" and not os.environ.get("OPENAI_API_KEY"):
+        raise RuntimeError(
+            "LOGOMIND_AI_PROVIDER=openai but OPENAI_API_KEY is not set. "
+            "Either provide an API key or set LOGOMIND_AI_PROVIDER=mock."
+        )
+
+    if provider_name == "openai":
+        _provider = OpenAIProvider()
+    elif provider_name == "mock":
         _provider = MockAIProvider()
-    elif provider_name == "openai" or os.environ.get("OPENAI_API_KEY"):
+    elif os.environ.get("OPENAI_API_KEY"):
+        # Key present and no explicit provider → use OpenAI.
         _provider = OpenAIProvider()
     else:
+        # Default: development mode, no key configured → deterministic mock.
         _provider = MockAIProvider()
 
     return _provider

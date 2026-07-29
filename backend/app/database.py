@@ -2,12 +2,20 @@
 Database configuration and session management.
 """
 
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from .models import Base  # noqa: F401 (re-export Base for migrations)
 
-DATABASE_URL = "sqlite:///./logomind.db"  # dev default; production: PostgreSQL
+# Load variables from backend/.env so configuration is honoured.
+load_dotenv()
+
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL", "sqlite:///./logomind.db"
+)  # dev default; production: PostgreSQL
 
 engine = create_engine(
     DATABASE_URL,
