@@ -55,6 +55,7 @@ build/
 dist/
 .cache/
 .vercel/
+*.tsbuildinfo
 
 # --- Environment files ---
 .env
