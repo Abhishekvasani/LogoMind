@@ -19,7 +19,7 @@ from ..schemas import (
     BriefAnalysisResult, BrandDNA, InsightReport,
     CreateEngineResult, FamilyJudgeResult, SSB, CoachFeedback,
     WorkshopState, WorkshopAnswer,
-    SketchUpload, DecisionLogEntry,
+    SketchUpload, SketchOut, DecisionLogEntry,
 )
 from ..services.discovery_engine import analyse_brief, extract_intent
 from ..services.engines import (
@@ -385,6 +385,19 @@ async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Dep
     db.commit()
 
     return feedback
+
+
+@router.get("/projects/{project_id}/sketches", response_model=List[SketchOut])
+def list_sketches(project_id: int, db: Session = Depends(get_db)):
+    """List a project's sketches and persisted coach feedback (Stage 8 iteration)."""
+    _get_project(db, project_id)  # 404 if the project does not exist
+    sketches = (
+        db.query(SketchModel)
+        .filter(SketchModel.project_id == project_id)
+        .order_by(SketchModel.sketch_number)
+        .all()
+    )
+    return sketches
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -82,6 +82,27 @@ class ProjectCreate(BaseModel):
     client_contact: Optional[str] = None
 
 
+class SketchOut(BaseModel):
+    """A persisted sketch and its coach feedback (Stage 8 iteration).
+
+    Defined before Project so Project can reference it; it only depends on
+    the top-level imports (no other schema types).
+    """
+    id: int
+    sketch_number: int
+    description: Optional[str] = None
+    design_intent: Optional[str] = None
+    linked_concept_family: Optional[str] = None
+    image_url: Optional[str] = None
+    coach_feedback: Optional[Dict[str, Any]] = None
+    coach_confidence: Optional[str] = None
+    revision_status: str = "draft"
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class ProjectSummary(BaseModel):
     """Dashboard card representation."""
     id: int
@@ -111,6 +132,7 @@ class Project(ProjectSummary):
     presentation: Optional[Dict[str, Any]] = None
     workshop_state: Optional[Dict[str, Any]] = None
     workshop_share_token: Optional[str] = None
+    sketches: List[SketchOut] = []
 
     class Config:
         from_attributes = True
