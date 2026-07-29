@@ -5,15 +5,17 @@ import { Project, runInsight } from "@/lib/api";
 
 export function StrategyView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const dna = project.brand_dna;
 
   const handleProceed = async () => {
     setRunning(true);
+    setError(null);
     try {
       await runInsight(project.id);
       onUpdate();
     } catch (e: any) {
-      alert(e.message);
+      setError(e.message);
     } finally {
       setRunning(false);
     }
@@ -51,6 +53,12 @@ export function StrategyView({ project, onUpdate }: { project: Project; onUpdate
               {running ? "Generating Insight…" : "Continue to Insight →"}
             </button>
           </div>
+
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+              {error}
+            </div>
+          )}
         </>
       ) : (
         <p className="text-gray-500">Brand DNA not yet generated. (Strategy Engine should have run.)</p>

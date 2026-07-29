@@ -5,15 +5,17 @@ import { Project, runCreate } from "@/lib/api";
 
 export function InsightView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const report = project.insight_report;
 
   const handleProceed = async () => {
     setRunning(true);
+    setError(null);
     try {
       await runCreate(project.id);
       onUpdate();
     } catch (e: any) {
-      alert(e.message);
+      setError(e.message);
     } finally {
       setRunning(false);
     }
@@ -100,6 +102,12 @@ export function InsightView({ project, onUpdate }: { project: Project; onUpdate:
       >
         {running ? "Generating Concept Families…" : "Continue to Create →"}
       </button>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

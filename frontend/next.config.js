@@ -1,14 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Proxy API requests to the FastAPI backend in development
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"}/api/:path*`,
-      },
-    ];
-  },
+  // NOTE: the previous rewrites() proxy has been removed.
+  //
+  // It was redundant: src/lib/api.ts calls the absolute API_BASE
+  // (which already includes the "/api" prefix) directly via fetch, so the
+  // proxy was never on the request path. Worse, when NEXT_PUBLIC_API_BASE
+  // already contained "/api" (as .env.example ships it), the rewrite
+  // doubled the prefix to ".../api/api/..." and 404'd. Removing it makes the
+  // direct-fetch path the single source of truth.
 };
 
 module.exports = nextConfig;

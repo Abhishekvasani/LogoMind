@@ -7,26 +7,30 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
   const [running, setRunning] = useState(false);
   const [sketchDesc, setSketchDesc] = useState("");
   const [sketchIntent, setSketchIntent] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const ssb = project.ssb;
+  const sketches = project.sketches || [];
 
   const handleUpload = async () => {
     if (!sketchDesc.trim()) return;
     setRunning(true);
+    setError(null);
     try {
       await uploadSketch(project.id, { description: sketchDesc, design_intent: sketchIntent });
       setSketchDesc("");
       setSketchIntent("");
       onUpdate();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { setError(e.message); }
     finally { setRunning(false); }
   };
 
   const handlePresentation = async () => {
     setRunning(true);
+    setError(null);
     try {
       await buildPresentation(project.id);
       onUpdate();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { setError(e.message); }
     finally { setRunning(false); }
   };
 
@@ -118,8 +122,58 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
           </button>
         </div>
 
-        {/* Coach feedback would appear here from project data */}
+        {sketches.length > 0 && (
+          <div className="space-y-3 mt-4">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Coach Feedback ({sketches.length})
+            </p>
+            {sketches.map((sketch: any) => (
+              <div key={sketch.id} className="p-3 border border-gray-200 rounded bg-white">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-400">Sketch {sketch.sketch_number}</span>
+                  {sketch.coach_confidence && (
+                    <span className="text-xs text-gray-400">{sketch.coach_confidence}</span>
+                  )}
+                </div>
+                {sketch.description && (
+                  <p className="text-sm text-gray-600 mb-2">"{sketch.description}"</p>
+                )}
+                {sketch.coach_feedback && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-800">{sketch.coach_feedback.assessment}</p>
+                    {sketch.coach_feedback.suggestions?.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-500">Suggestions:</p>
+                        <ul className="text-sm text-gray-600">
+                          {sketch.coach_feedback.suggestions.map((s: string, i: number) => (
+                            <li key={i}>· {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {sketch.coach_feedback.pitfalls_to_watch?.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-red-500">Pitfalls to watch:</p>
+                        <ul className="text-sm text-gray-600">
+                          {sketch.coach_feedback.pitfalls_to_watch.map((p: string, i: number) => (
+                            <li key={i}>· {p}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {error && (
+        <div className="md:col-span-2 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

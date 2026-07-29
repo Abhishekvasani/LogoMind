@@ -5,31 +5,35 @@ import { Project, runJudge, selectFamily, composeSSB } from "@/lib/api";
 
 export function ConceptFamiliesView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const families = project.concept_families || [];
   const judgeData = project.judge_report || [];
 
   const handleJudge = async () => {
     setRunning(true);
+    setError(null);
     try {
       await runJudge(project.id);
       onUpdate();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { setError(e.message); }
     finally { setRunning(false); }
   };
 
   const handleSelect = async (label: string) => {
+    setError(null);
     try {
       await selectFamily(project.id, label);
       onUpdate();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { setError(e.message); }
   };
 
   const handleComposeSSB = async () => {
     setRunning(true);
+    setError(null);
     try {
       await composeSSB(project.id);
       onUpdate();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { setError(e.message); }
     finally { setRunning(false); }
   };
 
@@ -112,6 +116,12 @@ export function ConceptFamiliesView({ project, onUpdate }: { project: Project; o
         >
           {running ? "Composing SSB…" : "Compose Strategic Sketch Brief →"}
         </button>
+      )}
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+          {error}
+        </div>
       )}
     </div>
   );

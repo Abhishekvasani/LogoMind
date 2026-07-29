@@ -31,6 +31,7 @@ export interface Project extends ProjectSummary {
   ssb?: any;
   presentation?: any;
   workshop_state?: any;
+  sketches?: any[];
 }
 
 export interface BriefAnalysisResult {
@@ -74,6 +75,12 @@ export const generateWorkshopLink = (projectId: number) =>
 
 export const completeWorkshop = (projectId: number) =>
   apiCall<Project>(`/projects/${projectId}/workshop/complete`, { method: "POST" });
+
+export const submitWorkshopAnswer = (
+  projectId: number,
+  data: { stage: number; question_id: string; answer: string; answer_type?: string }
+) =>
+  apiCall<any>(`/projects/${projectId}/workshop/answer`, { method: "POST", body: JSON.stringify(data) });
 
 // Stage 4: Strategy
 export const runStrategy = (projectId: number) =>
