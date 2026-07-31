@@ -85,3 +85,62 @@ async def extract_intent(preference: str) -> Dict[str, str]:
         temperature=0.2,
     )
     return parse_json_response(response)
+
+
+async def synthesize_brief(
+    company_name: str,
+    industry: str,
+    client_brief: str,
+    workshop_answers: list,
+) -> str:
+    """Synthesize a richer brief from the original brief + workshop answers.
+
+    Workshop answers are often terse (single words or short phrases). Rather
+    than appending them verbatim — which barely improves a real (quality-based)
+    Brand Confidence score — this asks the model to weave them into the original
+    brief as one coherent, well-written, detailed brief. The synthesized brief
+    is then what gets re-scored, so a workshop that genuinely gathered useful
+    information produces a brief that merits proceeding to Strategy.
+
+    Returns the synthesized brief as plain prose.
+    """
+    if not workshop_answers:
+        return client_brief
+
+    answers_text = "\n".join(
+        f"- {a.get('question_id', a.get('field', 'question'))}: {a.get('answer', '')}"
+        for a in workshop_answers
+        if a.get("answer")
+    )
+    if not answers_text.strip():
+        return client_brief
+
+    orchestrator = get_ai_orchestrator()
+    system_prompt = (
+        "You are LOGOS Discover, the Discovery Engine of LogoMind. Your task is "
+        "brief synthesis: merge a client's original brief with their answers to "
+        "discovery questions into ONE coherent, well-written, detailed brand brief."
+    )
+    user_prompt = f"""Company: {company_name}
+Industry: {industry}
+
+ORIGINAL BRIEF:
+{client_brief}
+
+DISCOVERY ANSWERS:
+{answers_text}
+
+Synthesize the original brief and the discovery answers into a single coherent brand brief (2-4 paragraphs of prose).
+Rules:
+- Weave the answers into the narrative so it reads as if the client wrote a thorough brief themselves.
+- Preserve every concrete fact from both inputs.
+- Do not invent specifics that are not supported by the inputs.
+- Plain prose only — no preamble, no headings, no markdown.
+"""
+    response = await orchestrator.complete(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        response_format="text",
+        temperature=0.4,
+    )
+    return response.strip()

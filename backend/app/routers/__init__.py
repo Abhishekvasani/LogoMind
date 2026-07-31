@@ -21,7 +21,7 @@ from ..schemas import (
     WorkshopState, WorkshopAnswer,
     SketchUpload, SketchOut, DecisionLogEntry,
 )
-from ..services.discovery_engine import analyse_brief, extract_intent
+from ..services.discovery_engine import analyse_brief, extract_intent, synthesize_brief
 from ..services.engines import (
     build_brand_dna, generate_insight, generate_concept_families,
     judge_family, compose_ssb, critique_sketch, build_presentation,
@@ -169,9 +169,18 @@ async def complete_workshop(project_id: int, db: Session = Depends(get_db)):
     """Finalise the Workshop; recalculate Brand Confidence and proceed to Strategy."""
     project = _get_project(db, project_id)
 
-    # Re-analyse with workshop answers integrated
+    # Synthesize the original brief + workshop answers into a richer, coherent
+    # brief (workshop answers are often terse; weaving them in is what actually
+    # raises a real, quality-based Brand Confidence score), then re-score it.
     state = project.workshop_state or {}
-    enriched_brief = project.client_brief + "\n\nWorkshop answers:\n" + str(state.get("answers", []))
+    answers = state.get("answers", [])
+
+    enriched_brief = await synthesize_brief(
+        company_name=project.company_name,
+        industry=project.industry,
+        client_brief=project.client_brief,
+        workshop_answers=answers,
+    )
 
     result = await analyse_brief(
         company_name=project.company_name,
