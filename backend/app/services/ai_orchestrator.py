@@ -29,6 +29,61 @@ from typing import Any, Dict, Optional
 from ..schemas import ConfidenceLevel
 
 
+# ─── Response parsing helper ───────────────────────────────────────────
+
+
+def parse_json_response(response: str) -> Any:
+    """Parse a model response into JSON, tolerating prose and code fences.
+
+    Mock and strict-JSON providers return clean JSON. Free / open models often
+    wrap JSON in prose ("Here is the result:") or in a ```json ... ``` fence,
+    or append trailing commentary. This extracts the first balanced JSON
+    object/array so the LOGOS engines can keep doing ``Schema(**data)``.
+
+    Raises ValueError with a snippet of the response if no JSON is found,
+    so callers surface a useful error instead of an opaque parse failure.
+    """
+    import re
+
+    text = response.strip()
+
+    # Fast path: already valid JSON.
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Strip a ```json ... ``` or ``` ... ``` code fence if present.
+    fence = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+    if fence:
+        try:
+            return json.loads(fence.group(1))
+        except json.JSONDecodeError:
+            text = fence.group(1)
+
+    # Fall back to the first balanced {...} or [...] span.
+    for opener, closer in (("{", "}"), ("[", "]")):
+        start = text.find(opener)
+        if start == -1:
+            continue
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == opener:
+                depth += 1
+            elif text[i] == closer:
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[start : i + 1])
+                    except json.JSONDecodeError:
+                        break  # try the next bracket type
+
+    raise ValueError(
+        "Model response did not contain parseable JSON. First 200 chars: "
+        + repr(text[:200])
+    )
+
+
 class AIProvider(ABC):
     """Abstract base — any AI provider implements this interface."""
 
@@ -293,7 +348,10 @@ class OpenAIProvider(AIProvider):
     """
     OpenAI provider — production default.
 
-    Uses the OpenAI Python SDK. Requires OPENAI_API_KEY environment variable.
+    Uses the OpenAI Python SDK against the OpenAI API or any OpenAI-compatible
+    endpoint (OpenRouter, Together, Groq, a local server, etc.). Requires
+    OPENAI_API_KEY. For a non-OpenAI endpoint, set OPENAI_BASE_URL and a
+    LOGOMIND_MODEL understood by that endpoint.
     """
 
     async def complete(
@@ -309,10 +367,15 @@ class OpenAIProvider(AIProvider):
         except ImportError:
             raise RuntimeError("openai package not installed. Run: pip install openai")
 
-        client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        client_kwargs: Dict[str, Any] = {"api_key": os.environ.get("OPENAI_API_KEY")}
+        base_url = os.environ.get("OPENAI_BASE_URL")
+        if base_url:
+            client_kwargs["base_url"] = base_url
+
+        client = AsyncOpenAI(**client_kwargs)
         model = os.environ.get("LOGOMIND_MODEL", "gpt-4o")
 
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "model": model,
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -349,21 +412,27 @@ def get_ai_orchestrator() -> AIProvider:
 
     provider_name = os.environ.get("LOGOMIND_AI_PROVIDER", "").lower()
 
-    # Explicit OpenAI selection without a key is a configuration error,
-    # not a reason to silently fall back to the mock provider.
-    if provider_name == "openai" and not os.environ.get("OPENAI_API_KEY"):
+    # OpenRouter routes through the existing OpenAI-compatible provider; just
+    # default its base URL and a free model if the caller hasn't set them.
+    if provider_name == "openrouter":
+        os.environ.setdefault("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
+        os.environ.setdefault("LOGOMIND_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+
+    # Any real provider requires an API key. Surface that explicitly instead of
+    # silently falling back to the mock, which would hide a misconfiguration.
+    needs_key = provider_name in ("openai", "openrouter") or (
+        provider_name == "" and bool(os.environ.get("OPENAI_BASE_URL"))
+    )
+    if needs_key and not os.environ.get("OPENAI_API_KEY"):
         raise RuntimeError(
-            "LOGOMIND_AI_PROVIDER=openai but OPENAI_API_KEY is not set. "
-            "Either provide an API key or set LOGOMIND_AI_PROVIDER=mock."
+            f"LOGOMIND_AI_PROVIDER={provider_name or '(unset)'} requires OPENAI_API_KEY, "
+            "but it is not set. Either provide a key or set LOGOMIND_AI_PROVIDER=mock."
         )
 
-    if provider_name == "openai":
+    if provider_name in ("openai", "openrouter") or os.environ.get("OPENAI_API_KEY"):
         _provider = OpenAIProvider()
     elif provider_name == "mock":
         _provider = MockAIProvider()
-    elif os.environ.get("OPENAI_API_KEY"):
-        # Key present and no explicit provider → use OpenAI.
-        _provider = OpenAIProvider()
     else:
         # Default: development mode, no key configured → deterministic mock.
         _provider = MockAIProvider()

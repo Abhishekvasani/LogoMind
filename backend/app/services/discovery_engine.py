@@ -8,10 +8,9 @@ The engine never asks a question without first answering "Why am I
 asking?" and "How will it improve the SSB?" (CTO Decision #019).
 """
 
-import json
 from typing import Any, Dict
 
-from .ai_orchestrator import get_ai_orchestrator
+from .ai_orchestrator import get_ai_orchestrator, parse_json_response
 from ..schemas import BriefAnalysisResult, DiscoveryMode
 
 DISCOVERY_SYSTEM_PROMPT = """You are LOGOS Discover, the Discovery Engine of LogoMind.
@@ -64,7 +63,7 @@ BRIEF:
         temperature=0.3,  # low temperature for analytical consistency
     )
 
-    data = json.loads(response)
+    data = parse_json_response(response)
     return BriefAnalysisResult(**data)
 
 
@@ -85,4 +84,4 @@ async def extract_intent(preference: str) -> Dict[str, str]:
         response_format="json",
         temperature=0.2,
     )
-    return json.loads(response)
+    return parse_json_response(response)

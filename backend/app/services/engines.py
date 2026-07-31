@@ -8,7 +8,7 @@ AI orchestrator (model-independent) and conform to LM-STD-001..006.
 import json
 from typing import Any, Dict, List
 
-from .ai_orchestrator import get_ai_orchestrator
+from .ai_orchestrator import get_ai_orchestrator, parse_json_response
 from ..schemas import (
     BrandDNA, InsightReport, CreateEngineResult,
     FamilyJudgeResult, SSB, CoachFeedback,
@@ -54,7 +54,7 @@ Surface any contradictions explicitly.
         response_format="json",
         temperature=0.4,
     )
-    return BrandDNA(**json.loads(response))
+    return BrandDNA(**parse_json_response(response))
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -95,7 +95,7 @@ Produce the Insight Report for this brand in this category.
         response_format="json",
         temperature=0.4,
     )
-    return InsightReport(**json.loads(response))
+    return InsightReport(**parse_json_response(response))
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -143,7 +143,7 @@ Apply the Combination Method. Avoid the clichés flagged in Insight.
         response_format="json",
         temperature=0.8,  # higher temperature for creative diversity
     )
-    return CreateEngineResult(**json.loads(response))
+    return CreateEngineResult(**parse_json_response(response))
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -196,7 +196,7 @@ Insight Report (competitive context):
         response_format="json",
         temperature=0.3,  # low for evaluation consistency
     )
-    return FamilyJudgeResult(**json.loads(response))
+    return FamilyJudgeResult(**parse_json_response(response))
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -257,7 +257,7 @@ Compose the SSB. Include 5-7 Sketch Missions with specific guidance.
         response_format="json",
         temperature=0.5,
     )
-    return SSB(**json.loads(response))
+    return SSB(**parse_json_response(response))
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -303,7 +303,7 @@ Brand DNA:
         response_format="json",
         temperature=0.6,
     )
-    return CoachFeedback(**json.loads(response))
+    return CoachFeedback(**parse_json_response(response))
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -356,4 +356,4 @@ SSB:
         response_format="json",
         temperature=0.5,
     )
-    return json.loads(response)
+    return parse_json_response(response)
