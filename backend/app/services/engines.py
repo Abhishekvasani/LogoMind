@@ -32,9 +32,29 @@ Apply the Brand Strategy Series:
 - RS-LIC-BS-005 Brand Archetypes (discovery, not assignment; "no clean archetype" valid)
 
 Surface contradictions — never silently resolve them (DR-2).
-Honest confidence per LM-STD-003.
+Honest confidence per LM-STD-003 (C1=low ... C5=high).
 
-Respond as JSON matching the BrandDNA schema.
+Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
+nest or rename fields; every non-optional field is required):
+{
+  "purpose": "string — the brand's reason for being",
+  "purpose_confidence": "C1" | "C2" | "C3" | "C4" | "C5",
+  "positioning_statement": "string — For [audience] who [need], [company] is the [category] that [distinctive], unlike [alternative], because [reason].",
+  "positioning_confidence": "C1" | "C2" | "C3" | "C4" | "C5",
+  "differentiation_primary": "string — the single most defensible difference, as a plain statement",
+  "differentiation_dimension": "product" | "behaviour" | "audience" | "voice" | "identity",
+  "differentiation_defensibility": "C1" | "C2" | "C3" | "C4" | "C5",
+  "audience_configuration": {"concerns": ["..."], "contexts": ["..."], "vocabularies": ["..."], "behaviours": ["..."]},
+  "audience_confidence": "C1" | "C2" | "C3" | "C4" | "C5",
+  "personality": "string — describe the brand AS A PERSON (a character sketch, not an adjective list)",
+  "personality_coherence": "C1" | "C2" | "C3" | "C4" | "C5",
+  "archetype": "string or null — the dominant classical archetype, or null if no clean archetype",
+  "archetype_finding": "clean" | "mixed" | "none",
+  "emotional_goal": "string — the single feeling the identity should evoke",
+  "contradictions_flagged": [{"description": "string"}]
+}
+
+Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
 
 
@@ -71,7 +91,21 @@ Timeless | Emerging | Short-lived | Overused.
 
 Apply RS-LIC-PH-009 Relevance: context-aware, calibrated to THIS brand.
 
-Respond as JSON matching the InsightReport schema.
+Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
+nest or rename fields; every non-optional field is required):
+{
+  "industry_analysis": {"conventions": ["..."], "competitive_landscape": "..."},
+  "competitor_map": [{"name": "...", "positioning": "...", "identity_notes": "..."}],
+  "cliche_avoidance": [{"symbol": "...", "why_cliche": "...", "original_meaning": "...", "refresh_possible": true, "alternatives": ["..."]}],
+  "opportunities": ["..."],
+  "trend_intelligence": [{"name": "...", "classification": "timeless" | "emerging" | "short_lived" | "overused", "context_assessment": "...", "brand_fit": "high" | "medium" | "low"}],
+  "trend_vs_timeless_balance": {"timeless": 0.0, "contemporary": 0.0},
+  "cultural_considerations": [{"topic": "...", "note": "..."}],
+  "confidence_summary": {"element_name": "C1" | "C2" | "C3" | "C4" | "C5"}
+}
+
+The two numbers in trend_vs_timeless_balance must sum to 1.0.
+Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
 
 
@@ -117,7 +151,29 @@ Apply:
 If the client requested a cliché symbol, respectfully challenge it
 (Creative Director Mode) and offer alternatives.
 
-Respond as JSON matching CreateEngineResult schema.
+Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
+nest or rename fields). Generate 3-5 families under "families":
+{
+  "families": [
+    {
+      "family_label": "A",
+      "theme": "...",
+      "core_meaning_served": "...",
+      "symbols": [{"name": "...", "meaning": "...", "originality": "C1" | "C2" | "C3" | "C4" | "C5", "abstraction_level": "literal" | "abstract" | "metaphorical", "risk_level": "low" | "medium" | "high"}],
+      "visual_language": {"forms": "...", "treatment": "...", "composition": "...", "palette": "..."},
+      "why_it_works": "...",
+      "pitfalls": "...",
+      "creative_council_assessment": {"meaning_mind": "...", "boldness_mind": "..."},
+      "confidence": "C1" | "C2" | "C3" | "C4" | "C5",
+      "recommendation_strength": "recommended" | "alternative" | "exploratory"
+    }
+  ],
+  "cliches_avoided": [{"cliche": "...", "reason": "..."}],
+  "client_request_notes": [{"request": "...", "note": "..."}]
+}
+
+Give each family a distinct single-letter label ("A", "B", "C", ...).
+Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
 
 
@@ -169,7 +225,44 @@ Classification:
 Never rubber-stamp. Never fake certainty (LM-STD-003).
 Apply the Concept DNA fingerprint for objective comparison.
 
-Respond as JSON matching FamilyJudgeResult schema.
+Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
+nest or rename fields; every non-optional field is required):
+{
+  "family_label": "A",
+  "creative_council_verdict": {
+    "meaning_mind": "...", "simplicity_mind": "...", "differentiation_mind": "...",
+    "context_mind": "...", "memorability_mind": "...", "systems_mind": "...",
+    "emotion_mind": "...", "longevity_mind": "...", "boldness_mind": "...",
+    "synthesised_verdict": "..."
+  },
+  "jury_scores": {
+    "meaning": {"score": 0.0, "confidence": "C1" | "C2" | "C3" | "C4" | "C5", "justification": "..."},
+    "simplicity": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "clarity": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "originality": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "memorability": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "authenticity": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "timelessness": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "relevance": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "consistency": {"score": 0.0, "confidence": "...", "justification": "..."},
+    "brand_fit": {"score": 0.0, "confidence": "...", "justification": "..."}
+  },
+  "composite": 0.0,
+  "classification": "recommended" | "develop" | "reject",
+  "concept_dna": {
+    "concept_id": "C-001", "emotion": "...", "archetype": "...",
+    "primary_symbol": "...", "secondary_symbol": "..." or null,
+    "shape_language": "...", "typography_personality": "...",
+    "complexity": "low" | "medium" | "high", "originality": "...", "risk": "...",
+    "timelessness_score": 0.0, "strategic_confidence": 0.0
+  },
+  "refinement_recommendations": ["..."]
+}
+
+jury_scores MUST contain exactly these 10 keys: meaning, simplicity, clarity,
+originality, memorability, authenticity, timelessness, relevance, consistency,
+brand_fit. Each score is 0.0-10.0. composite is 0.0-10.0.
+Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
 
 
@@ -196,7 +289,38 @@ Insight Report (competitive context):
         response_format="json",
         temperature=0.3,  # low for evaluation consistency
     )
-    return FamilyJudgeResult(**parse_json_response(response))
+    return FamilyJudgeResult(**_normalize_judge_output(parse_json_response(response)))
+
+
+# The 10 evaluation dimensions; jury_scores must contain exactly these keys,
+# each mapping to a JuryScore {score, confidence, justification}. Models
+# occasionally nest non-dimension keys (concept_dna, refinement_recommendations,
+# composite, ...) under jury_scores; this hoists them back to the top level and
+# drops any jury entry that isn't a valid score object.
+_JURY_DIMENSIONS = (
+    "meaning", "simplicity", "clarity", "originality", "memorability",
+    "authenticity", "timelessness", "relevance", "consistency", "brand_fit",
+)
+
+
+def _normalize_judge_output(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Defensively flatten misplaced keys in a Judge response before validation."""
+    if not isinstance(data, dict):
+        return data
+    data = dict(data)  # shallow copy; don't mutate the parsed original
+
+    jury = data.get("jury_scores")
+    if isinstance(jury, dict):
+        clean_jury = {}
+        for key, value in jury.items():
+            if key in _JURY_DIMENSIONS and isinstance(value, dict) and "score" in value:
+                clean_jury[key] = value
+            elif key not in data:
+                # A misplaced top-level key nested under jury_scores → hoist it.
+                data[key] = value
+        data["jury_scores"] = clean_jury
+
+    return data
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -221,7 +345,22 @@ The 5-Minute Rule: SSB must be absorbable in 5 minutes at Layer A.
 
 LogoMind will never make a creative decision for the designer.
 
-Respond as JSON matching the SSB schema.
+Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
+nest or rename fields; every field is required):
+{
+  "project_essence": "string — one paragraph",
+  "brand_dna_snapshot": {"purpose": "...", "positioning": "...", "differentiation": "...", "personality": "...", "archetype": "...", "emotional_goal": "..."},
+  "creative_north_star": "string — a single guiding sentence",
+  "creative_territories": [{"family_label": "A", "theme": "...", "recommendation": "recommended" | "alternative" | "exploratory"}],
+  "opportunities_and_warnings": {"explore": ["..."], "avoid": ["..."]},
+  "creative_council_advice": {"meaning_mind": "...", "simplicity_mind": "...", "differentiation_mind": "...", "context_mind": "...", "memorability_mind": "...", "systems_mind": "...", "emotion_mind": "...", "longevity_mind": "...", "boldness_mind": "..."},
+  "sketch_missions": [
+    {"mission_name": "...", "core_idea": "...", "combine": ["..."], "why_it_works": "...", "potential_pitfalls": ["..."], "start_with": "..."}
+  ]
+}
+
+Include 5-7 sketch_missions.
+Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
 
 
@@ -275,7 +414,17 @@ Flag production constraints (favicon, embroidery, monochrome).
 
 Never draw the logo for the designer.
 
-Respond as JSON matching CoachFeedback schema.
+Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
+nest or rename fields; every non-optional field is required):
+{
+  "assessment": "string — your overall assessment of the sketch",
+  "suggestions": ["string", "..."],
+  "pitfalls_to_watch": ["string", "..."],
+  "confidence": "C1" | "C2" | "C3" | "C4" | "C5"
+}
+
+Frame suggestions as questions where possible. Return ONLY the JSON object.
+No prose, no code fences, no commentary.
 """
 
 
@@ -322,7 +471,26 @@ Clients buy the reasoning as much as the design.
 
 Include objection-handling notes for likely client concerns.
 
-Respond as JSON: {"sections": [...], "objection_handling": [...]}
+Respond as JSON with EXACTLY this schema (use these field names verbatim):
+{
+  "sections": [
+    {"title": "Cover", "content": "..."},
+    {"title": "Executive Summary", "content": "..."},
+    {"title": "Brand Foundation", "content": "..."},
+    {"title": "Strategic Exploration", "content": "..."},
+    {"title": "The Chosen Concept", "content": "..."},
+    {"title": "Design Rationale", "content": "..."},
+    {"title": "Applications", "content": "..."},
+    {"title": "Future-Proofing", "content": "..."},
+    {"title": "Brand Guidelines Summary", "content": "..."},
+    {"title": "Q&A Preparation", "content": "..."}
+  ],
+  "objection_handling": [
+    {"concern": "...", "response": "..."}
+  ]
+}
+
+Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
 
 

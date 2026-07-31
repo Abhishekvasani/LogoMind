@@ -37,11 +37,16 @@ def parse_json_response(response: str) -> Any:
 
     Mock and strict-JSON providers return clean JSON. Free / open models often
     wrap JSON in prose ("Here is the result:") or in a ```json ... ``` fence,
-    or append trailing commentary. This extracts the first balanced JSON
-    object/array so the LOGOS engines can keep doing ``Schema(**data)``.
+    append trailing commentary, or emit nested objects. This extracts the most
+    likely intended JSON object/array so the LOGOS engines can keep doing
+    ``Schema(**data)``.
 
-    Raises ValueError with a snippet of the response if no JSON is found,
-    so callers surface a useful error instead of an opaque parse failure.
+    Strategy: fast-path strict parse; then a code-fence parse; then collect
+    EVERY balanced {...} / [...] span and return the longest one that parses
+    (the outermost/largest object is almost always the intended payload, not a
+    nested sub-object or an incidental object in prose).
+
+    Raises ValueError with a snippet of the response if no JSON is found.
     """
     import re
 
@@ -61,22 +66,34 @@ def parse_json_response(response: str) -> Any:
         except json.JSONDecodeError:
             text = fence.group(1)
 
-    # Fall back to the first balanced {...} or [...] span.
+    # Collect every balanced {...} and [...] span, keep the ones that parse,
+    # and prefer the longest (outermost) one.
+    candidates = []
     for opener, closer in (("{", "}"), ("[", "]")):
-        start = text.find(opener)
-        if start == -1:
-            continue
         depth = 0
-        for i in range(start, len(text)):
-            if text[i] == opener:
-                depth += 1
-            elif text[i] == closer:
-                depth -= 1
+        start = -1
+        for i, ch in enumerate(text):
+            if ch == opener:
                 if depth == 0:
+                    start = i
+                depth += 1
+            elif ch == closer:
+                depth -= 1
+                if depth == 0 and start != -1:
+                    span = text[start : i + 1]
                     try:
-                        return json.loads(text[start : i + 1])
+                        json.loads(span)
+                        candidates.append(span)
                     except json.JSONDecodeError:
-                        break  # try the next bracket type
+                        pass
+                    start = -1
+                elif depth < 0:
+                    # Unbalanced closer — bail this bracket type.
+                    break
+
+    if candidates:
+        # Longest parseable span = the outermost intended payload.
+        return json.loads(max(candidates, key=len))
 
     raise ValueError(
         "Model response did not contain parseable JSON. First 200 chars: "
@@ -137,6 +154,10 @@ class MockAIProvider(AIProvider):
             return self._mock_presentation(user_prompt)
         elif "ssb composer" in first_line or "strategic sketch brief" in first_line:
             return self._mock_ssb(user_prompt)
+        elif "brief synthesis" in first_line:
+            # Synthesize the enriched brief as prose (mock returns a deterministic
+            # expanded version of the input brief).
+            return self._mock_synthesize(user_prompt)
         elif "logos discover" in first_line or "discovery engine" in first_line or "brief analysis" in first_line:
             return self._mock_discovery(user_prompt)
         elif "intent extraction" in first_line:
@@ -160,6 +181,23 @@ class MockAIProvider(AIProvider):
             ],
             "next_action": f"Proceed with {mode} mode." if score >= 60 else "Run the Discovery Workshop.",
         })
+
+    def _mock_synthesize(self, user_prompt: str) -> str:
+        # Mock brief synthesis: return the ORIGINAL BRIEF portion plus the
+        # discovery answers, lightly expanded. Enough prose that re-analysis
+        # scores higher than the terse original — mirroring real synthesis.
+        original = ""
+        answers = ""
+        if "ORIGINAL BRIEF:" in user_prompt:
+            original = user_prompt.split("ORIGINAL BRIEF:", 1)[1].split("DISCOVERY ANSWERS:", 1)[0].strip()
+        if "DISCOVERY ANSWERS:" in user_prompt:
+            answers = user_prompt.split("DISCOVERY ANSWERS:", 1)[1].strip()
+        return (
+            f"{original}\n\n"
+            f"Additional strategic context gathered via discovery workshop: {answers}. "
+            f"This enriched brief reflects the client's clarified audience, positioning, "
+            f"and creative direction, providing a thorough foundation for design work."
+        )
 
     def _mock_strategy(self, brief: str) -> str:
         return json.dumps({
@@ -416,7 +454,10 @@ def get_ai_orchestrator() -> AIProvider:
     # default its base URL and a free model if the caller hasn't set them.
     if provider_name == "openrouter":
         os.environ.setdefault("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
-        os.environ.setdefault("LOGOMIND_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+        # Free models on OpenRouter fluctuate in availability; this one is
+        # currently active and reliably returns parseable JSON. Override with
+        # LOGOMIND_MODEL if you prefer a different one.
+        os.environ.setdefault("LOGOMIND_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
 
     # Any real provider requires an API key. Surface that explicitly instead of
     # silently falling back to the mock, which would hide a misconfiguration.

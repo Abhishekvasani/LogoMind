@@ -293,7 +293,7 @@ class ConceptDNA(BaseModel):
     """The Creative Genome fingerprint for objective comparison."""
     concept_id: str
     emotion: str
-    archetype: str
+    archetype: Optional[str] = None  # may be None — "no clean archetype" is valid
     primary_symbol: str
     secondary_symbol: Optional[str] = None
     shape_language: str
