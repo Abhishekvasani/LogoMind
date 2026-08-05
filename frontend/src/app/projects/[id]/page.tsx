@@ -7,12 +7,13 @@ import { Project, getProject } from "@/lib/api";
 import { StrategyView } from "@/components/StrategyView";
 import { InsightView } from "@/components/InsightView";
 import { ConceptFamiliesView } from "@/components/ConceptFamiliesView";
+import { ConceptPromptView } from "@/components/ConceptPromptView";
 import { SSBView } from "@/components/SSBView";
 import { WorkshopView } from "@/components/WorkshopView";
 import { PresentationView } from "@/components/PresentationView";
 import { runStrategy as runStrategyApi, generateWorkshopLink } from "@/lib/api";
 
-const STAGE_ORDER = ["entry", "discovery", "workshop", "strategy", "insight", "create", "judge", "ssb", "sketch", "presentation", "complete"];
+const STAGE_ORDER = ["entry", "discovery", "workshop", "strategy", "insight", "create", "judge", "concept_prompt", "ssb", "sketch", "presentation", "complete"];
 
 const STAGE_LABELS: Record<string, string> = {
   entry: "Brief",
@@ -22,6 +23,7 @@ const STAGE_LABELS: Record<string, string> = {
   insight: "Insight",
   create: "Create",
   judge: "Judge",
+  concept_prompt: "Concept",
   ssb: "SSB",
   sketch: "Sketch",
   presentation: "Presentation",
@@ -145,6 +147,8 @@ function ProjectStageContent({
     case "create":
     case "judge":
       return <ConceptFamiliesView project={project} onUpdate={onUpdate} />;
+    case "concept_prompt":
+      return <ConceptPromptView project={project} onUpdate={onUpdate} />;
     case "ssb":
     case "sketch":
       return <SSBView project={project} onUpdate={onUpdate} />;

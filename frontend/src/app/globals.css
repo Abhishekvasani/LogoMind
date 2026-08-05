@@ -2,22 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  LogoMind substrate — "specimen sheet".
+  Body defaults: warm paper, ink text, UI sans. The new tokens live in
+  tailwind.config.js (paper / ink / graphite / rule / verified / stamp).
+*/
+
 :root {
-  --foreground: #111827;
-  --background: #f9fafb;
+  --paper: #f2eee5;
+  --ink: #1a1814;
+}
+
+html {
+  background: var(--paper);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  font-feature-settings: "ss01", "cv11"; /* subtle Inter refinements where available */
 }
 
-/* Subtle, professional — LogoMind is for serious designers */
 * {
   box-sizing: border-box;
 }
 
+/* Hairline rules used by the specimen layout. */
+.hairline {
+  border-color: #d8d0bf; /* rule */
+}
+
+/* Drafting registration cross — drawn at the corners of the wireframe plate. */
+.reg-cross::before,
+.reg-cross::after {
+  content: "";
+  position: absolute;
+  background: #d8d0bf;
+}
+.reg-cross::before {
+  width: 10px;
+  height: 1px;
+}
+.reg-cross::after {
+  width: 1px;
+  height: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @media print {
-  header, footer, button { display: none !important; }
+  header,
+  footer,
+  button {
+    display: none !important;
+  }
 }

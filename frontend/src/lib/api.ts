@@ -5,7 +5,12 @@
  * One function per pipeline stage (PROD-JOURNEY-001).
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000/api";
+// Same-origin by default: requests go to "/api/..." and are proxied to the
+// FastAPI backend by next.config.js rewrites (server-side, so this works even
+// inside sandboxed browsers whose loopback can't reach the backend host).
+// Set NEXT_PUBLIC_API_BASE to an absolute URL to bypass the proxy (direct
+// cross-origin calls) for deployments that prefer it.
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -28,6 +33,7 @@ export interface Project extends ProjectSummary {
   insight_report?: any;
   concept_families?: any[];
   judge_report?: any;
+  concept_prompts?: any[];
   ssb?: any;
   presentation?: any;
   workshop_state?: any;
@@ -45,17 +51,49 @@ export interface BriefAnalysisResult {
 
 // ─── API Functions ────────────────────────────────────────────────────
 
+// A structured stage error from the backend's @with_stage_error wrapper.
+// When the backend returns HTTP 503 with this shape, apiCall throws a
+// StageApiError carrying it, so views can present a polished message + Retry
+// instead of a raw "Internal Server Error".
+export interface StageErrorPayload {
+  stage: string;
+  stage_name: string;
+  kind: "transient" | "validation";
+  detail: string; // human-readable explanation
+  retryable: boolean;
+  technical?: string;
+  estimate?: [number, number]; // [minSeconds, maxSeconds] typical wall-clock
+}
+
+export class StageApiError extends Error {
+  payload: StageErrorPayload;
+  status: number;
+  constructor(payload: StageErrorPayload, status: number) {
+    // Keep .message backward-compatible for any caller that still reads it.
+    super(payload.detail);
+    this.payload = payload;
+    this.status = status;
+  }
+}
+
 async function apiCall<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
   });
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(error.detail || `API error: ${response.status}`);
+    const body = await response.json().catch(() => ({ detail: response.statusText }));
+    const detail = body?.detail;
+    // Structured stage error (from @with_stage_error): present it richly.
+    if (detail && typeof detail === "object" && detail.stage && detail.detail) {
+      throw new StageApiError(detail as StageErrorPayload, response.status);
+    }
+    // Plain HTTPException detail (guard failures, 4xx): a simple string.
+    throw new Error(typeof detail === "string" ? detail : `API error: ${response.status}`);
   }
   return response.json();
 }
+
 
 // Projects
 export const listProjects = () => apiCall<ProjectSummary[]>("/projects");
@@ -100,6 +138,10 @@ export const runJudge = (projectId: number) =>
 
 export const selectFamily = (projectId: number, label: string) =>
   apiCall<any>(`/projects/${projectId}/select-family/${label}`, { method: "POST" });
+
+// Stage: Concept Prompt
+export const composeConceptPrompts = (projectId: number) =>
+  apiCall<any[]>(`/projects/${projectId}/concept-prompts`, { method: "POST" });
 
 // Stage 8: SSB + Sketch
 export const composeSSB = (projectId: number) =>
