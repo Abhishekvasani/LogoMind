@@ -1,25 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { Project, runCreate } from "@/lib/api";
+import { useStageAction } from "@/lib/useStageAction";
+import { StageStatus } from "@/components/StageStatus";
 
 export function InsightView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { run, retry, running, elapsed, error } = useStageAction(onUpdate);
   const report = project.insight_report;
 
-  const handleProceed = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      await runCreate(project.id);
-      onUpdate();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setRunning(false);
-    }
-  };
+  const handleProceed = () => run(() => runCreate(project.id), "create");
 
   if (!report) return <p className="text-gray-500">Insight report not generated.</p>;
 
@@ -103,11 +92,13 @@ export function InsightView({ project, onUpdate }: { project: Project; onUpdate:
         {running ? "Generating Concept Families…" : "Continue to Create →"}
       </button>
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      <StageStatus
+        running={running}
+        elapsed={elapsed}
+        error={error}
+        stageName="Concept Families"
+        onRetry={retry}
+      />
     </div>
   );
 }

@@ -1,25 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { Project, runInsight } from "@/lib/api";
+import { useStageAction } from "@/lib/useStageAction";
+import { StageStatus } from "@/components/StageStatus";
 
 export function StrategyView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { run, retry, running, elapsed, error } = useStageAction(onUpdate);
   const dna = project.brand_dna;
 
-  const handleProceed = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      await runInsight(project.id);
-      onUpdate();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setRunning(false);
-    }
-  };
+  const handleProceed = () => run(() => runInsight(project.id), "insight");
 
   return (
     <div className="space-y-4">
@@ -54,11 +43,13 @@ export function StrategyView({ project, onUpdate }: { project: Project; onUpdate
             </button>
           </div>
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-              {error}
-            </div>
-          )}
+          <StageStatus
+            running={running}
+            elapsed={elapsed}
+            error={error}
+            stageName="Insight"
+            onRetry={retry}
+          />
         </>
       ) : (
         <p className="text-gray-500">Brand DNA not yet generated. (Strategy Engine should have run.)</p>

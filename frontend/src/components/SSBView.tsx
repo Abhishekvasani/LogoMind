@@ -2,37 +2,28 @@
 
 import { useState } from "react";
 import { Project, uploadSketch, buildPresentation } from "@/lib/api";
+import { useStageAction } from "@/lib/useStageAction";
+import { StageStatus } from "@/components/StageStatus";
 
 export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
-  const [running, setRunning] = useState(false);
+  const { run, retry, running, elapsed, error } = useStageAction(onUpdate);
   const [sketchDesc, setSketchDesc] = useState("");
   const [sketchIntent, setSketchIntent] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const ssb = project.ssb;
   const sketches = project.sketches || [];
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!sketchDesc.trim()) return;
-    setRunning(true);
-    setError(null);
-    try {
-      await uploadSketch(project.id, { description: sketchDesc, design_intent: sketchIntent });
+    const desc = sketchDesc;
+    const intent = sketchIntent;
+    run(async () => {
+      await uploadSketch(project.id, { description: desc, design_intent: intent });
       setSketchDesc("");
       setSketchIntent("");
-      onUpdate();
-    } catch (e: any) { setError(e.message); }
-    finally { setRunning(false); }
+    }, "sketch");
   };
 
-  const handlePresentation = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      await buildPresentation(project.id);
-      onUpdate();
-    } catch (e: any) { setError(e.message); }
-    finally { setRunning(false); }
-  };
+  const handlePresentation = () => run(() => buildPresentation(project.id), "presentation");
 
   if (!ssb) return <p className="text-gray-500">SSB not yet composed.</p>;
 
@@ -169,11 +160,15 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
         )}
       </div>
 
-      {error && (
-        <div className="md:col-span-2 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      <div className="md:col-span-2">
+        <StageStatus
+          running={running}
+          elapsed={elapsed}
+          error={error}
+          stageName={error?.stage_name ?? "Stage"}
+          onRetry={retry}
+        />
+      </div>
     </div>
   );
 }

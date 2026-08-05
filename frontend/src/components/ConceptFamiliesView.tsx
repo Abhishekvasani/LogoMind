@@ -1,41 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { Project, runJudge, selectFamily, composeSSB } from "@/lib/api";
+import { useStageAction } from "@/lib/useStageAction";
+import { StageStatus } from "@/components/StageStatus";
 
 export function ConceptFamiliesView({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { run, retry, running, elapsed, error } = useStageAction(onUpdate);
   const families = project.concept_families || [];
   const judgeData = project.judge_report || [];
 
-  const handleJudge = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      await runJudge(project.id);
-      onUpdate();
-    } catch (e: any) { setError(e.message); }
-    finally { setRunning(false); }
-  };
+  const handleJudge = () => run(() => runJudge(project.id), "judge");
+  const handleSelect = (label: string) => run(() => selectFamily(project.id, label), "judge");
+  const handleComposeSSB = () => run(() => composeSSB(project.id), "ssb");
 
-  const handleSelect = async (label: string) => {
-    setError(null);
-    try {
-      await selectFamily(project.id, label);
-      onUpdate();
-    } catch (e: any) { setError(e.message); }
-  };
-
-  const handleComposeSSB = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      await composeSSB(project.id);
-      onUpdate();
-    } catch (e: any) { setError(e.message); }
-    finally { setRunning(false); }
-  };
+  // The stage name shown in the status depends on which action is in flight.
+  const stageName = error?.stage_name ?? (running ? "Judge" : "Concept Families");
 
   return (
     <div className="space-y-4">
@@ -118,11 +97,13 @@ export function ConceptFamiliesView({ project, onUpdate }: { project: Project; o
         </button>
       )}
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      <StageStatus
+        running={running}
+        elapsed={elapsed}
+        error={error}
+        stageName={stageName}
+        onRetry={retry}
+      />
     </div>
   );
 }
