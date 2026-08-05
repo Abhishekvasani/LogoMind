@@ -36,15 +36,89 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
         <Section title="1. Project Essence" content={ssb.project_essence} />
 
         <Section title="2. Brand DNA Snapshot">
-          <pre className="text-xs bg-gray-50 p-3 rounded overflow-auto max-h-40">
-            {JSON.stringify(ssb.brand_dna_snapshot, null, 2)}
-          </pre>
+          <dl className="space-y-1.5 text-sm">
+            <SnapRow label="Purpose" value={ssb.brand_dna_snapshot?.purpose} />
+            <SnapRow label="Positioning" value={ssb.brand_dna_snapshot?.positioning} />
+            <SnapRow label="Differentiation" value={ssb.brand_dna_snapshot?.differentiation} />
+            <SnapRow label="Personality" value={ssb.brand_dna_snapshot?.personality} />
+            <SnapRow label="Archetype" value={ssb.brand_dna_snapshot?.archetype} />
+            <SnapRow label="Emotional Goal" value={ssb.brand_dna_snapshot?.emotional_goal} />
+          </dl>
         </Section>
 
         <div className="p-4 bg-gray-900 text-white rounded-lg">
           <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">3. Creative North Star</p>
           <p className="font-medium">{ssb.creative_north_star}</p>
         </div>
+
+        {/* 4. Selected Territory */}
+        {ssb.selected_territory ? (
+          <Section title="4. Selected Territory">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-medium text-sm">Family {ssb.selected_territory.family_label} — {ssb.selected_territory.theme}</span>
+                  {ssb.selected_territory.core_meaning_served && (
+                    <p className="text-xs text-gray-500 mt-0.5">Serves: {ssb.selected_territory.core_meaning_served}</p>
+                  )}
+                </div>
+                {ssb.selected_territory.composite != null && (
+                  <span className="text-xs px-2 py-1 rounded bg-gray-800 text-white">
+                    {typeof ssb.selected_territory.composite === 'number' ? ssb.selected_territory.composite.toFixed(1) : ssb.selected_territory.composite}
+                    {ssb.selected_territory.classification ? ` — ${ssb.selected_territory.classification}` : ''}
+                  </span>
+                )}
+              </div>
+              {ssb.selected_territory.visual_language && Object.keys(ssb.selected_territory.visual_language).length > 0 && (
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {Object.entries(ssb.selected_territory.visual_language).map(([k, v]) => (
+                    <div key={k} className="bg-gray-50 p-2 rounded">
+                      <p className="font-medium text-gray-500 uppercase">{k}</p>
+                      <p className="text-gray-700">{v as string}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {ssb.selected_territory.symbols?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">SYMBOLS</p>
+                  <div className="flex flex-wrap gap-1">
+                    {ssb.selected_territory.symbols.map((s: any, i: number) => (
+                      <span key={i} className="text-xs px-2 py-0.5 bg-gray-100 rounded">
+                        {s.name} <span className="text-gray-400">({s.meaning})</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {ssb.selected_territory.why_it_works && (
+                <p className="text-sm text-gray-600 italic">{ssb.selected_territory.why_it_works}</p>
+              )}
+              {ssb.selected_territory.pitfalls && (
+                <p className="text-xs text-amber-700">⚠ {ssb.selected_territory.pitfalls}</p>
+              )}
+              {ssb.selected_territory.refinement_recommendations?.length > 0 && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs font-medium text-gray-500 mb-1">Refinement:</p>
+                  <ul className="text-xs text-gray-600 space-y-0.5">
+                    {ssb.selected_territory.refinement_recommendations.map((r: string, i: number) => <li key={i}>· {r}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Section>
+        ) : (
+          <Section title="4. Creative Territories">
+            <div className="space-y-1">
+              {(ssb.creative_territories || []).map((t: any, i: number) => (
+                <p key={i} className="text-sm text-gray-600">
+                  Family {t.family_label} — {t.theme}
+                  <span className="text-xs text-gray-400 ml-2">({t.recommendation})</span>
+                </p>
+              ))}
+            </div>
+          </Section>
+        )}
 
         <Section title="5. Opportunities & Warnings">
           <div className="space-y-2">
@@ -63,16 +137,55 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
           </div>
         </Section>
 
+        {/* 6. Creative Council Advice */}
+        {ssb.council_advice ? (
+          <Section title="6. Creative Council Advice">
+            {ssb.council_advice.synthesised_verdict && (
+              <p className="text-sm font-medium text-gray-800 mb-2 p-2 bg-gray-50 rounded">{ssb.council_advice.synthesised_verdict}</p>
+            )}
+            <dl className="space-y-1 text-xs">
+              {['meaning_mind','simplicity_mind','differentiation_mind','context_mind','memorability_mind','systems_mind','emotion_mind','longevity_mind','boldness_mind']
+                .filter((m) => (ssb.council_advice as any)[m])
+                .map((m) => (
+                  <div key={m} className="flex gap-2">
+                    <dt className="text-gray-500 capitalize w-36 flex-shrink-0">{m.replace(/_mind$/, '').replace(/_/g, ' ')}:</dt>
+                    <dd className="text-gray-700">{(ssb.council_advice as any)[m]}</dd>
+                  </div>
+                ))}
+            </dl>
+          </Section>
+        ) : null}
+
         {ssb.sketch_missions?.length > 0 && (
           <Section title="7. Sketch Missions">
             <div className="space-y-3">
-              {ssb.sketch_missions.map((m: any, i: number) => (
+              {ssb.sketch_missions.map((m: any, i: number) => {
+                const chosenSymbols = (ssb.selected_territory?.symbols || []).map((s: any) => s.name);
+                return (
                 <div key={i} className="p-3 border border-gray-200 rounded">
                   <p className="font-medium text-sm">Mission {i + 1}: {m.mission_name}</p>
                   <p className="text-sm text-gray-600 mt-1">{m.core_idea}</p>
-                  <p className="text-xs text-gray-500 mt-1 italic">Start with: {m.start_with}</p>
+                  {m.combine?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {m.combine.map((c: string, j: number) => (
+                        <span key={j} className={`text-xs px-1.5 py-0.5 rounded ${
+                          chosenSymbols.includes(c) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                        }`}>{c}</span>
+                      ))}
+                    </div>
+                  )}
+                  {m.why_it_works && <p className="text-xs text-gray-500 mt-2 italic">{m.why_it_works}</p>}
+                  {m.potential_pitfalls?.length > 0 && (
+                    <ul className="text-xs text-red-600 mt-1">
+                      {m.potential_pitfalls.map((p: string, j: number) => <li key={j}>· {p}</li>)}
+                    </ul>
+                  )}
+                  {m.start_with && (
+                    <p className="text-xs text-gray-700 mt-2 bg-gray-50 p-2 rounded">▸ {m.start_with}</p>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </Section>
         )}
@@ -179,6 +292,16 @@ function Section({ title, content, children }: { title: string; content?: string
       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{title}</p>
       {content && <p className="text-sm text-gray-700">{content}</p>}
       {children}
+    </div>
+  );
+}
+
+function SnapRow({ label, value }: { label: string; value?: string }) {
+  if (!value) return null;
+  return (
+    <div className="flex gap-2">
+      <dt className="text-gray-400 w-28 flex-shrink-0">{label}:</dt>
+      <dd className="text-gray-700">{value}</dd>
     </div>
   );
 }

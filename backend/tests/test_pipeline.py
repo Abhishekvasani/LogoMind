@@ -102,7 +102,13 @@ def test_pipeline_direct_path(client: TestClient):
     # Stage 8: SSB.
     r = client.post(f"/api/projects/{project_id}/ssb")
     assert r.status_code == 200, r.text
-    assert r.json()["creative_north_star"]
+    ssb = r.json()
+    assert ssb["creative_north_star"]
+    # The selected territory is anchored from the chosen family + judge result.
+    assert ssb["selected_territory"] is not None, "SSB must carry the selected territory"
+    assert ssb["selected_territory"]["family_label"] == family_label
+    assert ssb["selected_territory"]["composite"] is not None, "selected territory must carry the judge composite"
+    assert ssb["selected_territory"]["visual_language"], "selected territory must carry visual language"
     project = client.get(f"/api/projects/{project_id}").json()
     assert project["stage"] == "ssb"
     assert project["ssb"] is not None
