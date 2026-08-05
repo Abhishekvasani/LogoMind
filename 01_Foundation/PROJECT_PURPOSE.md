@@ -117,8 +117,10 @@ If most answers are *no*, the work falls outside LogoMind's purpose.
 
 Clarity about exclusion is as important as clarity about purpose. LogoMind is **not**:
 
-- ❌ An AI logo generator.
-- ❌ A prompt library.
+- ❌ An AI logo generator (it produces no images or finished logos).
+- ❌ An image generator (it produces strategy-grounded *concept prompts* and *composition wireframes* — the executable thinking layer that precedes a designer's chosen image tool, per FD-015 — but it does not render images itself).
+- ❌ A creative decision-maker (it recommends; the designer always decides — FD-005).
+- ❌ A prompt library (it reasons from strategy to generate prompts; it is not a static collection).
 - ❌ A trend tracker.
 - ❌ A portfolio platform.
 - ❌ A collection of facts.

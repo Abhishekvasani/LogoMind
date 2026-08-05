@@ -74,6 +74,7 @@ The following decisions are recorded as permanent governance. They may only be s
 | FD-012 | LOGOS is a thinking system, not an answer engine. |
 | FD-013 | Perfect the core before expanding (depth over breadth). |
 | FD-014 | The Strategic Sketch Brief is the primary pre-creative output. |
+| FD-015 | LogoMind produces strategy-grounded concept prompts and composition wireframes — the executable thinking layer preceding a designer's chosen image tool. It remains not a logo generator: it produces no images and makes no creative decision. |
 
 ---
 
