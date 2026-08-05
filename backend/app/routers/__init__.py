@@ -20,12 +20,14 @@ from ..schemas import (
     CreateEngineResult, FamilyJudgeResult, SSB, CoachFeedback,
     WorkshopState, WorkshopAnswer,
     SketchUpload, SketchOut, DecisionLogEntry,
+    ConceptPromptResult,
 )
 from ..services.discovery_engine import analyse_brief, extract_intent, synthesize_brief
 from ..services.engines import (
     build_brand_dna, generate_insight, generate_concept_families,
     judge_family, compose_ssb, critique_sketch, build_presentation,
 )
+from ..services.concept_engine import compose_concept_prompt
 
 
 router = APIRouter()
@@ -44,6 +46,104 @@ def _log_decision(db: Session, project_id: int, decision: str, reason: str = Non
     entry = DecisionLogModel(project_id=project_id, decision=decision, reason=reason, stage=stage)
     db.add(entry)
     db.commit()
+
+
+# ─── Stage error handling ─────────────────────────────────────────────
+#
+# The LOGOS engines call live AI models that can transiently fail (timeouts,
+# 5xx, rate limits) or emit output the schema can't validate. Rather than
+# surfacing a bare 500, stage endpoints are wrapped with @with_stage_error
+# so the frontend receives a structured, human-readable error it can present
+# with a Retry action and an honest explanation. HTTP 503 (Service
+# Unavailable) is semantically correct for a transient upstream-model failure
+# and tells the client the request is safe to retry.
+
+# Friendly per-stage names for user-facing copy.
+_STAGE_NAMES = {
+    "strategy": "Strategy",
+    "insight": "Insight",
+    "create": "Concept Families",
+    "judge": "Judge",
+    "concept_prompt": "Concept Prompt",
+    "ssb": "Strategic Sketch Brief",
+    "sketch": "Sketch Coach",
+    "presentation": "Presentation",
+}
+
+# Typical wall-clock ranges (seconds) for each stage against a real model,
+# so the UI can show an honest estimate instead of an indeterminate spinner.
+_STAGE_ESTIMATES = {
+    "strategy": (20, 90),
+    "insight": (30, 120),
+    "create": (60, 240),
+    "judge": (180, 540),
+    "concept_prompt": (180, 720),
+    "ssb": (30, 120),
+    "sketch": (20, 60),
+    "presentation": (30, 90),
+}
+
+
+def with_stage_error(stage: str):
+    """Decorator: catch engine/model failures and return a structured StageError.
+
+    `stage` is the pipeline stage id (e.g. "insight"). Validation/guard
+    HTTPExceptions (4xx) pass through unchanged; only unexpected engine
+    failures become a 503 StageError.
+    """
+    import functools
+    from pydantic import ValidationError
+
+    def decorator(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except HTTPException:
+                raise  # guard failures (missing prerequisites etc.) pass through
+            except ValidationError as e:
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "stage": stage,
+                        "stage_name": _STAGE_NAMES.get(stage, stage),
+                        "kind": "validation",
+                        "detail": (
+                            f"The {_STAGE_NAMES.get(stage, stage)} engine produced a response "
+                            f"we couldn't interpret. This is usually a momentary model hiccup — "
+                            f"please retry. (Field: {e.errors()[0].get('loc') if e.errors() else '?'})"
+                        ),
+                        "retryable": True,
+                        "estimate": _STAGE_ESTIMATES.get(stage),
+                    },
+                )
+            except Exception as e:
+                # Network/transient model errors (timeout, 5xx, rate limit)
+                # already retry inside OpenAIProvider; reaching here means those
+                # retries were exhausted. Treat as retryable — a later attempt
+                # often succeeds.
+                msg = str(e) or type(e).__name__
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "stage": stage,
+                        "stage_name": _STAGE_NAMES.get(stage, stage),
+                        "kind": "transient",
+                        "detail": (
+                            f"The {_STAGE_NAMES.get(stage, stage)} engine couldn't reach the "
+                            f"model after several attempts. This is typically a temporary load "
+                            f"or timeout issue — please retry in a moment."
+                        ),
+                        "retryable": True,
+                        "technical": msg[:300],
+                        "estimate": _STAGE_ESTIMATES.get(stage),
+                    },
+                )
+
+        return wrapper
+
+    return decorator
+
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -200,6 +300,7 @@ async def complete_workshop(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/strategy", response_model=BrandDNA)
+@with_stage_error("strategy")
 async def run_strategy(project_id: int, db: Session = Depends(get_db)):
     """Run the Strategy Engine — produces Brand DNA (Stage 4)."""
     project = _get_project(db, project_id)
@@ -224,6 +325,7 @@ async def run_strategy(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/insight", response_model=InsightReport)
+@with_stage_error("insight")
 async def run_insight(project_id: int, db: Session = Depends(get_db)):
     """Run the Insight Engine — industry research + trends (Stage 5)."""
     project = _get_project(db, project_id)
@@ -245,6 +347,7 @@ async def run_insight(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/create", response_model=CreateEngineResult)
+@with_stage_error("create")
 async def run_create(project_id: int, db: Session = Depends(get_db)):
     """Run the Create Engine — produces Concept Families (Stage 6)."""
     project = _get_project(db, project_id)
@@ -280,6 +383,7 @@ async def run_create(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/judge", response_model=List[FamilyJudgeResult])
+@with_stage_error("judge")
 async def run_judge(project_id: int, db: Session = Depends(get_db)):
     """Run the Judge Engine on all Concept Families (Stage 7)."""
     project = _get_project(db, project_id)
@@ -334,15 +438,67 @@ def select_family(project_id: int, family_label: str, db: Session = Depends(get_
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# STAGE: CONCEPT PROMPT ENGINE (LOG-CP-001)
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/projects/{project_id}/concept-prompts", response_model=List[ConceptPromptResult])
+@with_stage_error("concept_prompt")
+async def compose_project_concept_prompts(project_id: int, db: Session = Depends(get_db)):
+    """Run the Concept Prompt Engine on all Concept Families (Stage: concept_prompt).
+
+    Produces an executable concept (prompt variants + model adaptations +
+    wireframe spec + rationale) per family. Generates no images; makes no
+    creative decision (FD-015).
+    """
+    project = _get_project(db, project_id)
+    if not project.concept_families or not project.judge_report:
+        raise HTTPException(
+            status_code=400,
+            detail="Concept Families and Judge evaluation required first.",
+        )
+
+    # Pair each family with its own judge result by label so the engine can
+    # honour per-family evaluation and refinements.
+    judge_by_label = {j.get("family_label"): j for j in project.judge_report}
+
+    results = []
+    for family in project.concept_families:
+        result = await compose_concept_prompt(
+            family=family,
+            judge_result=judge_by_label.get(family.get("family_label"), {}),
+            brand_dna=project.brand_dna,
+            insight_report=project.insight_report,
+        )
+        results.append(result)
+
+    project.concept_prompts = [r.model_dump() for r in results]
+    project.stage = "concept_prompt"
+
+    db.commit()
+    _log_decision(db, project_id, "Composed Concept Prompts for all families", stage="concept_prompt")
+    return results
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # STAGE 8: SSB + SKETCH (PROD-SSB-001, LOG-COACH-001)
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/ssb", response_model=SSB)
+@with_stage_error("ssb")
 async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
     """Compose the Strategic Sketch Brief (Stage 8)."""
     project = _get_project(db, project_id)
     if not project.judge_report:
         raise HTTPException(status_code=400, detail="Judge evaluation required first.")
+
+    # Read the designer's family selection so the SSB headlines the chosen
+    # territory. Falls back to auto-selection (highest composite) inside
+    # compose_ssb if nothing was explicitly selected.
+    selected = db.query(ConceptFamilyModel).filter(
+        ConceptFamilyModel.project_id == project_id,
+        ConceptFamilyModel.is_selected == True,  # noqa: E712
+    ).first()
+    selected_label = selected.family_label if selected else None
 
     result = await compose_ssb(
         brand_dna=project.brand_dna,
@@ -350,7 +506,14 @@ async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
         concept_families=project.concept_families,
         judge_reports=project.judge_report,
         company_name=project.company_name,
+        selected_family_label=selected_label,
     )
+    if selected is None and result.selected_territory:
+        _log_decision(
+            db, project_id,
+            f"SSB auto-selected Family {result.selected_territory.family_label} (no explicit selection)",
+            stage="ssb",
+        )
     project.ssb = result.model_dump()
     project.stage = "ssb"
     db.commit()
@@ -358,6 +521,7 @@ async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/projects/{project_id}/sketches", response_model=CoachFeedback)
+@with_stage_error("sketch")
 async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Depends(get_db)):
     """Upload a sketch and get Sketch Coach feedback (Stage 8 iteration)."""
     project = _get_project(db, project_id)
@@ -414,6 +578,7 @@ def list_sketches(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/presentation")
+@with_stage_error("presentation")
 async def build_project_presentation(project_id: int, db: Session = Depends(get_db)):
     """Build the client presentation (Stage 9)."""
     project = _get_project(db, project_id)
