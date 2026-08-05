@@ -6,9 +6,10 @@ AI orchestrator (model-independent) and conform to LM-STD-001..006.
 """
 
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .ai_orchestrator import get_ai_orchestrator, parse_json_response
+from . import lic_knowledge
 from ..schemas import (
     BrandDNA, InsightReport, CreateEngineResult,
     FamilyJudgeResult, SSB, CoachFeedback,
@@ -129,24 +130,90 @@ Produce the Insight Report for this brand in this category.
         response_format="json",
         temperature=0.4,
     )
-    return InsightReport(**parse_json_response(response))
+    return InsightReport(**_normalize_insight_output(parse_json_response(response)))
+
+
+def _normalize_insight_output(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Defensively repair common real-model drift in an Insight response.
+
+    Real models occasionally (a) rename ``trend_vs_timeless_balance`` to a
+    near-synonym or (b) omit it entirely while still producing the rest of the
+    report. ``trend_vs_timeless_balance`` is the only *required* field without a
+    default, so a missing/emitted-under-an-alias value fails validation. This
+    maps known aliases back and, if still absent, derives a balanced default
+    from ``trend_intelligence`` classifications so the report validates.
+
+    Precedent: ``_normalize_judge_output`` does the same for the Judge engine.
+    """
+    if not isinstance(data, dict):
+        return data
+    data = dict(data)
+
+    # Map common aliases for the required balance field.
+    balance_aliases = (
+        "trend_balance",
+        "timeless_vs_trend_balance",
+        "trend_timeless_balance",
+        "balance",
+        "timelessness_balance",
+    )
+    if "trend_vs_timeless_balance" not in data:
+        for alias in balance_aliases:
+            if alias in data and isinstance(data[alias], dict):
+                data["trend_vs_timeless_balance"] = data.pop(alias)
+                break
+
+    # If still missing, derive a neutral balance from trend classifications.
+    if "trend_vs_timeless_balance" not in data:
+        trends = data.get("trend_intelligence") or []
+        timeless = sum(1 for t in trends if isinstance(t, dict) and t.get("classification") == "timeless")
+        contemporary = sum(
+            1 for t in trends
+            if isinstance(t, dict) and t.get("classification") in ("emerging", "short_lived", "overused")
+        )
+        total = timeless + contemporary
+        if total > 0:
+            data["trend_vs_timeless_balance"] = {
+                "timeless": round(timeless / total, 2),
+                "contemporary": round(contemporary / total, 2),
+            }
+        else:
+            # No trend data to derive from — use a balanced neutral default.
+            data["trend_vs_timeless_balance"] = {"timeless": 0.5, "contemporary": 0.5}
+
+    return data
+
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # CREATE ENGINE (LOG-CREATE-001) — Concept Families
 # ═══════════════════════════════════════════════════════════════════════
 
-CREATE_SYSTEM_PROMPT = """You are LOGOS Create, the Concept Families engine.
+CREATE_SYSTEM_PROMPT = (
+    """You are LOGOS Create, the Concept Families engine.
 
 Your role: transform Brand DNA + Insight into 3-5 Concept Families —
 strategic creative territories, NOT isolated ideas. Each family has a
-theme, supporting symbols, visual language, and rationale.
+theme, supporting symbols, a CONCRETE visual language, and rationale.
 
-Apply:
-- RS-LIC-PH-005 Originality: Combination Method, 5 Originality Tests
-- Cross-pollinate across domains (avoid the obvious domain)
-- Eliminate clichés (consult the Insight Report)
-- Apply the "Why?" Loop to every recommendation
+METHOD (apply the injected knowledge literally):
+- Use the Combination Method: establish meaning → gather inputs from the
+  meaning's domain AND adjacent domains → cross-pollinate → combine → test.
+- Use the Cross-Pollination table to reach PAST the obvious domain. For each
+  meaning, prefer adjacent-domain inputs (higher originality) over obvious ones.
+- Filter every symbol against the Symbol Library: an 🟠/🔴 originality risk
+  REQUIRES an explicit refresh/abstraction justification. Do NOT propose a
+  symbol the library says to "Avoid When" the category matches — unless you
+  explicitly reframe it (and say how).
+- Each family must pass the 5 Originality Tests (Meaning, Distinctiveness,
+  Clarity, Inevitability, Non-Arbitrary); state which adjacent inputs combine.
+- Eliminate clichés (consult the Insight Report's cliche_avoidance).
+
+VISUAL LANGUAGE must be concrete, not one-word:
+- forms: name a geometric/organic system (e.g. "concentric circles on a 1:√2 grid")
+- treatment: stroke weight / finish logic (e.g. "single-weight 2u strokes, matte")
+- composition: layout + clear space (e.g. "centred mark, 1x clear-space on all sides")
+- palette: 3-4 named colours with a dominant/secondary split (e.g. "deep teal dominant, warm sand secondary, ivory accent")
 
 If the client requested a cliché symbol, respectfully challenge it
 (Creative Director Mode) and offer alternatives.
@@ -175,6 +242,8 @@ nest or rename fields). Generate 3-5 families under "families":
 Give each family a distinct single-letter label ("A", "B", "C", ...).
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
+    + lic_knowledge.knowledge_block(["RS-LIC-PH-005", "RS-LIC-SY-VOLUME"])
+)
 
 
 async def generate_concept_families(
@@ -206,7 +275,8 @@ Apply the Combination Method. Avoid the clichés flagged in Insight.
 # JUDGE ENGINE (LOG-JUDGE-001)
 # ═══════════════════════════════════════════════════════════════════════
 
-JUDGE_SYSTEM_PROMPT = """You are LOGOS Judge, the Design Jury + Creative Council.
+JUDGE_SYSTEM_PROMPT = (
+    """You are LOGOS Judge, the Design Jury + Creative Council.
 
 Your role: evaluate Concept Families across 10 dimensions (Philosophy Series),
 provide a defensible score for each, explain reasoning, and classify outcome.
@@ -224,6 +294,10 @@ Classification:
 
 Never rubber-stamp. Never fake certainty (LM-STD-003).
 Apply the Concept DNA fingerprint for objective comparison.
+
+For the `originality` dimension, score against the 5 Originality Tests injected
+below (Meaning, Distinctiveness, Clarity, Inevitability, Non-Arbitrary): the
+justification must state which tests the concept passes/fails.
 
 Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
 nest or rename fields; every non-optional field is required):
@@ -264,6 +338,8 @@ originality, memorability, authenticity, timelessness, relevance, consistency,
 brand_fit. Each score is 0.0-10.0. composite is 0.0-10.0.
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
+    + lic_knowledge.knowledge_block(["RS-LIC-PH-005"])
+)
 
 
 async def judge_family(
@@ -338,11 +414,22 @@ The SSB gives the designer everything needed to sketch with confidence.
 3. Creative North Star (single sentence)
 4. Creative Territories (chosen family + alternatives)
 5. Opportunities & Warnings (explore this; avoid that)
-6. Creative Council Advice (9-mind table)
+6. Creative Council Advice (9-mind table + synthesised verdict)
 7. Sketch Missions (5-10 specific starting points)
 
-The 5-Minute Rule: SSB must be absorbable in 5 minutes at Layer A.
+GROUNDING RULES (critical):
+- The chosen territory is GIVEN to you in the user prompt (SELECTED TERRITORY).
+  Populate selected_territory from it — carry its visual_language, symbols,
+  composite, classification, and concept_dna through verbatim. Do NOT invent a
+  different chosen territory.
+- Every sketch_mission.combine[] entry MUST be a symbol drawn from the selected
+  territory's symbols. Do not introduce symbols the family does not own.
+- Ground each mission's why_it_works in the jury's refinement_recommendations
+  and the concept_dna fingerprint for the selected territory.
+- creative_council_advice.synthesised_verdict MUST come from the selected
+  territory's judge verdict.
 
+The 5-Minute Rule: SSB must be absorbable in 5 minutes at Layer A.
 LogoMind will never make a creative decision for the designer.
 
 Respond as JSON with EXACTLY this schema (use these field names verbatim; do not
@@ -356,12 +443,87 @@ nest or rename fields; every field is required):
   "creative_council_advice": {"meaning_mind": "...", "simplicity_mind": "...", "differentiation_mind": "...", "context_mind": "...", "memorability_mind": "...", "systems_mind": "...", "emotion_mind": "...", "longevity_mind": "...", "boldness_mind": "..."},
   "sketch_missions": [
     {"mission_name": "...", "core_idea": "...", "combine": ["..."], "why_it_works": "...", "potential_pitfalls": ["..."], "start_with": "..."}
-  ]
+  ],
+  "selected_territory": {
+    "family_label": "A", "theme": "...", "recommendation": "...", "core_meaning_served": "...",
+    "why_it_works": "...", "pitfalls": "...", "composite": 0.0, "classification": "...",
+    "visual_language": {"forms": "...", "treatment": "...", "composition": "...", "palette": "..."},
+    "symbols": [{"name": "...", "meaning": "..."}],
+    "concept_dna": {"emotion": "...", "primary_symbol": "...", "shape_language": "..."},
+    "refinement_recommendations": ["..."]
+  },
+  "council_advice": {
+    "meaning_mind": "...", "simplicity_mind": "...", "differentiation_mind": "...",
+    "context_mind": "...", "memorability_mind": "...", "systems_mind": "...",
+    "emotion_mind": "...", "longevity_mind": "...", "boldness_mind": "...",
+    "synthesised_verdict": "..."
+  }
 }
 
-Include 5-7 sketch_missions.
+Include 5-7 sketch_missions. start_with must be concrete, actionable guidance
+(e.g. "Begin with a circular grid; sketch 10 keystone variations; test at 16px").
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
+
+
+def _select_chosen_family(
+    concept_families: List[Dict[str, Any]],
+    judge_reports: List[Dict[str, Any]],
+    selected_family_label: Optional[str],
+) -> tuple:
+    """Resolve the chosen family + its judge result + the alternatives.
+
+    Selection order: explicit label → highest-composite family → first.
+    Returns (chosen_family, chosen_judge, alternative_families).
+    """
+    def _label_of(fam):
+        return fam.get("family_label") if isinstance(fam, dict) else None
+
+    chosen = None
+    if selected_family_label:
+        chosen = next((f for f in concept_families if _label_of(f) == selected_family_label), None)
+    if chosen is None and judge_reports:
+        # Pick the highest-composite family.
+        ranked = sorted(
+            judge_reports,
+            key=lambda j: j.get("composite", 0) if isinstance(j, dict) else 0,
+            reverse=True,
+        )
+        if ranked:
+            top_label = ranked[0].get("family_label") if isinstance(ranked[0], dict) else None
+            chosen = next((f for f in concept_families if _label_of(f) == top_label), None)
+    if chosen is None and concept_families:
+        chosen = concept_families[0]
+
+    chosen_label = _label_of(chosen)
+    chosen_judge = next((j for j in judge_reports if isinstance(j, dict) and j.get("family_label") == chosen_label), None)
+    alternatives = [f for f in concept_families if _label_of(f) != chosen_label]
+    return chosen or {}, chosen_judge or {}, alternatives
+
+
+def _anchor_selected_territory(data: Dict[str, Any], chosen_family: Dict[str, Any], chosen_judge: Dict[str, Any]) -> Dict[str, Any]:
+    """Force selected_territory to carry the ACTUAL persisted family/judge data.
+
+    The model may paraphrase; this guarantees truthfulness by overlaying the
+    real visual_language, symbols, composite, classification, concept_dna, and
+    refinement_recommendations from the persisted Create/Judge output.
+    """
+    territory = data.get("selected_territory") or {}
+    territory["family_label"] = chosen_family.get("family_label", territory.get("family_label"))
+    territory["theme"] = chosen_family.get("theme", territory.get("theme"))
+    territory.setdefault("recommendation", chosen_family.get("recommendation_strength", "alternative"))
+    territory["core_meaning_served"] = chosen_family.get("core_meaning_served", territory.get("core_meaning_served"))
+    territory["why_it_works"] = chosen_family.get("why_it_works", territory.get("why_it_works"))
+    territory["pitfalls"] = chosen_family.get("pitfalls", territory.get("pitfalls"))
+    territory["visual_language"] = chosen_family.get("visual_language", territory.get("visual_language") or {})
+    territory["symbols"] = chosen_family.get("symbols", territory.get("symbols") or [])
+    if chosen_judge:
+        territory["composite"] = chosen_judge.get("composite", territory.get("composite"))
+        territory["classification"] = chosen_judge.get("classification", territory.get("classification"))
+        territory["concept_dna"] = chosen_judge.get("concept_dna", territory.get("concept_dna"))
+        territory["refinement_recommendations"] = chosen_judge.get("refinement_recommendations", territory.get("refinement_recommendations") or [])
+    data["selected_territory"] = territory
+    return data
 
 
 async def compose_ssb(
@@ -370,25 +532,45 @@ async def compose_ssb(
     concept_families: List[Dict[str, Any]],
     judge_reports: List[Dict[str, Any]],
     company_name: str,
+    selected_family_label: Optional[str] = None,
 ) -> SSB:
     """Compose the Strategic Sketch Brief (Stage 8)."""
     orchestrator = get_ai_orchestrator()
+
+    chosen, chosen_judge, alternatives = _select_chosen_family(
+        concept_families, judge_reports, selected_family_label
+    )
+
+    # Focused context — NOT a raw full-list dump. The chosen family + its judge
+    # result are inlined so the model grounds missions in them; alternatives are
+    # summarised to one line each to keep the prompt small.
+    alt_summary = [
+        f"{f.get('family_label', '?')} — {f.get('theme', '')} — {f.get('recommendation_strength', '')}"
+        for f in alternatives
+    ]
 
     user_prompt = f"""Company: {company_name}
 
 Brand DNA:
 {json.dumps(brand_dna, indent=2, default=str)}
 
-Insight Report:
+Insight Report (clichés + opportunities):
 {json.dumps(insight_report, indent=2, default=str)}
 
-Concept Families:
-{json.dumps(concept_families, indent=2, default=str)}
+SELECTED TERRITORY (the designer chose this — populate selected_territory from it):
+{json.dumps(chosen, indent=2, default=str)}
 
-Judge Reports:
-{json.dumps(judge_reports, indent=2, default=str)}
+SELECTED TERRITORY JUDGE RESULT (carry composite, classification, concept_dna,
+council verdict, and refinement_recommendations into the SSB):
+{json.dumps(chosen_judge, indent=2, default=str)}
 
-Compose the SSB. Include 5-7 Sketch Missions with specific guidance.
+ALTERNATIVE TERRITORIES (list under creative_territories with reduced detail):
+{chr(10).join(alt_summary) or '(none)'}
+
+Compose the SSB. selected_territory and council_advice MUST be populated from
+the SELECTED TERRITORY + its judge result above. Every sketch_mission.combine[]
+entry MUST be a symbol from the selected territory's symbols. Include 5-7
+Sketch Missions with concrete, actionable start_with guidance.
 """
     response = await orchestrator.complete(
         system_prompt=SSB_SYSTEM_PROMPT,
@@ -396,7 +578,9 @@ Compose the SSB. Include 5-7 Sketch Missions with specific guidance.
         response_format="json",
         temperature=0.5,
     )
-    return SSB(**parse_json_response(response))
+    data = parse_json_response(response)
+    data = _anchor_selected_territory(data, chosen, chosen_judge)
+    return SSB(**data)
 
 
 # ═══════════════════════════════════════════════════════════════════════

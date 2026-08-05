@@ -19,12 +19,14 @@ load_dotenv()
 
 from .database import init_db
 from .routers import router
+from .services import lic_knowledge
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialise database on startup."""
+    """Initialise database and load LIC knowledge on startup."""
     init_db()
+    lic_knowledge.load()  # cache curated operational extracts for the engines
     yield
 
 

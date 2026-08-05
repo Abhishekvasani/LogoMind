@@ -38,6 +38,7 @@ class PipelineStage(str, Enum):
     INSIGHT = "insight"
     CREATE = "create"
     JUDGE = "judge"
+    CONCEPT_PROMPT = "concept_prompt"
     SSB = "ssb"
     SKETCH = "sketch"
     PRESENTATION = "presentation"
@@ -128,6 +129,7 @@ class Project(ProjectSummary):
     insight_report: Optional[Dict[str, Any]] = None
     concept_families: Optional[List[Dict[str, Any]]] = None
     judge_report: Optional[List[Dict[str, Any]]] = None
+    concept_prompts: Optional[List[Dict[str, Any]]] = None
     ssb: Optional[Dict[str, Any]] = None
     presentation: Optional[Dict[str, Any]] = None
     workshop_state: Optional[Dict[str, Any]] = None
@@ -268,6 +270,71 @@ class CreateEngineResult(BaseModel):
     client_request_notes: List[Dict[str, str]] = []
 
 
+# ─── Concept Prompt Engine (LOG-CP-001) ────────────────────────────────
+
+class PromptVariant(BaseModel):
+    """One of the four model-agnostic concept prompts for a family.
+
+    Styles are a fixed set (PROD-CP-001 §4): minimal, detailed,
+    typographic-led, symbolic. The engine does NOT rank variants — they are
+    parallel starting points the designer chooses between.
+    """
+    style: str  # minimal | detailed | typographic-led | symbolic
+    prompt: str  # complete natural-language concept prompt
+    intent: str  # one line: what this variant emphasises
+
+
+class ModelAdaptation(BaseModel):
+    """How to tune the concept prompt for one image-model family.
+
+    Model behaviour lives here, NOT in the variants — variants stay
+    model-agnostic (PROD-CP-001 §6).
+    """
+    model_family: str  # midjourney | ideogram | stable-diffusion | recraft | general
+    notes: str  # how to tune for this family
+    example_suffix: str  # concrete copy-pasteable tunable, e.g. "--ar 1:1 --style raw"
+
+
+class WireframeElement(BaseModel):
+    """One element of a composition wireframe spec.
+
+    Geometry/position/size are from a closed vocabulary (PROD-CP-001 §5.2)
+    so the spec is deterministically renderable to SVG — never freeform
+    imagery (LOG-CP-001 §3).
+    """
+    kind: str  # symbol | wordmark | tagline | container | negative-space
+    geometry: str  # circle | hexagon | rectangle | monogram | baseline-bar | custom
+    position: str  # center | left-of-text | above | below | integrated
+    relative_size: str  # dominant | balanced | accent | small
+    notes: str = ""
+
+
+class WireframeSpec(BaseModel):
+    """The composition blueprint — structured data, rendered to SVG.
+
+    The LLM describes layout; it never draws pixels (LOG-CP-001 §3).
+    """
+    orientation: str  # horizontal | stacked | lockup | emblem
+    balance: str  # e.g. "60/40 symbol-to-text" | "centered"
+    alignment: str  # center | left | baseline-aligned
+    safe_margin: str  # e.g. "12% padding"
+    elements: List[WireframeElement] = []
+    favicon_note: str  # how the composition degrades at favicon size
+
+
+class ConceptPromptResult(BaseModel):
+    """Concept Prompt Engine output for ONE Concept Family (LOG-CP-001)."""
+    family_label: str
+    core_concept: str  # one-sentence distillation of the family as a visual
+    variants: List[PromptVariant]  # exactly four
+    model_adaptations: List[ModelAdaptation]  # five model families
+    wireframe: WireframeSpec
+    rationale: str  # trace to Brand DNA + visual_language
+    cliches_avoided: List[str] = []
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+
 # ─── Judge Engine (LOG-JUDGE-001) ──────────────────────────────────────
 
 class JuryScore(BaseModel):
@@ -326,6 +393,46 @@ class SketchMission(BaseModel):
     start_with: str  # specific guidance
 
 
+class SSBTerritory(BaseModel):
+    """A Creative Territory in the SSB — the chosen family plus its judge fingerprint.
+
+    Carries the rich judge/visual data the SSB previously discarded. All new
+    fields are optional so older SSB JSON (and the mock) still validate.
+    """
+    family_label: str
+    theme: str
+    recommendation: str = "alternative"  # recommended | alternative | exploratory
+    core_meaning_served: Optional[str] = None
+    why_it_works: Optional[str] = None
+    pitfalls: Optional[str] = None
+    # Judge fingerprint carried forward (from FamilyJudgeResult):
+    composite: Optional[float] = None
+    classification: Optional[str] = None  # recommended | develop | reject
+    # Create-stage richness:
+    visual_language: Dict[str, str] = {}      # forms, treatment, composition, palette
+    symbols: List[Dict[str, Any]] = []        # [{name, meaning, originality, abstraction_level, risk_level}]
+    concept_dna: Optional[Dict[str, Any]] = None
+    refinement_recommendations: List[str] = []
+
+
+class CouncilAdvice(BaseModel):
+    """The Creative Council's advice for the SSB.
+
+    Mirrors CreativeCouncilVerdict. Fields optional so older dict-shaped advice
+    still validates.
+    """
+    meaning_mind: str = ""
+    simplicity_mind: str = ""
+    differentiation_mind: str = ""
+    context_mind: str = ""
+    memorability_mind: str = ""
+    systems_mind: str = ""
+    emotion_mind: str = ""
+    longevity_mind: str = ""
+    boldness_mind: str = ""
+    synthesised_verdict: str = ""
+
+
 class SSB(BaseModel):
     """Strategic Sketch Brief — LogoMind's flagship output (PROD-SSB-001)."""
     project_essence: str
@@ -335,6 +442,9 @@ class SSB(BaseModel):
     opportunities_and_warnings: Dict[str, List[str]]
     creative_council_advice: Dict[str, str]
     sketch_missions: List[SketchMission]
+    # Rich additions (all optional — backward compatible with older SSB JSON):
+    selected_territory: Optional[SSBTerritory] = None
+    council_advice: Optional[CouncilAdvice] = None
 
 
 # ─── Sketch Coach (LOG-COACH-001) ──────────────────────────────────────
