@@ -24,12 +24,12 @@ export function StrategyView({ project, onUpdate }: { project: Project; onUpdate
           <DNACard label="Emotional Goal" value={dna.emotional_goal} confidence={undefined} />
 
           {dna.contradictions_flagged?.length > 0 && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <h3 className="font-medium text-amber-900 mb-2">⚠ Contradictions Flagged</h3>
+            <div className="p-4 bg-warn/10 border border-warn/30 rounded-lg">
+              <h3 className="font-medium text-warn mb-2">⚠ Contradictions Flagged</h3>
               {dna.contradictions_flagged.map((c: any, i: number) => (
-                <p key={i} className="text-sm text-amber-800">{c.description || JSON.stringify(c)}</p>
+                <p key={i} className="text-sm text-warn">{c.description || JSON.stringify(c)}</p>
               ))}
-              <p className="text-xs text-amber-600 mt-2">LogoMind surfaces contradictions; the designer resolves them.</p>
+              <p className="text-xs text-warn/80 mt-2">LogoMind surfaces contradictions; the designer resolves them.</p>
             </div>
           )}
 
@@ -37,7 +37,7 @@ export function StrategyView({ project, onUpdate }: { project: Project; onUpdate
             <button
               onClick={handleProceed}
               disabled={running}
-              className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+              className="px-4 py-2 bg-ink text-stock rounded-md hover:bg-ink/85 disabled:opacity-50"
             >
               {running ? "Generating Insight…" : "Continue to Insight →"}
             </button>
@@ -52,7 +52,7 @@ export function StrategyView({ project, onUpdate }: { project: Project; onUpdate
           />
         </>
       ) : (
-        <p className="text-gray-500">Brand DNA not yet generated. (Strategy Engine should have run.)</p>
+        <p className="text-graphite">Brand DNA not yet generated. (Strategy Engine should have run.)</p>
       )}
     </div>
   );
@@ -61,15 +61,15 @@ export function StrategyView({ project, onUpdate }: { project: Project; onUpdate
 function DNACard({ label, value, confidence, sub }: { label: string; value: string; confidence?: string; sub?: string }) {
   const confidenceEmoji: Record<string, string> = { C5: "🟢", C4: "🔵", C3: "🟠", C2: "🟣", C1: "⚪" };
   return (
-    <div className="p-4 bg-white border border-gray-200 rounded-lg">
+    <div className="p-4 bg-stock border border-rule rounded-lg">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-medium text-graphite uppercase tracking-wide">{label}</span>
         {confidence && (
-          <span className="text-xs text-gray-400">{confidenceEmoji[confidence] || ""} {confidence}</span>
+          <span className="text-xs text-graphite">{confidenceEmoji[confidence] || ""} {confidence}</span>
         )}
       </div>
-      <p className="text-gray-900">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+      <p className="text-ink">{value}</p>
+      {sub && <p className="text-xs text-graphite mt-1">{sub}</p>}
     </div>
   );
 }

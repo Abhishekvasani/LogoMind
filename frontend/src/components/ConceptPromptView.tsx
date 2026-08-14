@@ -54,7 +54,10 @@ export function ConceptPromptView({ project, onUpdate }: { project: Project; onU
             adaptations, and a composition wireframe. Copy a prompt into your own image model.
           </p>
         </header>
-        {project.stage === "judge" ? (
+        {/* Compose is reachable once families have been judged. The happy path
+            routes through Client Fit (judge → client_fit → concept_prompt), but
+            a designer may also arrive here straight from judge, so accept both. */}
+        {project.stage === "judge" || project.stage === "client_fit" ? (
           <button
             onClick={handleCompose}
             disabled={running}
@@ -73,7 +76,6 @@ export function ConceptPromptView({ project, onUpdate }: { project: Project; onU
           error={error}
           stageName="Concept Prompt"
           onRetry={retry}
-          tone="specimen"
         />
       </section>
     );
@@ -110,11 +112,13 @@ export function ConceptPromptView({ project, onUpdate }: { project: Project; onU
             {/* Classification stamp, top-right */}
             {stamp && (
               <span
-                className="absolute top-0 right-6 -translate-y-1/2 px-3 py-1 font-mono text-[10px] tracking-folio uppercase border bg-stock"
-                style={{
-                  color: stamp === "recommended" ? "#3F6B43" : stamp === "reject" ? "#9A3B2E" : "#B8732A",
-                  borderColor: stamp === "recommended" ? "#3F6B43" : stamp === "reject" ? "#9A3B2E" : "#B8732A",
-                }}
+                className={`absolute top-0 right-6 -translate-y-1/2 px-3 py-1 font-mono text-[10px] tracking-folio uppercase border bg-stock ${
+                  stamp === "recommended"
+                    ? "text-stamp-recommended border-stamp-recommended"
+                    : stamp === "reject"
+                    ? "text-stamp-reject border-stamp-reject"
+                    : "text-stamp-develop border-stamp-develop"
+                }`}
               >
                 {STAMP_TEXT[stamp] ?? stamp}
               </span>
@@ -264,7 +268,6 @@ export function ConceptPromptView({ project, onUpdate }: { project: Project; onU
         error={error}
         stageName="Concept Prompt"
         onRetry={retry}
-        tone="specimen"
       />
     </section>
   );

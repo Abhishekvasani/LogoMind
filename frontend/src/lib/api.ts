@@ -36,6 +36,10 @@ export interface Project extends ProjectSummary {
   concept_prompts?: any[];
   ssb?: any;
   presentation?: any;
+  client_persona?: any;
+  appeal_report?: any;
+  contest_brief?: any;
+  contest_feedback?: any[];
   workshop_state?: any;
   sketches?: any[];
 }
@@ -138,6 +142,31 @@ export const runJudge = (projectId: number) =>
 
 export const selectFamily = (projectId: number, label: string) =>
   apiCall<any>(`/projects/${projectId}/select-family/${label}`, { method: "POST" });
+
+// Stage: Client Fit (Client Preference Predictor)
+export const runClientFit = (projectId: number) =>
+  apiCall<any>(`/projects/${projectId}/client-fit`, { method: "POST" });
+
+// Stage 4: refine Client Fit with revealed in-contest preferences
+export const refineClientFit = (
+  projectId: number,
+  signals: Array<{ kind: "liked" | "disliked" | "comment"; trait: string; note?: string }>
+) =>
+  apiCall<any>(`/projects/${projectId}/client-fit/refine`, { method: "POST", body: JSON.stringify({ signals }) });
+
+// Stage 3: Contest Brief Decoder
+export const decodeContestBrief = (rawText: string) =>
+  apiCall<any>(`/decode-contest-brief`, { method: "POST", body: JSON.stringify({ raw_text: rawText }) });
+
+export const attachContestBrief = (projectId: number, rawText: string) =>
+  apiCall<Project>(`/projects/${projectId}/contest-brief`, { method: "POST", body: JSON.stringify({ raw_text: rawText }) });
+
+// Intent Extraction utility (LOG-DISC-001) — "I want blue" -> "I want trust".
+export const decodeIntent = (preference: string) =>
+  apiCall<{ preference: string; intent: string; reasoning: string }>(`/decode-intent`, {
+    method: "POST",
+    body: JSON.stringify({ preference }),
+  });
 
 // Stage: Concept Prompt
 export const composeConceptPrompts = (projectId: number) =>

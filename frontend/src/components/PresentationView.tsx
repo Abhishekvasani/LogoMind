@@ -6,7 +6,7 @@ export function PresentationView({ project }: { project: Project; onUpdate: () =
   const presentation = project.presentation;
 
   if (!presentation) {
-    return <p className="text-gray-500">Presentation not yet built.</p>;
+    return <p className="text-graphite">Presentation not yet built.</p>;
   }
 
   return (
@@ -16,7 +16,7 @@ export function PresentationView({ project }: { project: Project; onUpdate: () =
         <div className="flex gap-2">
           <button
             onClick={() => window.print()}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-rule rounded hover:bg-surface-2"
           >
             Print / PDF
           </button>
@@ -27,30 +27,30 @@ export function PresentationView({ project }: { project: Project; onUpdate: () =
       {presentation.sections?.length > 0 ? (
         <div className="space-y-4">
           {presentation.sections.map((section: any, i: number) => (
-            <div key={i} className="p-6 bg-white border border-gray-200 rounded-lg">
-              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+            <div key={i} className="p-6 bg-stock border border-rule rounded-lg">
+              <p className="text-xs text-graphite uppercase tracking-wide mb-2">
                 Slide {i + 1} of {presentation.sections.length}
               </p>
               <h3 className="text-lg font-medium mb-2">{section.title}</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{section.content}</p>
+              <p className="text-ink/90 whitespace-pre-wrap">{section.content}</p>
             </div>
           ))}
         </div>
       ) : (
-        <div className="p-6 bg-white border border-gray-200 rounded-lg">
-          <p className="text-gray-700">{JSON.stringify(presentation, null, 2)}</p>
+        <div className="p-6 bg-stock border border-rule rounded-lg">
+          <p className="text-ink/90">{JSON.stringify(presentation, null, 2)}</p>
         </div>
       )}
 
       {/* Objection Handling (designer-only) */}
       {presentation.objection_handling?.length > 0 && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-medium text-amber-900 mb-2">🎯 Objection-Handling Notes (Designer Only — Not in Export)</h3>
+        <div className="p-4 bg-warn/10 border border-warn/30 rounded-lg">
+          <h3 className="font-medium text-warn mb-2">🎯 Objection-Handling Notes (Designer Only — Not in Export)</h3>
           <div className="space-y-2">
             {presentation.objection_handling.map((o: any, i: number) => (
               <div key={i} className="text-sm">
-                <p className="font-medium text-amber-800">"{o.concern}"</p>
-                <p className="text-amber-700 ml-4">→ {o.response}</p>
+                <p className="font-medium text-warn">"{o.concern}"</p>
+                <p className="text-warn/90 ml-4">→ {o.response}</p>
               </div>
             ))}
           </div>
@@ -58,12 +58,12 @@ export function PresentationView({ project }: { project: Project; onUpdate: () =
       )}
 
       {/* Project complete */}
-      <div className="p-6 bg-gray-900 text-white rounded-lg text-center">
+      <div className="p-6 bg-ink text-stock rounded-lg text-center">
         <p className="text-lg font-medium mb-1">Project Complete ✓</p>
-        <p className="text-gray-400 text-sm">
+        <p className="text-graphite text-sm">
           {project.company_name} has moved through the full LOGOS pipeline.
         </p>
-        <p className="text-gray-500 text-xs mt-2 italic">Reason. Create. Refine.</p>
+        <p className="text-graphite text-xs mt-2 italic">Reason. Create. Refine.</p>
       </div>
     </div>
   );

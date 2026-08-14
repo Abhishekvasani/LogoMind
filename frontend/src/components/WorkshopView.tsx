@@ -78,9 +78,9 @@ export function WorkshopView({ project, onUpdate }: { project: Project; onUpdate
 
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+      <div className="p-6 bg-stock border border-rule rounded-lg">
         <h2 className="text-lg font-medium mb-2">Discovery Workshop</h2>
-        <p className="text-gray-600 mb-4">
+        <p className="text-graphite mb-4">
           The brief needs enrichment. Answer the questions below to fill the strategic gaps
           Discovery identified, then complete the workshop to rebuild Brand DNA.
         </p>
@@ -88,77 +88,77 @@ export function WorkshopView({ project, onUpdate }: { project: Project; onUpdate
         {questions.length > 0 ? (
           <div className="space-y-4">
             {questions.map((q, i) => (
-              <div key={q.field} className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+              <div key={q.field} className="p-4 border border-rule rounded-lg bg-surface-2/50">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600">
+                  <span className="text-xs px-2 py-0.5 rounded bg-surface-2 text-graphite">
                     Step {i + 1}
                   </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded ${
                       q.impact === "high"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-gray-200 text-gray-600"
+                        ? "bg-bad/20 text-bad"
+                        : "bg-surface-2 text-graphite"
                     }`}
                   >
                     {q.impact} impact
                   </span>
                   <span className="font-medium text-sm">{q.field.replace(/_/g, " ")}</span>
                 </div>
-                <p className="text-sm text-gray-700 mb-2 italic">
+                <p className="text-sm text-ink/90 mb-2 italic">
                   {q.suggested_question || `Tell us about ${q.field.replace(/_/g, " ")}.`}
                 </p>
                 <textarea
                   value={answers[q.field] || ""}
                   onChange={(e) => setAnswers({ ...answers, [q.field]: e.target.value })}
                   placeholder="Your answer…"
-                  className="w-full p-2 border border-gray-300 rounded text-sm min-h-[70px]"
+                  className="w-full p-2 border border-rule rounded text-sm min-h-[70px] bg-paper text-ink focus:outline-none focus:border-ink/40"
                 />
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-graphite mb-4">
             No specific gaps were surfaced. If you have already gathered the strategic context
             separately, you can proceed directly.
           </p>
         )}
 
-        <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 mt-4">
+        <div className="flex flex-col gap-3 pt-4 border-t border-rule mt-4">
           <button
             onClick={handleComplete}
             disabled={running}
-            className="self-start px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+            className="self-start px-4 py-2 bg-ink text-stock rounded-md hover:bg-ink/85 disabled:opacity-50"
           >
             {running ? "Processing…" : "Complete Workshop & Run Strategy →"}
           </button>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-graphite">
             Completing re-analyses the enriched brief and advances to Strategy.
           </p>
         </div>
       </div>
 
       {/* Optional: client-shareable link (deferred page). Kept for Phase 6. */}
-      <div className="p-4 bg-white border border-gray-200 rounded-lg">
-        <p className="text-sm text-gray-500 mb-2">
+      <div className="p-4 bg-stock border border-rule rounded-lg">
+        <p className="text-sm text-graphite mb-2">
           Optionally, generate a link for your client to answer the workshop themselves.
           (The public workshop page is a deferred feature.)
         </p>
         <button
           onClick={handleShare}
-          className="px-4 py-2 bg-gray-100 text-gray-900 rounded-md hover:bg-gray-200 self-start"
+          className="px-4 py-2 bg-surface-2 text-ink rounded-md hover:bg-ink/15 self-start"
         >
           Generate Client Workshop Link
         </button>
         {shareLink && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
-            <p className="font-medium text-blue-900 mb-1">Share this link with your client:</p>
-            <code className="text-blue-700 break-all">{shareLink}</code>
+          <div className="mt-3 p-3 bg-info/10 border border-info/30 rounded text-sm">
+            <p className="font-medium text-info mb-1">Share this link with your client:</p>
+            <code className="text-info break-all">{shareLink}</code>
           </div>
         )}
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+        <div className="p-3 bg-bad/10 border border-bad/30 rounded text-sm text-bad">
           {error}
         </div>
       )}

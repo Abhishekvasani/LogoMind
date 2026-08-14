@@ -9,9 +9,14 @@
  * logo attempt. Ink-on-paper strokes, registration crosses at the corners, and
  * a figure caption (FIG. {label} — {ORIENTATION}) make the spec legible as a
  * blueprint the designer takes to their own tool.
+ *
+ * Stroke/fill colours are theme-reactive (ink/graphite/rule/stock). They are
+ * resolved to real hex at render via useIsDark() so the PNG export — which
+ * serializes the SVG into an isolated image context where CSS variables do not
+ * resolve — renders with the correct light/dark palette too.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ─── Types (mirror backend schemas) ───────────────────────────────────
 
@@ -30,6 +35,31 @@ export interface WireframeSpec {
   safe_margin: string;
   elements: WireframeElement[];
   favicon_note: string;
+}
+
+// ─── Theme-aware palette ──────────────────────────────────────────────
+// Hex mirrors globals.css so the PNG export matches the on-screen substrate.
+
+interface WireColors {
+  ink: string;
+  inkLight: string;
+  rule: string;
+  plate: string;
+}
+
+const LIGHT: WireColors = { ink: "#1A1814", inkLight: "#5C564C", rule: "#D8D0BF", plate: "#FBF8F1" };
+const DARK: WireColors = { ink: "#EDEBE3", inkLight: "#A8A499", rule: "#393733", plate: "#302F2D" };
+
+function useIsDark() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const update = () => setDark(document.documentElement.classList.contains("dark"));
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return dark;
 }
 
 // ─── Geometry helpers (unchanged: deterministic) ─────────────────────
@@ -69,29 +99,25 @@ function placeElement(
 
 // ─── Element renderer (technical-drawing styling) ─────────────────────
 
-const INK = "#1A1814";
-const INK_LIGHT = "#5C564C";
-const RULE = "#D8D0BF";
-
-function ElementShape({ el, pos }: { el: WireframeElement; pos: { x: number; y: number; r: number } }) {
+function ElementShape({ el, pos, c }: { el: WireframeElement; pos: { x: number; y: number; r: number }; c: WireColors }) {
   const SW = 5; // a confident, single ink weight
   let shape = null;
   switch (el.geometry) {
     case "circle":
-      shape = <circle cx={pos.x} cy={pos.y} r={pos.r} stroke={INK} strokeWidth={SW} fill="none" />;
+      shape = <circle cx={pos.x} cy={pos.y} r={pos.r} stroke={c.ink} strokeWidth={SW} fill="none" />;
       break;
     case "hexagon":
-      shape = <polygon points={hexagonPoints(pos.x, pos.y, pos.r)} stroke={INK} strokeWidth={SW} fill="none" />;
+      shape = <polygon points={hexagonPoints(pos.x, pos.y, pos.r)} stroke={c.ink} strokeWidth={SW} fill="none" />;
       break;
     case "rectangle":
       shape = (
-        <rect x={pos.x - pos.r} y={pos.y - pos.r * 0.6} width={pos.r * 2} height={pos.r * 1.2} stroke={INK} strokeWidth={SW} fill="none" />
+        <rect x={pos.x - pos.r} y={pos.y - pos.r * 0.6} width={pos.r * 2} height={pos.r * 1.2} stroke={c.ink} strokeWidth={SW} fill="none" />
       );
       break;
     case "baseline-bar":
       // wordmark stand-in: two ink rules (a cap-height line + baseline)
       shape = (
-        <g stroke={INK} strokeWidth={SW}>
+        <g stroke={c.ink} strokeWidth={SW}>
           <line x1={pos.x - pos.r * 1.4} y1={pos.y - pos.r * 0.35} x2={pos.x + pos.r * 1.4} y2={pos.y - pos.r * 0.35} />
           <line x1={pos.x - pos.r * 1.4} y1={pos.y + pos.r * 0.35} x2={pos.x + pos.r * 1.4} y2={pos.y + pos.r * 0.35} />
         </g>
@@ -99,7 +125,7 @@ function ElementShape({ el, pos }: { el: WireframeElement; pos: { x: number; y: 
       break;
     case "monogram":
       shape = (
-        <text x={pos.x} y={pos.y + pos.r * 0.35} textAnchor="middle" fontSize={pos.r * 1.4} fontFamily="var(--font-fraunces), Georgia, serif" fontWeight={600} fill={INK}>
+        <text x={pos.x} y={pos.y + pos.r * 0.35} textAnchor="middle" fontSize={pos.r * 1.4} fontFamily="var(--font-fraunces), Georgia, serif" fontWeight={600} fill={c.ink}>
           A
         </text>
       );
@@ -107,7 +133,7 @@ function ElementShape({ el, pos }: { el: WireframeElement; pos: { x: number; y: 
     default:
       // custom / container / negative-space — dashed placeholder
       shape = (
-        <rect x={pos.x - pos.r} y={pos.y - pos.r} width={pos.r * 2} height={pos.r * 2} stroke={INK_LIGHT} strokeWidth={3} strokeDasharray="14 10" fill="none" />
+        <rect x={pos.x - pos.r} y={pos.y - pos.r} width={pos.r * 2} height={pos.r * 2} stroke={c.inkLight} strokeWidth={3} strokeDasharray="14 10" fill="none" />
       );
   }
 
@@ -116,9 +142,9 @@ function ElementShape({ el, pos }: { el: WireframeElement; pos: { x: number; y: 
   const tagY = pos.y + pos.r + 22;
   return (
     <g>
-      <line x1={pos.x + pos.r * 0.7} y1={pos.y + pos.r * 0.7} x2={tagX - 6} y2={tagY - 6} stroke={RULE} strokeWidth={2} />
+      <line x1={pos.x + pos.r * 0.7} y1={pos.y + pos.r * 0.7} x2={tagX - 6} y2={tagY - 6} stroke={c.rule} strokeWidth={2} />
       {shape}
-      <text x={tagX} y={tagY} fontSize={22} fontFamily="var(--font-jetbrains), monospace" fill={INK_LIGHT} letterSpacing="0.1em">
+      <text x={tagX} y={tagY} fontSize={22} fontFamily="var(--font-jetbrains), monospace" fill={c.inkLight} letterSpacing="0.1em">
         {el.kind.toUpperCase()}
       </text>
     </g>
@@ -127,12 +153,12 @@ function ElementShape({ el, pos }: { el: WireframeElement; pos: { x: number; y: 
 
 // ─── Registration cross (corner mark) ─────────────────────────────────
 
-function RegMark({ x, y }: { x: number; y: number }) {
+function RegMark({ x, y, c }: { x: number; y: number; c: WireColors }) {
   return (
-    <g stroke={RULE} strokeWidth={2}>
+    <g stroke={c.rule} strokeWidth={2}>
       <line x1={x - 14} y1={y} x2={x + 14} y2={y} />
       <line x1={x} y1={y - 14} x2={x} y2={y + 14} />
-      <circle cx={x} cy={y} r={2} fill={RULE} stroke="none" />
+      <circle cx={x} cy={y} r={2} fill={c.rule} stroke="none" />
     </g>
   );
 }
@@ -142,6 +168,7 @@ function RegMark({ x, y }: { x: number; y: number }) {
 export function Wireframe({ spec, familyLabel }: { spec: WireframeSpec; familyLabel?: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const c = useIsDark() ? DARK : LIGHT;
 
   const marginPct = parseFloat(spec.safe_margin) || 12;
   const margin = (CANVAS * marginPct) / 100;
@@ -177,7 +204,7 @@ export function Wireframe({ spec, familyLabel }: { spec: WireframeSpec; familyLa
       canvas.height = CANVAS;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.fillStyle = "#FBF8F1";
+      ctx.fillStyle = c.plate; // match the on-screen plate substrate for the export
       ctx.fillRect(0, 0, CANVAS, CANVAS);
       ctx.drawImage(img, 0, 0);
       canvas.toBlob((blob) => {
@@ -199,20 +226,20 @@ export function Wireframe({ spec, familyLabel }: { spec: WireframeSpec; familyLa
       {/* The plate */}
       <div className="relative bg-stock border border-ink/30 rounded-sm p-3">
         <svg ref={svgRef} viewBox={`0 0 ${CANVAS} ${CANVAS}`} className="w-full h-auto" role="img" aria-label="Composition wireframe">
-          <rect x={0} y={0} width={CANVAS} height={CANVAS} fill="#FBF8F1" />
+          <rect x={0} y={0} width={CANVAS} height={CANVAS} fill={c.plate} />
           {/* registration crosses at the inner corners */}
-          <RegMark x={margin - 24} y={margin - 24} />
-          <RegMark x={CANVAS - margin + 24} y={margin - 24} />
-          <RegMark x={margin - 24} y={CANVAS - margin + 24} />
-          <RegMark x={CANVAS - margin + 24} y={CANVAS - margin + 24} />
+          <RegMark x={margin - 24} y={margin - 24} c={c} />
+          <RegMark x={CANVAS - margin + 24} y={margin - 24} c={c} />
+          <RegMark x={margin - 24} y={CANVAS - margin + 24} c={c} />
+          <RegMark x={CANVAS - margin + 24} y={CANVAS - margin + 24} c={c} />
           {/* safe-margin frame */}
-          <rect x={margin} y={margin} width={inner} height={inner} fill="none" stroke={RULE} strokeWidth={2} />
+          <rect x={margin} y={margin} width={inner} height={inner} fill="none" stroke={c.rule} strokeWidth={2} />
           {/* optical-centre guides */}
-          <line x1={CANVAS / 2} y1={margin} x2={CANVAS / 2} y2={CANVAS - margin} stroke={RULE} strokeWidth={1.5} strokeDasharray="6 10" />
-          <line x1={margin} y1={CANVAS / 2} x2={CANVAS - margin} y2={CANVAS / 2} stroke={RULE} strokeWidth={1.5} strokeDasharray="6 10" />
+          <line x1={CANVAS / 2} y1={margin} x2={CANVAS / 2} y2={CANVAS - margin} stroke={c.rule} strokeWidth={1.5} strokeDasharray="6 10" />
+          <line x1={margin} y1={CANVAS / 2} x2={CANVAS - margin} y2={CANVAS / 2} stroke={c.rule} strokeWidth={1.5} strokeDasharray="6 10" />
 
           {spec.elements.map((el, i) => (
-            <ElementShape key={i} el={el} pos={placeElement(el, spec.orientation, inner, margin)} />
+            <ElementShape key={i} el={el} pos={placeElement(el, spec.orientation, inner, margin)} c={c} />
           ))}
         </svg>
       </div>
@@ -232,7 +259,7 @@ export function Wireframe({ spec, familyLabel }: { spec: WireframeSpec; familyLa
             {spec.elements
               .filter((e) => e.kind === "symbol")
               .map((el, i) => (
-                <ElementShape key={i} el={el} pos={placeElement(el, spec.orientation, inner, margin)} />
+                <ElementShape key={i} el={el} pos={placeElement(el, spec.orientation, inner, margin)} c={c} />
               ))}
           </svg>
         </div>

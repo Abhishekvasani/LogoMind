@@ -35,6 +35,7 @@ const ESTIMATES: Record<string, [number, number]> = {
   insight: [30, 120],
   create: [60, 240],
   judge: [180, 540],
+  client_fit: [30, 120],
   concept_prompt: [180, 720],
   ssb: [30, 120],
   sketch: [20, 60],
