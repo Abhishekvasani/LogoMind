@@ -38,6 +38,8 @@ class PipelineStage(str, Enum):
     INSIGHT = "insight"
     CREATE = "create"
     JUDGE = "judge"
+    CLIENT_FIT = "client_fit"
+    CONCEPT_PROMPT = "concept_prompt"
     SSB = "ssb"
     SKETCH = "sketch"
     PRESENTATION = "presentation"
@@ -82,6 +84,27 @@ class ProjectCreate(BaseModel):
     client_contact: Optional[str] = None
 
 
+class SketchOut(BaseModel):
+    """A persisted sketch and its coach feedback (Stage 8 iteration).
+
+    Defined before Project so Project can reference it; it only depends on
+    the top-level imports (no other schema types).
+    """
+    id: int
+    sketch_number: int
+    description: Optional[str] = None
+    design_intent: Optional[str] = None
+    linked_concept_family: Optional[str] = None
+    image_url: Optional[str] = None
+    coach_feedback: Optional[Dict[str, Any]] = None
+    coach_confidence: Optional[str] = None
+    revision_status: str = "draft"
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class ProjectSummary(BaseModel):
     """Dashboard card representation."""
     id: int
@@ -107,10 +130,16 @@ class Project(ProjectSummary):
     insight_report: Optional[Dict[str, Any]] = None
     concept_families: Optional[List[Dict[str, Any]]] = None
     judge_report: Optional[List[Dict[str, Any]]] = None
+    concept_prompts: Optional[List[Dict[str, Any]]] = None
     ssb: Optional[Dict[str, Any]] = None
     presentation: Optional[Dict[str, Any]] = None
+    client_persona: Optional[Dict[str, Any]] = None      # Client Preference Predictor — persona
+    appeal_report: Optional[Dict[str, Any]] = None       # Client Preference Predictor — ranked appeal
+    contest_brief: Optional[Dict[str, Any]] = None       # Decoded contest brief (Stage 3)
+    contest_feedback: Optional[List[Dict[str, Any]]] = None  # Revealed in-contest preferences (Stage 4)
     workshop_state: Optional[Dict[str, Any]] = None
     workshop_share_token: Optional[str] = None
+    sketches: List[SketchOut] = []
 
     class Config:
         from_attributes = True
@@ -159,6 +188,21 @@ class WorkshopState(BaseModel):
     answers: List[WorkshopAnswer] = []
     intent_extractions: List[Dict[str, str]] = []  # {preference, intent}
     estimated_minutes_remaining: float = 15.0
+
+
+class IntentExtractionRequest(BaseModel):
+    """Input to the Intent Extraction sub-engine (LOG-DISC-001)."""
+    preference: str  # a client's stated preference, e.g. "I want blue"
+
+
+class IntentExtraction(BaseModel):
+    """Decoded strategic intent behind a stated preference.
+
+    "I want blue" -> "I want trust"; "I want a shield" -> "I want security".
+    """
+    preference: str
+    intent: str
+    reasoning: str
 
 
 # ─── Strategy Engine (LOG-STRAT-001) ───────────────────────────────────
@@ -246,6 +290,71 @@ class CreateEngineResult(BaseModel):
     client_request_notes: List[Dict[str, str]] = []
 
 
+# ─── Concept Prompt Engine (LOG-CP-001) ────────────────────────────────
+
+class PromptVariant(BaseModel):
+    """One of the four model-agnostic concept prompts for a family.
+
+    Styles are a fixed set (PROD-CP-001 §4): minimal, detailed,
+    typographic-led, symbolic. The engine does NOT rank variants — they are
+    parallel starting points the designer chooses between.
+    """
+    style: str  # minimal | detailed | typographic-led | symbolic
+    prompt: str  # complete natural-language concept prompt
+    intent: str  # one line: what this variant emphasises
+
+
+class ModelAdaptation(BaseModel):
+    """How to tune the concept prompt for one image-model family.
+
+    Model behaviour lives here, NOT in the variants — variants stay
+    model-agnostic (PROD-CP-001 §6).
+    """
+    model_family: str  # midjourney | ideogram | stable-diffusion | recraft | general
+    notes: str  # how to tune for this family
+    example_suffix: str  # concrete copy-pasteable tunable, e.g. "--ar 1:1 --style raw"
+
+
+class WireframeElement(BaseModel):
+    """One element of a composition wireframe spec.
+
+    Geometry/position/size are from a closed vocabulary (PROD-CP-001 §5.2)
+    so the spec is deterministically renderable to SVG — never freeform
+    imagery (LOG-CP-001 §3).
+    """
+    kind: str  # symbol | wordmark | tagline | container | negative-space
+    geometry: str  # circle | hexagon | rectangle | monogram | baseline-bar | custom
+    position: str  # center | left-of-text | above | below | integrated
+    relative_size: str  # dominant | balanced | accent | small
+    notes: str = ""
+
+
+class WireframeSpec(BaseModel):
+    """The composition blueprint — structured data, rendered to SVG.
+
+    The LLM describes layout; it never draws pixels (LOG-CP-001 §3).
+    """
+    orientation: str  # horizontal | stacked | lockup | emblem
+    balance: str  # e.g. "60/40 symbol-to-text" | "centered"
+    alignment: str  # center | left | baseline-aligned
+    safe_margin: str  # e.g. "12% padding"
+    elements: List[WireframeElement] = []
+    favicon_note: str  # how the composition degrades at favicon size
+
+
+class ConceptPromptResult(BaseModel):
+    """Concept Prompt Engine output for ONE Concept Family (LOG-CP-001)."""
+    family_label: str
+    core_concept: str  # one-sentence distillation of the family as a visual
+    variants: List[PromptVariant]  # exactly four
+    model_adaptations: List[ModelAdaptation]  # five model families
+    wireframe: WireframeSpec
+    rationale: str  # trace to Brand DNA + visual_language
+    cliches_avoided: List[str] = []
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+
 # ─── Judge Engine (LOG-JUDGE-001) ──────────────────────────────────────
 
 class JuryScore(BaseModel):
@@ -271,7 +380,7 @@ class ConceptDNA(BaseModel):
     """The Creative Genome fingerprint for objective comparison."""
     concept_id: str
     emotion: str
-    archetype: str
+    archetype: Optional[str] = None  # may be None — "no clean archetype" is valid
     primary_symbol: str
     secondary_symbol: Optional[str] = None
     shape_language: str
@@ -293,6 +402,104 @@ class FamilyJudgeResult(BaseModel):
     refinement_recommendations: List[str] = []
 
 
+# ─── Client Preference Predictor (Client Fit) ──────────────────────────
+#
+# LogoMind's answer to "what will THIS client love?" — a reasoning-based
+# preference model, NOT a literal neural/brain-response measurement. It builds
+# a persona of the specific decision-maker from their brief, then predicts how
+# strongly each Concept Family will resonate with THAT persona and ranks them.
+# Honesty is structural: every prediction carries explicit confidence and a
+# caveat about how much signal a brief alone provides.
+
+class ClientPersona(BaseModel):
+    """A model of THIS client's likely taste, inferred from the brief + context.
+
+    Predicts aesthetic lean and boldness tolerance so downstream stages can aim
+    at the client's taste rather than a generic 'good design' average.
+    """
+    one_line: str  # "A pragmatic fintech founder who prizes clarity over cleverness"
+    archetype: str  # e.g. "The Pragmatist" | "The Bold Disruptor" | "The Heritage Guardian"
+    taste_signals: List[str]  # concrete signals observed in the brief
+    decoded_intents: List[Dict[str, str]] = []  # [{stated, intent}] e.g. "blue" -> "trust"
+    aesthetic_lean: str  # minimal | bold | elegant | playful | technical | heritage | organic
+    boldness_tolerance: str  # conservative | moderate | adventurous
+    must_haves: List[str] = []
+    must_avoids: List[str] = []
+    references: List[str] = []
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+class FamilyAppeal(BaseModel):
+    """One Concept Family scored for predicted resonance with THIS client."""
+    family_label: str
+    client_appeal_score: float = Field(ge=0, le=100)  # predicted resonance for THIS client
+    rank: int  # 1 = strongest predicted
+    predicted_response: str  # one vivid line in the client's emotional vocabulary
+    appeal_drivers: List[str]  # why it resonates with THIS client (persona-relative)
+    appeal_risks: List[str]  # why it might miss for THIS client
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+class AppealReport(BaseModel):
+    """Client Preference Predictor output — ranks families by predicted client appeal.
+
+    The decision screen: which direction is the safest bet to win THIS client,
+    and why. Designed to differ from the Judge (design excellence) — a family
+    can score high with the jury but lower with a conservative client, and the
+    predictor says so explicitly.
+    """
+    persona: ClientPersona
+    family_appeal: List[FamilyAppeal]  # ranked by client_appeal_score desc
+    recommended_family: str  # family_label of rank 1
+    reasoning: str  # 2-3 sentences: why the top family is the safest bet to win
+    caveat: str  # honest limit, e.g. "brief-only; refine with contest feedback"
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+# ─── Contest Intelligence (Stage 3 + 4) ─────────────────────────────────
+#
+# Two contest-specific inputs that sharpen the Client Preference Predictor:
+# (3) a decoded contest brief — messy freelancer.com text -> structured signals,
+# and (4) revealed preferences — what the client actually liked/disliked mid-contest.
+
+class ContestBrief(BaseModel):
+    """A contest brief decoded into structured, usable signals.
+
+    Freelancer.com briefs are semi-structured free text. This normalises them so
+    the persona engine gets clean must-haves/avoids/colors instead of prose.
+    """
+    company_name: Optional[str] = None
+    industry: Optional[str] = None
+    tagline: Optional[str] = None
+    dos: List[str] = []
+    donts: List[str] = []
+    colors_preferred: List[str] = []
+    colors_avoided: List[str] = []
+    style_keywords: List[str] = []
+    must_include: List[str] = []
+    must_avoid: List[str] = []
+    references: List[str] = []
+    decoded_summary: str  # readable synthesis of the contest intent
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+class ContestBriefDecodeRequest(BaseModel):
+    """Raw contest text to decode (Stage 3)."""
+    raw_text: str
+
+
+class ContestSignal(BaseModel):
+    """One observed in-contest preference signal (Stage 4)."""
+    kind: str  # liked | disliked | comment
+    trait: str  # what was liked/disliked/commented, e.g. "minimal layouts"
+    note: Optional[str] = None
+
+
+class ContestRefineRequest(BaseModel):
+    """Add revealed-preference signals and re-run the prediction (Stage 4)."""
+    signals: List[ContestSignal]
+
+
 # ─── SSB (PROD-SSB-001) ────────────────────────────────────────────────
 
 class SketchMission(BaseModel):
@@ -304,6 +511,46 @@ class SketchMission(BaseModel):
     start_with: str  # specific guidance
 
 
+class SSBTerritory(BaseModel):
+    """A Creative Territory in the SSB — the chosen family plus its judge fingerprint.
+
+    Carries the rich judge/visual data the SSB previously discarded. All new
+    fields are optional so older SSB JSON (and the mock) still validate.
+    """
+    family_label: str
+    theme: str
+    recommendation: str = "alternative"  # recommended | alternative | exploratory
+    core_meaning_served: Optional[str] = None
+    why_it_works: Optional[str] = None
+    pitfalls: Optional[str] = None
+    # Judge fingerprint carried forward (from FamilyJudgeResult):
+    composite: Optional[float] = None
+    classification: Optional[str] = None  # recommended | develop | reject
+    # Create-stage richness:
+    visual_language: Dict[str, str] = {}      # forms, treatment, composition, palette
+    symbols: List[Dict[str, Any]] = []        # [{name, meaning, originality, abstraction_level, risk_level}]
+    concept_dna: Optional[Dict[str, Any]] = None
+    refinement_recommendations: List[str] = []
+
+
+class CouncilAdvice(BaseModel):
+    """The Creative Council's advice for the SSB.
+
+    Mirrors CreativeCouncilVerdict. Fields optional so older dict-shaped advice
+    still validates.
+    """
+    meaning_mind: str = ""
+    simplicity_mind: str = ""
+    differentiation_mind: str = ""
+    context_mind: str = ""
+    memorability_mind: str = ""
+    systems_mind: str = ""
+    emotion_mind: str = ""
+    longevity_mind: str = ""
+    boldness_mind: str = ""
+    synthesised_verdict: str = ""
+
+
 class SSB(BaseModel):
     """Strategic Sketch Brief — LogoMind's flagship output (PROD-SSB-001)."""
     project_essence: str
@@ -313,6 +560,9 @@ class SSB(BaseModel):
     opportunities_and_warnings: Dict[str, List[str]]
     creative_council_advice: Dict[str, str]
     sketch_missions: List[SketchMission]
+    # Rich additions (all optional — backward compatible with older SSB JSON):
+    selected_territory: Optional[SSBTerritory] = None
+    council_advice: Optional[CouncilAdvice] = None
 
 
 # ─── Sketch Coach (LOG-COACH-001) ──────────────────────────────────────

@@ -19,13 +19,19 @@ from ..schemas import (
     BriefAnalysisResult, BrandDNA, InsightReport,
     CreateEngineResult, FamilyJudgeResult, SSB, CoachFeedback,
     WorkshopState, WorkshopAnswer,
-    SketchUpload, DecisionLogEntry,
+    SketchUpload, SketchOut, DecisionLogEntry,
+    ConceptPromptResult, AppealReport,
+    IntentExtractionRequest, IntentExtraction,
+    ContestBrief, ContestBriefDecodeRequest, ContestRefineRequest,
 )
-from ..services.discovery_engine import analyse_brief, extract_intent
+from ..services.discovery_engine import analyse_brief, extract_intent, synthesize_brief
 from ..services.engines import (
     build_brand_dna, generate_insight, generate_concept_families,
     judge_family, compose_ssb, critique_sketch, build_presentation,
 )
+from ..services.concept_engine import compose_concept_prompt
+from ..services.client_fit_engine import predict_client_appeal
+from ..services.contest_engine import decode_contest_brief, contest_brief_to_enrichment
 
 
 router = APIRouter()
@@ -44,6 +50,106 @@ def _log_decision(db: Session, project_id: int, decision: str, reason: str = Non
     entry = DecisionLogModel(project_id=project_id, decision=decision, reason=reason, stage=stage)
     db.add(entry)
     db.commit()
+
+
+# ─── Stage error handling ─────────────────────────────────────────────
+#
+# The LOGOS engines call live AI models that can transiently fail (timeouts,
+# 5xx, rate limits) or emit output the schema can't validate. Rather than
+# surfacing a bare 500, stage endpoints are wrapped with @with_stage_error
+# so the frontend receives a structured, human-readable error it can present
+# with a Retry action and an honest explanation. HTTP 503 (Service
+# Unavailable) is semantically correct for a transient upstream-model failure
+# and tells the client the request is safe to retry.
+
+# Friendly per-stage names for user-facing copy.
+_STAGE_NAMES = {
+    "strategy": "Strategy",
+    "insight": "Insight",
+    "create": "Concept Families",
+    "judge": "Judge",
+    "client_fit": "Client Fit",
+    "concept_prompt": "Concept Prompt",
+    "ssb": "Strategic Sketch Brief",
+    "sketch": "Sketch Coach",
+    "presentation": "Presentation",
+}
+
+# Typical wall-clock ranges (seconds) for each stage against a real model,
+# so the UI can show an honest estimate instead of an indeterminate spinner.
+_STAGE_ESTIMATES = {
+    "strategy": (20, 90),
+    "insight": (30, 120),
+    "create": (60, 240),
+    "judge": (180, 540),
+    "client_fit": (30, 120),
+    "concept_prompt": (180, 720),
+    "ssb": (30, 120),
+    "sketch": (20, 60),
+    "presentation": (30, 90),
+}
+
+
+def with_stage_error(stage: str):
+    """Decorator: catch engine/model failures and return a structured StageError.
+
+    `stage` is the pipeline stage id (e.g. "insight"). Validation/guard
+    HTTPExceptions (4xx) pass through unchanged; only unexpected engine
+    failures become a 503 StageError.
+    """
+    import functools
+    from pydantic import ValidationError
+
+    def decorator(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except HTTPException:
+                raise  # guard failures (missing prerequisites etc.) pass through
+            except ValidationError as e:
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "stage": stage,
+                        "stage_name": _STAGE_NAMES.get(stage, stage),
+                        "kind": "validation",
+                        "detail": (
+                            f"The {_STAGE_NAMES.get(stage, stage)} engine produced a response "
+                            f"we couldn't interpret. This is usually a momentary model hiccup — "
+                            f"please retry. (Field: {e.errors()[0].get('loc') if e.errors() else '?'})"
+                        ),
+                        "retryable": True,
+                        "estimate": _STAGE_ESTIMATES.get(stage),
+                    },
+                )
+            except Exception as e:
+                # Network/transient model errors (timeout, 5xx, rate limit)
+                # already retry inside OpenAIProvider; reaching here means those
+                # retries were exhausted. Treat as retryable — a later attempt
+                # often succeeds.
+                msg = str(e) or type(e).__name__
+                raise HTTPException(
+                    status_code=503,
+                    detail={
+                        "stage": stage,
+                        "stage_name": _STAGE_NAMES.get(stage, stage),
+                        "kind": "transient",
+                        "detail": (
+                            f"The {_STAGE_NAMES.get(stage, stage)} engine couldn't reach the "
+                            f"model after several attempts. This is typically a temporary load "
+                            f"or timeout issue — please retry in a moment."
+                        ),
+                        "retryable": True,
+                        "technical": msg[:300],
+                        "estimate": _STAGE_ESTIMATES.get(stage),
+                    },
+                )
+
+        return wrapper
+
+    return decorator
+
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -169,9 +275,18 @@ async def complete_workshop(project_id: int, db: Session = Depends(get_db)):
     """Finalise the Workshop; recalculate Brand Confidence and proceed to Strategy."""
     project = _get_project(db, project_id)
 
-    # Re-analyse with workshop answers integrated
+    # Synthesize the original brief + workshop answers into a richer, coherent
+    # brief (workshop answers are often terse; weaving them in is what actually
+    # raises a real, quality-based Brand Confidence score), then re-score it.
     state = project.workshop_state or {}
-    enriched_brief = project.client_brief + "\n\nWorkshop answers:\n" + str(state.get("answers", []))
+    answers = state.get("answers", [])
+
+    enriched_brief = await synthesize_brief(
+        company_name=project.company_name,
+        industry=project.industry,
+        client_brief=project.client_brief,
+        workshop_answers=answers,
+    )
 
     result = await analyse_brief(
         company_name=project.company_name,
@@ -187,10 +302,68 @@ async def complete_workshop(project_id: int, db: Session = Depends(get_db)):
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# INTENT EXTRACTION (LOG-DISC-001 sub-engine) — utility
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/decode-intent", response_model=IntentExtraction)
+async def decode_intent(req: IntentExtractionRequest):
+    """Decode a client's stated preference into the strategic intent behind it.
+
+    "I want blue" -> "I want trust"; "I want a shield" -> "I want security".
+    A quick utility for reading between the lines of a contest brief.
+    """
+    result = await extract_intent(req.preference)
+    return IntentExtraction(**result)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# STAGE 3: CONTEST BRIEF DECODER (freelancer.com brief -> structured signals)
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/decode-contest-brief", response_model=ContestBrief)
+@with_stage_error("client_fit")
+async def decode_contest_brief_route(req: ContestBriefDecodeRequest):
+    """Decode a pasted logo-contest brief into structured signals (Stage 3).
+
+    Utility endpoint: returns company/industry/colors/do's/don'ts/etc. so the
+    new-project form can confirm them before creating the project.
+    """
+    return await decode_contest_brief(req.raw_text)
+
+
+@router.post("/projects/{project_id}/contest-brief", response_model=Project)
+@with_stage_error("client_fit")
+async def attach_contest_brief(project_id: int, req: ContestBriefDecodeRequest, db: Session = Depends(get_db)):
+    """Decode a contest brief and attach it to a project (Stage 3).
+
+    Stores the structured ContestBrief, enriches the project's client_brief with
+    a readable summary of the decoded requirements (so Discovery/Strategy also
+    benefit), and fills company_name/industry if they were empty.
+    """
+    project = _get_project(db, project_id)
+    brief = await decode_contest_brief(req.raw_text)
+
+    project.contest_brief = brief.model_dump()
+    # Fill company/industry if the decoded brief provides them and the project lacks them.
+    if not project.company_name and brief.company_name:
+        project.company_name = brief.company_name
+    if (not project.industry or project.industry.strip().lower() == "unspecified") and brief.industry:
+        project.industry = brief.industry
+    # Enrich the brief so downstream stages (Discovery, Strategy, Client Fit) see
+    # the structured requirements, not just the raw prose.
+    project.client_brief = (project.client_brief or "").rstrip() + "\n\n" + contest_brief_to_enrichment(brief)
+
+    db.commit()
+    _log_decision(db, project_id, "Contest brief decoded and attached", stage="client_fit")
+    return project
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # STAGE 4: STRATEGY ENGINE (LOG-STRAT-001)
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/strategy", response_model=BrandDNA)
+@with_stage_error("strategy")
 async def run_strategy(project_id: int, db: Session = Depends(get_db)):
     """Run the Strategy Engine — produces Brand DNA (Stage 4)."""
     project = _get_project(db, project_id)
@@ -215,6 +388,7 @@ async def run_strategy(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/insight", response_model=InsightReport)
+@with_stage_error("insight")
 async def run_insight(project_id: int, db: Session = Depends(get_db)):
     """Run the Insight Engine — industry research + trends (Stage 5)."""
     project = _get_project(db, project_id)
@@ -236,6 +410,7 @@ async def run_insight(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/create", response_model=CreateEngineResult)
+@with_stage_error("create")
 async def run_create(project_id: int, db: Session = Depends(get_db)):
     """Run the Create Engine — produces Concept Families (Stage 6)."""
     project = _get_project(db, project_id)
@@ -271,6 +446,7 @@ async def run_create(project_id: int, db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/judge", response_model=List[FamilyJudgeResult])
+@with_stage_error("judge")
 async def run_judge(project_id: int, db: Session = Depends(get_db)):
     """Run the Judge Engine on all Concept Families (Stage 7)."""
     project = _get_project(db, project_id)
@@ -325,15 +501,166 @@ def select_family(project_id: int, family_label: str, db: Session = Depends(get_
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# STAGE: CLIENT PREFERENCE PREDICTOR (Client Fit)
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/projects/{project_id}/client-fit", response_model=AppealReport)
+@with_stage_error("client_fit")
+async def run_client_fit(project_id: int, db: Session = Depends(get_db)):
+    """Run the Client Preference Predictor (Client Fit stage).
+
+    Builds a persona of THIS client from the brief + context, then predicts how
+    strongly each Concept Family will resonate with that persona and ranks them.
+    Honest preference prediction — not literal neuroscience (see report caveat).
+    Requires Concept Families (Create); uses Strategy + Insight as context.
+    """
+    project = _get_project(db, project_id)
+    if not project.concept_families:
+        raise HTTPException(status_code=400, detail="Concept Families required. Run Create first.")
+
+    result = await predict_client_appeal(
+        company_name=project.company_name,
+        industry=project.industry,
+        client_brief=project.client_brief,
+        discovery_summary=project.discovery_summary,
+        brand_dna=project.brand_dna,
+        insight_report=project.insight_report,
+        concept_families=project.concept_families,
+        judge_report=project.judge_report,
+        contest_brief=project.contest_brief,
+        contest_feedback=project.contest_feedback,
+    )
+
+    project.client_persona = result.persona.model_dump()
+    project.appeal_report = result.model_dump()
+    # Don't regress a project that has already moved past Client Fit.
+    if project.stage in ("entry", "discovery", "workshop", "strategy", "insight", "create", "judge"):
+        project.stage = "client_fit"
+    db.commit()
+
+    _log_decision(
+        db, project_id,
+        f"Client Fit: recommended Family {result.recommended_family} "
+        f"(appeal {result.family_appeal[0].client_appeal_score:.0f}/100)",
+        stage="client_fit",
+    )
+    return result
+
+
+@router.post("/projects/{project_id}/client-fit/refine", response_model=AppealReport)
+@with_stage_error("client_fit")
+async def refine_client_fit(project_id: int, req: ContestRefineRequest, db: Session = Depends(get_db)):
+    """Stage 4 — fold the client's revealed in-contest preferences into the prediction.
+
+    Appends the supplied signals (liked/disliked traits, comments) to the
+    project's accumulated contest feedback, then re-runs the Client Preference
+    Predictor with that feedback as the highest-signal input. This is how the
+    prediction adapts to what the client actually does in the contest, not just
+    what the brief said.
+    """
+    project = _get_project(db, project_id)
+    if not project.concept_families:
+        raise HTTPException(status_code=400, detail="Concept Families required. Run Create first.")
+
+    # Accumulate signals (never overwrite — feedback compounds across the contest).
+    existing = list(project.contest_feedback or [])
+    existing.extend(s.model_dump() for s in req.signals)
+    project.contest_feedback = existing
+
+    result = await predict_client_appeal(
+        company_name=project.company_name,
+        industry=project.industry,
+        client_brief=project.client_brief,
+        discovery_summary=project.discovery_summary,
+        brand_dna=project.brand_dna,
+        insight_report=project.insight_report,
+        concept_families=project.concept_families,
+        judge_report=project.judge_report,
+        contest_brief=project.contest_brief,
+        contest_feedback=project.contest_feedback,
+    )
+    project.client_persona = result.persona.model_dump()
+    project.appeal_report = result.model_dump()
+    db.commit()
+
+    _log_decision(
+        db, project_id,
+        f"Client Fit refined with {len(req.signals)} contest signal(s); "
+        f"now recommends Family {result.recommended_family}",
+        stage="client_fit",
+    )
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# STAGE: CONCEPT PROMPT ENGINE (LOG-CP-001)
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/projects/{project_id}/concept-prompts", response_model=List[ConceptPromptResult])
+@with_stage_error("concept_prompt")
+async def compose_project_concept_prompts(project_id: int, db: Session = Depends(get_db)):
+    """Run the Concept Prompt Engine on all Concept Families (Stage: concept_prompt).
+
+    Produces an executable concept (prompt variants + model adaptations +
+    wireframe spec + rationale) per family. Generates no images; makes no
+    creative decision (FD-015).
+    """
+    project = _get_project(db, project_id)
+    if not project.concept_families or not project.judge_report:
+        raise HTTPException(
+            status_code=400,
+            detail="Concept Families and Judge evaluation required first.",
+        )
+
+    # Pair each family with its own judge result by label so the engine can
+    # honour per-family evaluation and refinements.
+    judge_by_label = {j.get("family_label"): j for j in project.judge_report}
+
+    # If a Client Fit prediction exists, steer every prompt toward the client's
+    # modelled taste and flag the rank-1 (recommended) family for extra emphasis.
+    recommended_label = (project.appeal_report or {}).get("recommended_family")
+    persona = project.client_persona
+
+    results = []
+    for family in project.concept_families:
+        result = await compose_concept_prompt(
+            family=family,
+            judge_result=judge_by_label.get(family.get("family_label"), {}),
+            brand_dna=project.brand_dna,
+            insight_report=project.insight_report,
+            client_persona=persona,
+            is_recommended=(family.get("family_label") == recommended_label),
+        )
+        results.append(result)
+
+    project.concept_prompts = [r.model_dump() for r in results]
+    project.stage = "concept_prompt"
+
+    db.commit()
+    _log_decision(db, project_id, "Composed Concept Prompts for all families", stage="concept_prompt")
+    return results
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # STAGE 8: SSB + SKETCH (PROD-SSB-001, LOG-COACH-001)
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/ssb", response_model=SSB)
+@with_stage_error("ssb")
 async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
     """Compose the Strategic Sketch Brief (Stage 8)."""
     project = _get_project(db, project_id)
     if not project.judge_report:
         raise HTTPException(status_code=400, detail="Judge evaluation required first.")
+
+    # Read the designer's family selection so the SSB headlines the chosen
+    # territory. Falls back to auto-selection (highest composite) inside
+    # compose_ssb if nothing was explicitly selected.
+    selected = db.query(ConceptFamilyModel).filter(
+        ConceptFamilyModel.project_id == project_id,
+        ConceptFamilyModel.is_selected == True,  # noqa: E712
+    ).first()
+    selected_label = selected.family_label if selected else None
 
     result = await compose_ssb(
         brand_dna=project.brand_dna,
@@ -341,7 +668,14 @@ async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
         concept_families=project.concept_families,
         judge_reports=project.judge_report,
         company_name=project.company_name,
+        selected_family_label=selected_label,
     )
+    if selected is None and result.selected_territory:
+        _log_decision(
+            db, project_id,
+            f"SSB auto-selected Family {result.selected_territory.family_label} (no explicit selection)",
+            stage="ssb",
+        )
     project.ssb = result.model_dump()
     project.stage = "ssb"
     db.commit()
@@ -349,6 +683,7 @@ async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/projects/{project_id}/sketches", response_model=CoachFeedback)
+@with_stage_error("sketch")
 async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Depends(get_db)):
     """Upload a sketch and get Sketch Coach feedback (Stage 8 iteration)."""
     project = _get_project(db, project_id)
@@ -387,11 +722,25 @@ async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Dep
     return feedback
 
 
+@router.get("/projects/{project_id}/sketches", response_model=List[SketchOut])
+def list_sketches(project_id: int, db: Session = Depends(get_db)):
+    """List a project's sketches and persisted coach feedback (Stage 8 iteration)."""
+    _get_project(db, project_id)  # 404 if the project does not exist
+    sketches = (
+        db.query(SketchModel)
+        .filter(SketchModel.project_id == project_id)
+        .order_by(SketchModel.sketch_number)
+        .all()
+    )
+    return sketches
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # STAGE 9: PRESENTATION BUILDER (LOG-PRESENT-001)
 # ═══════════════════════════════════════════════════════════════════════
 
 @router.post("/projects/{project_id}/presentation")
+@with_stage_error("presentation")
 async def build_project_presentation(project_id: int, db: Session = Depends(get_db)):
     """Build the client presentation (Stage 9)."""
     project = _get_project(db, project_id)

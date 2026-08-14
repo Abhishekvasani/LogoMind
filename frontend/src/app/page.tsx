@@ -22,17 +22,17 @@ export default function Dashboard() {
         <h1 className="text-2xl font-semibold">Projects</h1>
         <Link
           href="/projects/new"
-          className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700 transition"
+          className="px-4 py-2 bg-ink text-stock rounded-md hover:bg-ink/85 transition"
         >
           + New Project
         </Link>
       </div>
 
-      {loading && <p className="text-gray-500">Loading projects…</p>}
+      {loading && <p className="text-graphite">Loading projects…</p>}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <div className="p-4 bg-bad/10 border border-bad/30 rounded-md text-bad text-sm">
           {error}
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-graphite">
             Is the backend running? Start it with: <code>cd backend && uvicorn app.main:app --reload</code>
           </p>
         </div>
@@ -40,10 +40,10 @@ export default function Dashboard() {
 
       {!loading && !error && projects.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-gray-500 mb-4">No projects yet.</p>
+          <p className="text-graphite mb-4">No projects yet.</p>
           <Link
             href="/projects/new"
-            className="inline-block px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700 transition"
+            className="inline-block px-4 py-2 bg-ink text-stock rounded-md hover:bg-ink/85 transition"
           >
             Start your first project
           </Link>
@@ -56,16 +56,16 @@ export default function Dashboard() {
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="block p-5 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:shadow-sm transition"
+              className="block p-5 bg-stock border border-rule rounded-lg hover:border-ink/40 hover:shadow-sm transition"
             >
-              <h3 className="font-medium text-gray-900">{project.company_name}</h3>
-              <p className="text-sm text-gray-500 mt-1">{project.industry}</p>
+              <h3 className="font-medium text-ink">{project.company_name}</h3>
+              <p className="text-sm text-graphite mt-1">{project.industry}</p>
               <div className="mt-3 flex items-center gap-2">
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded capitalize">
+                <span className="text-xs px-2 py-1 bg-surface-2 rounded capitalize">
                   {project.stage}
                 </span>
                 {project.brand_confidence_score > 0 && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-graphite">
                     {project.brand_confidence_score.toFixed(0)}% confidence
                   </span>
                 )}

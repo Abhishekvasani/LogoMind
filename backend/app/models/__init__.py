@@ -56,7 +56,7 @@ class Project(Base):
     client_contact = Column(String, nullable=True)  # for Workshop link sharing
 
     # Pipeline status (which stage the project is in — PROD-JOURNEY-001)
-    # entry | discovery | workshop | strategy | insight | create | judge | ssb | sketch | presentation | complete
+    # entry | discovery | workshop | strategy | insight | create | judge | concept_prompt | ssb | sketch | presentation | complete
     stage = Column(String, default="entry", nullable=False, index=True)
 
     # The Brand Confidence Score (0-100) from LOG-DISC-001
@@ -69,8 +69,13 @@ class Project(Base):
     insight_report = Column(JSON, nullable=True)          # LOG-INSIGHT-001 output
     concept_families = Column(JSON, nullable=True)        # LOG-CREATE-001 output
     judge_report = Column(JSON, nullable=True)            # LOG-JUDGE-001 output
+    concept_prompts = Column(JSON, nullable=True)         # LOG-CP-001 output
     ssb = Column(JSON, nullable=True)                     # PROD-SSB-001 output
     presentation = Column(JSON, nullable=True)            # LOG-PRESENT-001 output
+    client_persona = Column(JSON, nullable=True)          # Client Preference Predictor — persona
+    appeal_report = Column(JSON, nullable=True)           # Client Preference Predictor — ranked appeal
+    contest_brief = Column(JSON, nullable=True)           # Decoded contest brief (Stage 3)
+    contest_feedback = Column(JSON, nullable=True)        # Revealed in-contest preferences (Stage 4)
 
     # Workshop state (LOG-DISC-001 Workshop Mode)
     workshop_state = Column(JSON, nullable=True)  # current stage, answers, etc.

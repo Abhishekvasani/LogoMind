@@ -38,11 +38,12 @@ Every word earns its place:
 LogoMind is the **designer's strategic partner** — the brand strategist, market researcher, semiotics expert, creative director, and design jury that solo designers and small studios cannot afford to employ. It provides the thinking that should precede the sketching.
 
 LogoMind is *not*:
-- ❌ An AI logo generator (it does not produce logos)
+- ❌ An AI logo generator (it produces no images or finished logos)
+- ❌ An image generator (it produces strategy-grounded *concept prompts* and *composition wireframes* — the executable thinking layer preceding a designer's chosen image tool, per FD-015 — but it renders no images itself)
 - ❌ A stock-symbol library (it reasons about symbols; it does not dispense them)
-- ❌ A prompt collection (it is a structured reasoning system)
+- ❌ A prompt collection (it generates prompts from strategy; it is a structured reasoning system)
 - ❌ A trend tracker (it is context-aware about trends; it does not chase them)
-- ❌ A replacement for the designer (the designer always decides)
+- ❌ A replacement for the designer (it recommends and crafts instruments; the designer always decides)
 
 ---
 
@@ -181,13 +182,14 @@ LogoMind occupies a position no existing product holds:
 
 | Existing Category | Position | LogoMind's Difference |
 |-------------------|----------|----------------------|
-| **AI logo generators** (Looka, Brandmark, etc.) | Generate finished logos from brief | LogoMind generates strategic thinking, not logos |
+| **AI logo generators** (Looka, Brandmark, etc.) | Generate finished logos from brief | LogoMind generates strategic thinking and strategy-grounded concept prompts + wireframes — not logos or images |
+| **Image-model prompt tools** | Help users write prompts from scratch | LogoMind grounds prompts in brand strategy; the designer never writes a prompt cold |
 | **Brand strategy platforms** | Help large organisations manage brands | LogoMind helps individual designers think strategically |
 | **Design tools** (Figma, Illustrator) | Help designers execute | LogoMind helps designers decide *what* to execute |
 | **Online courses** | Teach design concepts | LogoMind *applies* concepts to the designer's live project |
 | **Mood board / inspiration tools** | Curate visual references | LogoMind reasons about meaning, not just aesthetics |
 
-LogoMind's niche: **concept intelligence for identity designers**. It sits between strategy education and design execution, doing what neither does.
+LogoMind's niche: **concept intelligence for identity designers** — the strategy-grounded thinking layer that precedes execution, now made executable as concept prompts and composition wireframes the designer takes to their own tools. It sits between strategy education and design execution, doing what neither does.
 
 ---
 

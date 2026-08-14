@@ -7,12 +7,14 @@ import { Project, getProject } from "@/lib/api";
 import { StrategyView } from "@/components/StrategyView";
 import { InsightView } from "@/components/InsightView";
 import { ConceptFamiliesView } from "@/components/ConceptFamiliesView";
+import { ConceptPromptView } from "@/components/ConceptPromptView";
+import { ClientFitView } from "@/components/ClientFitView";
 import { SSBView } from "@/components/SSBView";
 import { WorkshopView } from "@/components/WorkshopView";
 import { PresentationView } from "@/components/PresentationView";
-import { runStrategy as runStrategyApi } from "@/lib/api";
+import { runStrategy as runStrategyApi, generateWorkshopLink } from "@/lib/api";
 
-const STAGE_ORDER = ["entry", "discovery", "workshop", "strategy", "insight", "create", "judge", "ssb", "sketch", "presentation", "complete"];
+const STAGE_ORDER = ["entry", "discovery", "workshop", "strategy", "insight", "create", "judge", "client_fit", "concept_prompt", "ssb", "sketch", "presentation", "complete"];
 
 const STAGE_LABELS: Record<string, string> = {
   entry: "Brief",
@@ -22,6 +24,8 @@ const STAGE_LABELS: Record<string, string> = {
   insight: "Insight",
   create: "Create",
   judge: "Judge",
+  client_fit: "Client Fit",
+  concept_prompt: "Concept",
   ssb: "SSB",
   sketch: "Sketch",
   presentation: "Presentation",
@@ -36,6 +40,9 @@ export default function ProjectPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // viewStage lets the user click a reached stage pill to review/modify it.
+  // null = follow the project's real current stage.
+  const [viewStage, setViewStage] = useState<string | null>(null);
 
   const loadProject = () => {
     getProject(projectId)
@@ -44,53 +51,92 @@ export default function ProjectPage() {
       .finally(() => setLoading(false));
   };
 
+  // After a stage action advances the project, drop the manual override so the
+  // workspace follows the real current stage.
+  const handleUpdate = () => {
+    setViewStage(null);
+    loadProject();
+  };
+
   useEffect(() => {
     loadProject();
   }, [projectId]);
 
-  if (loading) return <p className="text-gray-500">Loading project…</p>;
-  if (error) return <div className="p-4 bg-red-50 rounded text-red-700">{error}</div>;
+  if (loading) return <p className="text-graphite">Loading project…</p>;
+  if (error) return <div className="p-4 bg-bad/10 border border-bad/30 rounded text-bad">{error}</div>;
   if (!project) return <p>Project not found.</p>;
 
   const currentStageIndex = STAGE_ORDER.indexOf(project.stage);
+  // The stage currently displayed: manual override (a reached stage the user
+  // clicked) or the project's real current stage.
+  const activeStage = viewStage ?? project.stage;
+  const activeStageIndex = STAGE_ORDER.indexOf(activeStage);
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-gray-400 hover:text-gray-600">← Dashboard</Link>
+          <Link href="/" className="text-graphite hover:text-ink">← Dashboard</Link>
           <h1 className="text-xl font-semibold">{project.company_name}</h1>
-          <span className="text-sm text-gray-400">{project.industry}</span>
+          <span className="text-sm text-graphite">{project.industry}</span>
         </div>
       </div>
 
-      {/* Stage progress bar */}
+      {/* Stage progress bar — each reached stage is clickable to jump back to it. */}
       <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-2">
-        {STAGE_ORDER.map((stage, idx) => (
-          <div key={stage} className="flex items-center">
-            <div
-              className={`px-3 py-1 text-xs rounded-full whitespace-nowrap ${
-                idx <= currentStageIndex
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-400"
-              }`}
-            >
-              {STAGE_LABELS[stage]}
+        {STAGE_ORDER.map((stage, idx) => {
+          const reached = idx <= currentStageIndex;
+          const isActive = stage === activeStage;
+          const classNames = `px-3 py-1 text-xs rounded-full whitespace-nowrap ${
+            isActive
+              ? "bg-accent text-stock font-medium"
+              : reached
+                ? "bg-ink text-stock hover:bg-ink/85 cursor-pointer"
+                : "bg-surface-2 text-graphite"
+          }`;
+          if (reached) {
+            return (
+              <div key={stage} className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setViewStage(stage)}
+                  aria-current={isActive ? "step" : undefined}
+                  className={classNames}
+                >
+                  {STAGE_LABELS[stage]}
+                </button>
+                {idx < STAGE_ORDER.length - 1 && <div className="w-4 h-px bg-rule" />}
+              </div>
+            );
+          }
+          return (
+            <div key={stage} className="flex items-center">
+              <span className={classNames} aria-disabled="true">
+                {STAGE_LABELS[stage]}
+              </span>
+              {idx < STAGE_ORDER.length - 1 && <div className="w-4 h-px bg-rule" />}
             </div>
-            {idx < STAGE_ORDER.length - 1 && <div className="w-4 h-px bg-gray-200" />}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Stage content */}
-      <ProjectStageContent project={project} onUpdate={loadProject} />
+      <ProjectStageContent project={project} stage={activeStage} onUpdate={handleUpdate} />
     </div>
   );
 }
 
-function ProjectStageContent({ project, onUpdate }: { project: Project; onUpdate: () => void }) {
-  switch (project.stage) {
+function ProjectStageContent({
+  project,
+  stage,
+  onUpdate,
+}: {
+  project: Project;
+  stage: string;
+  onUpdate: () => void;
+}) {
+  switch (stage) {
     case "entry":
     case "discovery":
       return <DiscoveryStage project={project} onUpdate={onUpdate} />;
@@ -103,6 +149,10 @@ function ProjectStageContent({ project, onUpdate }: { project: Project; onUpdate
     case "create":
     case "judge":
       return <ConceptFamiliesView project={project} onUpdate={onUpdate} />;
+    case "client_fit":
+      return <ClientFitView project={project} onUpdate={onUpdate} />;
+    case "concept_prompt":
+      return <ConceptPromptView project={project} onUpdate={onUpdate} />;
     case "ssb":
     case "sketch":
       return <SSBView project={project} onUpdate={onUpdate} />;
@@ -110,7 +160,7 @@ function ProjectStageContent({ project, onUpdate }: { project: Project; onUpdate
     case "complete":
       return <PresentationView project={project} onUpdate={onUpdate} />;
     default:
-      return <p className="text-gray-500">Unknown stage: {project.stage}</p>;
+      return <p className="text-graphite">Unknown stage: {stage}</p>;
   }
 }
 
@@ -119,37 +169,55 @@ function DiscoveryStage({ project, onUpdate }: { project: Project; onUpdate: () 
   const score = project.brand_confidence_score;
   const level = project.brand_confidence_level;
   const [proceeding, setProceeding] = useState(false);
+  const [startingWorkshop, setStartingWorkshop] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleProceed = async () => {
     setProceeding(true);
+    setError(null);
     try {
       await runStrategyApi(project.id);
       onUpdate(); // reload — project.stage will now be "strategy"
     } catch (e: any) {
-      alert(e.message);
+      setError(e.message);
     } finally {
       setProceeding(false);
     }
   };
 
+  const handleStartWorkshop = async () => {
+    // generateWorkshopLink flips the project to the "workshop" stage, which
+    // routes the workspace into WorkshopView (the designer-facing workshop).
+    setStartingWorkshop(true);
+    setError(null);
+    try {
+      await generateWorkshopLink(project.id);
+      onUpdate(); // reload — project.stage will now be "workshop"
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setStartingWorkshop(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-white border border-gray-200 rounded-lg">
+      <div className="p-6 bg-stock border border-rule rounded-lg">
         <h2 className="text-lg font-medium mb-4">Brief Analysis</h2>
 
         {score > 0 ? (
           <>
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-gray-500">Brand Confidence Score</span>
+                <span className="text-sm text-graphite">Brand Confidence Score</span>
                 <span className="text-sm font-medium">
                   {score.toFixed(0)}% — <span className="capitalize">{level}</span>
                 </span>
               </div>
-              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${
-                    score >= 90 ? "bg-green-500" : score >= 60 ? "bg-yellow-500" : "bg-red-400"
+                    score >= 90 ? "bg-ok" : score >= 60 ? "bg-warn" : "bg-bad"
                   }`}
                   style={{ width: `${score}%` }}
                 />
@@ -157,7 +225,7 @@ function DiscoveryStage({ project, onUpdate }: { project: Project; onUpdate: () 
             </div>
 
             {discovery?.discovery_summary && (
-              <p className="text-gray-700 mb-4">{discovery.discovery_summary}</p>
+              <p className="text-ink/90 mb-4">{discovery.discovery_summary}</p>
             )}
 
             {discovery?.missing_info?.length > 0 && (
@@ -165,17 +233,17 @@ function DiscoveryStage({ project, onUpdate }: { project: Project; onUpdate: () 
                 <h3 className="text-sm font-medium mb-2">Missing Information</h3>
                 <ul className="space-y-2">
                   {discovery.missing_info.map((info: any, i: number) => (
-                    <li key={i} className="text-sm bg-gray-50 p-3 rounded">
+                    <li key={i} className="text-sm bg-surface-2 p-3 rounded">
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`text-xs px-2 py-0.5 rounded ${
-                          info.impact === "high" ? "bg-red-100 text-red-700" : "bg-gray-200 text-gray-600"
+                          info.impact === "high" ? "bg-bad/15 text-bad" : "bg-surface-2 text-graphite border border-rule"
                         }`}>
                           {info.impact}
                         </span>
                         <span className="font-medium">{info.field}</span>
                       </div>
                       {info.suggested_question && (
-                        <p className="text-gray-600 italic">{info.suggested_question}</p>
+                        <p className="text-graphite italic">{info.suggested_question}</p>
                       )}
                     </li>
                   ))}
@@ -183,26 +251,43 @@ function DiscoveryStage({ project, onUpdate }: { project: Project; onUpdate: () 
               </div>
             )}
 
-            <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
+            <div className="flex flex-col gap-3 pt-2 border-t border-rule">
               {score >= 70 ? (
                 <button
                   onClick={handleProceed}
                   disabled={proceeding}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                  className="self-start px-4 py-2 bg-ink text-stock rounded-md hover:bg-ink/85 disabled:opacity-50"
                 >
                   {proceeding ? "Generating Brand DNA…" : "Proceed to Strategy →"}
                 </button>
               ) : (
-                <p className="text-sm text-gray-500">
-                  Brand Confidence below 70%. Run the Discovery Workshop to fill the gaps.
-                </p>
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-graphite">
+                    Brand Confidence is below 70%. Run the Discovery Workshop to fill the gaps
+                    before generating Brand DNA.
+                  </p>
+                  <button
+                    onClick={handleStartWorkshop}
+                    disabled={startingWorkshop}
+                    className="self-start px-4 py-2 bg-ink text-stock rounded-md hover:bg-ink/85 disabled:opacity-50"
+                  >
+                    {startingWorkshop ? "Starting…" : "Start Discovery Workshop →"}
+                  </button>
+                </div>
+              )}
+
+              {error && (
+                <div className="p-3 bg-bad/10 border border-bad/30 rounded text-sm text-bad">
+                  {error}
+                </div>
               )}
             </div>
           </>
         ) : (
-          <p className="text-gray-500">Brief not yet analysed.</p>
+          <p className="text-graphite">Brief not yet analysed.</p>
         )}
       </div>
     </div>
   );
 }
+

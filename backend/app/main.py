@@ -2,23 +2,31 @@
 LogoMind FastAPI application.
 
 The complete backend — wires together database, AI orchestration,
-and all 9 pipeline stages (PROD-JOURNEY-001).
+and the full pipeline of stages (PROD-JOURNEY-001).
 
 Run: uvicorn app.main:app --reload
 """
 
 from contextlib import asynccontextmanager
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# Load variables from backend/.env so configuration is honoured.
+load_dotenv()
+
 from .database import init_db
 from .routers import router
+from .services import lic_knowledge
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialise database on startup."""
+    """Initialise database and load LIC knowledge on startup."""
     init_db()
+    lic_knowledge.load()  # cache curated operational extracts for the engines
     yield
 
 
@@ -33,16 +41,23 @@ app = FastAPI(
 
     **LogoMind will never make a creative decision for the designer.**
 
-    Pipeline: Brief → Discovery → Strategy → Insight → Create → Judge → SSB → Coach → Presentation
+    Pipeline: Brief → Discovery → Workshop → Strategy → Insight → Create → Judge →
+    Client Fit → Concept Prompt → SSB → Sketch → Presentation
     """,
     version="1.0.0",
     lifespan=lifespan,
 )
 
-# CORS for the Next.js frontend
+# CORS for the Next.js frontend.
+# CORS_ORIGINS may be a comma-separated list; defaults to the local dev origins.
+_default_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_cors_env = os.environ.get("CORS_ORIGINS", "").strip()
+_cors_origins = (
+    [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else _default_origins
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

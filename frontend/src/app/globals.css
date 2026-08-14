@@ -2,22 +2,115 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  LogoMind substrate — theme-aware "specimen sheet".
+
+  Two palettes driven by CSS variables so the whole app flips with one class:
+    :root      — the warm PAPER / ink light theme (the original studio printout).
+    html.dark  — "studio at night": Claude-inspired warm charcoal + coral accent.
+
+  Colours are stored as space-separated RGB channel triples so Tailwind's
+  `/opacity` modifiers (border-ink/15, bg-ink/85, text-graphite/80, …) compose
+  correctly via rgb(var(--token) / <alpha>). Tailwind's color tokens in
+  tailwind.config.js reference these variables, so every bg-stock / text-ink /
+  border-rule adapts automatically. Default theme is dark; a header toggle
+  flips to light (persisted in localStorage under "lm-theme").
+*/
+
 :root {
-  --foreground: #111827;
-  --background: #f9fafb;
+  /* ── Light: warm paper & ink (original specimen theme) ── */
+  --paper: 242 238 229;   /* #f2eee5 — warm manila page background */
+  --stock: 251 248 241;   /* #fbf8f1 — card / plate surface */
+  --surface-2: 236 230 216; /* #ece6d8 — chips, subtle fills, input bg */
+  --ink: 26 24 20;        /* #1a1814 — primary text + hairline frames */
+  --graphite: 92 86 76;   /* #5c564c — secondary text */
+  --rule: 216 208 191;    /* #d8d0bf — hairline dividers, registration marks */
+
+  --accent: 184 115 42;   /* #b8732a — the "verified" stamp, amber */
+  --ok: 63 107 67;        /* #3f6b43 — drivers / liked / opportunity */
+  --warn: 184 115 42;     /* #b8732a — honest caveat / contradiction */
+  --bad: 154 59 46;       /* #9a3b2e — risk / disliked / cliché */
+  --info: 60 110 143;     /* #3c6e8f — share link / contemporary */
+
+  --stamp-recommended: 63 107 67;
+  --stamp-develop: 184 115 42;
+  --stamp-reject: 154 59 46;
+
+  color-scheme: light;
+}
+
+html.dark {
+  /* ── Dark: "studio at night" (Claude-inspired warm charcoal + coral) ── */
+  --paper: 38 37 36;      /* #262524 — warm Claude charcoal page background */
+  --stock: 48 47 45;      /* #302f2d — raised card / header / footer surface */
+  --surface-2: 58 57 54;  /* #3a3936 — chips, subtle fills, input bg */
+  --ink: 237 235 227;     /* #edebe3 — primary text, warm ivory */
+  --graphite: 168 164 153;/* #a8a499 — secondary text */
+  --rule: 57 55 51;       /* #393733 — hairline border */
+
+  --accent: 217 119 87;   /* #d97757 — Claude coral, the signature accent */
+  --ok: 143 176 116;      /* #8fb074 — sage green */
+  --warn: 214 163 90;     /* #d6a35a — ochre / warm amber */
+  --bad: 208 105 96;      /* #d06960 — clay red */
+  --info: 147 172 202;    /* #93acca — soft blue */
+
+  --stamp-recommended: 143 176 116;
+  --stamp-develop: 214 163 90;
+  --stamp-reject: 208 105 96;
+
+  color-scheme: dark;
+}
+
+html {
+  background: rgb(var(--paper));
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: rgb(var(--ink));
+  background: rgb(var(--paper));
+  font-feature-settings: "ss01", "cv11"; /* subtle Inter refinements where available */
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Subtle, professional — LogoMind is for serious designers */
 * {
   box-sizing: border-box;
 }
 
+/* Hairline rules used by the specimen layout. */
+.hairline {
+  border-color: rgb(var(--rule));
+}
+
+/* Drafting registration cross — drawn at the corners of the wireframe plate. */
+.reg-cross::before,
+.reg-cross::after {
+  content: "";
+  position: absolute;
+  background: rgb(var(--rule));
+}
+.reg-cross::before {
+  width: 10px;
+  height: 1px;
+}
+.reg-cross::after {
+  width: 1px;
+  height: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @media print {
-  header, footer, button { display: none !important; }
+  header,
+  footer,
+  button {
+    display: none !important;
+  }
 }
