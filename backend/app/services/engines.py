@@ -111,7 +111,7 @@ nest or rename fields; every non-optional field is required):
 The two numbers in trend_vs_timeless_balance must sum to 1.0.
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """ + lic_knowledge.knowledge_block([
-    "RS-LIC-PH-008", "RS-LIC-PH-009", "RS-LIC-SY-VOLUME",
+    "RS-LIC-PH-008", "RS-LIC-PH-009", "RS-LIC-SY-VOLUME", "RS-LIC-IND-VOLUME",
 ])
 
 
@@ -264,6 +264,7 @@ Return ONLY the JSON object. No prose, no code fences, no commentary.
     + lic_knowledge.knowledge_block([
         "RS-LIC-PH-005", "RS-LIC-SY-VOLUME",
         "RS-LIC-CL-VOLUME", "RS-LIC-TY-VOLUME", "RS-LIC-ID-VOLUME",
+        "RS-LIC-IND-VOLUME",
     ])
     + "\n\n" + _exemplars.CREATE_STYLE_ANCHOR
 )

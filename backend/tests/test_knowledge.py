@@ -97,7 +97,9 @@ def test_engine_prompts_carry_knowledge():
         (engines.STRATEGY_SYSTEM_PROMPT, "RS-LIC-BS-001"),      # 5 BS frameworks
         (engines.INSIGHT_SYSTEM_PROMPT, "RS-LIC-PH-008"),       # Trend Taxonomy
         (engines.INSIGHT_SYSTEM_PROMPT, "RS-LIC-SY-VOLUME"),    # cliché detection
+        (engines.INSIGHT_SYSTEM_PROMPT, "RS-LIC-IND-VOLUME"),   # industry conventions
         (engines.CREATE_SYSTEM_PROMPT, "RS-LIC-SY-VOLUME"),
+        (engines.CREATE_SYSTEM_PROMPT, "RS-LIC-IND-VOLUME"),    # per-category clichés
         (engines.JUDGE_SYSTEM_PROMPT, "RS-LIC-PH-003"),         # simplicity dim
         (engines.SSB_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),        # grids / logo types
         (engines.COACH_SYSTEM_PROMPT, "RS-LIC-PH-004"),         # clarity audit
@@ -107,3 +109,20 @@ def test_engine_prompts_carry_knowledge():
     for prompt, marker in cases:
         assert "CANONICAL LOGOMIND KNOWLEDGE" in prompt, "knowledge block missing"
         assert f"--- {marker} ---" in prompt, f"{marker} not injected"
+
+
+def test_industry_volume_content():
+    """The Industry Intelligence slice carries the fields the engines consume.
+
+    Insight reports conventions/clichés/opportunities per industry and Create
+    avoids the per-category clichés — the slice must expose both, for several
+    industries, or it degrades to a decorative injection.
+    """
+    lk.load(force=True)
+    extract = lk.get("RS-LIC-IND-VOLUME")
+    assert "RS-LIC-IND-001" in extract and "RS-LIC-IND-014" in extract
+    # Field markers the engines read the slice for.
+    for marker in ("signal=", "AVOID clichés=", "opportunities=", "Industry Intelligence Framework"):
+        assert marker in extract, f"industry slice missing '{marker}'"
+    # A known cliché map must survive the compaction (sample check).
+    assert "Dumbbell" in extract or "dumbbell" in extract

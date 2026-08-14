@@ -366,6 +366,46 @@ def _slice_bs005_archetypes(md: str) -> str:
     )
 
 
+def _slice_industry_volume(md: str) -> str:
+    """Compact the industry entries to one row each + the Industry Intelligence
+    Framework.
+
+    Per entry: core signal, symbol/colour/typography conventions, the cliché
+    list, and the white-space opportunities — exactly the fields the Insight
+    engine reports (conventions / cliché_avoidance / opportunities) and the
+    Create engine deviates from with intent.
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-IND-\d+) — (.+)$", md, re.MULTILINE):
+        iid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 1500
+        block = md[block_start:block_end]
+        signal = _first_field(block, "Core Signal")
+        symbols = _first_field(block, "Symbol Conventions")
+        colours = _first_field(block, "Colour Conventions")
+        typeconv = _first_field(block, "Typography Conventions")
+        cliches = _first_field(block, "Clichés to Avoid")
+        opportunities = _first_field(block, "Opportunities")
+        rows.append(
+            f"- {name} ({iid}): signal=[{signal}]; symbols=[{symbols}]; "
+            f"colours=[{colours}]; type=[{typeconv}]; "
+            f"AVOID clichés=[{cliches}]; opportunities=[{opportunities}]"
+        )
+    body = "\n".join(rows)
+    framework = _slice_between(
+        md,
+        "## Industry Intelligence Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=2200,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Industry Intelligence Framework (apply when working per-category) ---\n{framework}"
+
+
 # ─── Registry ───────────────────────────────────────────────────────────
 
 
@@ -471,6 +511,11 @@ _REGISTRY: Tuple[ExtractSpec, ...] = (
         lic_id="RS-LIC-BS-005",
         filename="RS-LIC-BS-005_Brand_Archetypes.md",
         slicer=_slice_bs005_archetypes,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-IND-VOLUME",
+        filename="RS-LIC-IND-VOLUME.md",
+        slicer=_slice_industry_volume,
     ),
 )
 
