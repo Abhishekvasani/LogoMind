@@ -72,7 +72,13 @@ def _migrate_sqlite_columns(engine) -> None:
 
     existing = {c["name"] for c in insp.get_columns("projects")}
     # Columns introduced after the initial schema, with their SQL types.
-    needed = [("concept_prompts", "JSON")]
+    needed = [
+        ("concept_prompts", "JSON"),
+        ("client_persona", "JSON"),
+        ("appeal_report", "JSON"),
+        ("contest_brief", "JSON"),
+        ("contest_feedback", "JSON"),
+    ]
     with engine.begin() as conn:
         for col, col_type in needed:
             if col not in existing:

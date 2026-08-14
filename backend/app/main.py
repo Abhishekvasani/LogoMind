@@ -2,7 +2,7 @@
 LogoMind FastAPI application.
 
 The complete backend — wires together database, AI orchestration,
-and all 9 pipeline stages (PROD-JOURNEY-001).
+and the full pipeline of stages (PROD-JOURNEY-001).
 
 Run: uvicorn app.main:app --reload
 """
@@ -41,7 +41,8 @@ app = FastAPI(
 
     **LogoMind will never make a creative decision for the designer.**
 
-    Pipeline: Brief → Discovery → Strategy → Insight → Create → Judge → SSB → Coach → Presentation
+    Pipeline: Brief → Discovery → Workshop → Strategy → Insight → Create → Judge →
+    Client Fit → Concept Prompt → SSB → Sketch → Presentation
     """,
     version="1.0.0",
     lifespan=lifespan,

@@ -143,6 +143,42 @@ def test_pipeline_direct_path(client: TestClient):
     assert project["presentation"] is not None
 
 
+def test_pipeline_client_fit_and_concept_prompt(client: TestClient):
+    """After Judge, the Client Fit and Concept Prompt stages advance + persist.
+
+    Closes the coverage gap where the direct-path walk skipped the two stages
+    added on this branch (judge -> client_fit -> concept_prompt).
+    """
+    project = _create_project(client)
+    pid = project["id"]
+
+    # Walk forward through Judge (prerequisite for both new stages).
+    for stage in ("analyse", "strategy", "insight", "create", "judge"):
+        r = client.post(f"/api/projects/{pid}/{stage}")
+        assert r.status_code == 200, (stage, r.text)
+
+    # Client Fit — predicts which family THIS client will prefer.
+    r = client.post(f"/api/projects/{pid}/client-fit")
+    assert r.status_code == 200, r.text
+    appeal = r.json()
+    assert appeal["recommended_family"]
+    assert appeal["persona"]["archetype"]
+    project = client.get(f"/api/projects/{pid}").json()
+    assert project["stage"] == "client_fit"
+    assert project["appeal_report"] is not None
+    assert project["client_persona"] is not None
+
+    # Concept Prompt — one executable concept per family, steered by the persona.
+    r = client.post(f"/api/projects/{pid}/concept-prompts")
+    assert r.status_code == 200, r.text
+    concepts = r.json()
+    assert isinstance(concepts, list)
+    assert len(concepts) == len(project["concept_families"])
+    project = client.get(f"/api/projects/{pid}").json()
+    assert project["stage"] == "concept_prompt"
+    assert project["concept_prompts"] is not None
+
+
 def test_pipeline_workshop_path(client: TestClient):
     """Short brief → score < 70 → workshop enriches the brief → proceed to Strategy."""
     # A very short brief scores low on the mock heuristic.

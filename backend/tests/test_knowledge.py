@@ -47,3 +47,25 @@ def test_load_is_idempotent():
     first = lk.get("RS-LIC-PH-005")
     lk.load()  # no force — should be a no-op
     assert lk.get("RS-LIC-PH-005") == first
+
+
+def test_added_slicers_resolve():
+    """The added slicers each resolve to non-empty content.
+
+    Guards against silent breakage: if a source markdown shifts or a slicer
+    regex drifts, the engine would inject an empty knowledge block instead of
+    catching it. These ids back the Create + Concept Prompt anti-generic
+    directives, so an empty extract degrades output quality with no error.
+    """
+    lk.load(force=True)
+    for lic_id in (
+        "RS-LIC-BS-001",       # Brand Positioning
+        "RS-LIC-BS-002",       # Brand Differentiation
+        "RS-LIC-PH-003",       # Simplicity
+        "RS-LIC-PH-004",       # Clarity
+        "RS-LIC-CL-VOLUME",    # Color volume
+        "RS-LIC-TY-VOLUME",    # Typography volume
+        "RS-LIC-ID-VOLUME",    # Identity volume
+    ):
+        content = lk.get(lic_id)
+        assert content, f"{lic_id} resolved empty — slicer or source file may have shifted"

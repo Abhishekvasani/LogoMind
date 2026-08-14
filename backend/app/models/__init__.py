@@ -72,6 +72,10 @@ class Project(Base):
     concept_prompts = Column(JSON, nullable=True)         # LOG-CP-001 output
     ssb = Column(JSON, nullable=True)                     # PROD-SSB-001 output
     presentation = Column(JSON, nullable=True)            # LOG-PRESENT-001 output
+    client_persona = Column(JSON, nullable=True)          # Client Preference Predictor — persona
+    appeal_report = Column(JSON, nullable=True)           # Client Preference Predictor — ranked appeal
+    contest_brief = Column(JSON, nullable=True)           # Decoded contest brief (Stage 3)
+    contest_feedback = Column(JSON, nullable=True)        # Revealed in-contest preferences (Stage 4)
 
     # Workshop state (LOG-DISC-001 Workshop Mode)
     workshop_state = Column(JSON, nullable=True)  # current stage, answers, etc.

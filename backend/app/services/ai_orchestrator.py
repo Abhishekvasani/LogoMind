@@ -146,6 +146,10 @@ class MockAIProvider(AIProvider):
             return self._mock_create(user_prompt)
         elif "logos concept prompt" in first_line or "executable concept engine" in first_line:
             return self._mock_concept_prompt(user_prompt)
+        elif "logos client insight" in first_line or "client preference predictor" in first_line:
+            return self._mock_client_fit(user_prompt)
+        elif "logos contest reader" in first_line or "contest brief decoder" in first_line:
+            return self._mock_contest_decode(user_prompt)
         elif "logos judge" in first_line or "design jury" in first_line:
             return self._mock_judge(user_prompt)
         elif "logos insight" in first_line or "trend intelligence" in first_line:
@@ -486,6 +490,56 @@ class MockAIProvider(AIProvider):
             ],
         })
 
+    def _mock_client_fit(self, user_prompt: str) -> str:
+        # Deterministic AppealReport matching the mock Create output (Family A).
+        return json.dumps({
+            "persona": {
+                "one_line": "A pragmatic decision-maker who prizes clarity and trust over cleverness.",
+                "archetype": "The Pragmatist",
+                "taste_signals": ["plain-spoken language", "emphasis on trust and reliability"],
+                "decoded_intents": [{"stated": "trustworthy", "intent": "wants the audience to feel safe"}],
+                "aesthetic_lean": "minimal",
+                "boldness_tolerance": "moderate",
+                "must_haves": [],
+                "must_avoids": [],
+                "references": [],
+                "confidence": "C3",
+            },
+            "family_appeal": [
+                {
+                    "family_label": "A",
+                    "client_appeal_score": 82.0,
+                    "rank": 1,
+                    "predicted_response": "Will read as dependable and unfussy — exactly the trust signal this client asked for.",
+                    "appeal_drivers": ["Matches the brief's trust emphasis", "Minimal lean fits a pragmatic buyer"],
+                    "appeal_risks": ["May feel too conservative if the client secretly wants to stand out"],
+                    "confidence": "C3",
+                },
+            ],
+            "recommended_family": "A",
+            "reasoning": "Family A maps directly onto the client's stated trust priority and minimal lean, making it the safest bet to be selected quickly in a contest setting.",
+            "caveat": "Mock prediction from brief only. Fold in the client's contest ratings to sharpen it.",
+            "confidence": "C3",
+        })
+
+    def _mock_contest_decode(self, user_prompt: str) -> str:
+        # Deterministic ContestBrief — extracts a plausible shape regardless of input.
+        return json.dumps({
+            "company_name": None,
+            "industry": None,
+            "tagline": None,
+            "dos": ["scalable", "original"],
+            "donts": ["clipart", "stock icons"],
+            "colors_preferred": ["blue", "white"],
+            "colors_avoided": ["red"],
+            "style_keywords": ["modern", "minimal", "clean"],
+            "must_include": [],
+            "must_avoid": ["generic globes"],
+            "references": [],
+            "decoded_summary": "The contest holder wants a modern, minimal, clean identity that reads as trustworthy; blue is welcome, red is not, and generic stock imagery should be avoided.",
+            "confidence": "C3",
+        })
+
 
 class OpenAIProvider(AIProvider):
     """
@@ -535,7 +589,16 @@ class OpenAIProvider(AIProvider):
         }
         if max_tokens:
             kwargs["max_tokens"] = max_tokens
-        if response_format == "json":
+        # NVIDIA NIM's OpenAI-compatible endpoint rejects the OpenAI-standard
+        # response_format={"type": "json_object"} with a StructuredOutputsParams
+        # validation error ("none of the structured-outputs constraints
+        # specified"). Its JSON output is driven by the prompt — every LOGOS
+        # engine already ends with "Return ONLY the JSON object" — plus our
+        # tolerant parse_json_response (which strips fences/prose), so for NIM
+        # we intentionally omit response_format. OpenAI / OpenRouter honour it,
+        # so they keep the constraint and the tighter output guarantee.
+        is_nim = "integrate.api.nvidia.com" in (base_url or "")
+        if response_format == "json" and not is_nim:
             kwargs["response_format"] = {"type": "json_object"}
 
         # Real model endpoints (NIM, OpenRouter, OpenAI) transiently time out,

@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from .ai_orchestrator import get_ai_orchestrator, parse_json_response
 from . import lic_knowledge
+from . import _exemplars
 from ..schemas import (
     BrandDNA, InsightReport, CreateEngineResult,
     FamilyJudgeResult, SSB, CoachFeedback,
@@ -209,6 +210,20 @@ METHOD (apply the injected knowledge literally):
   Clarity, Inevitability, Non-Arbitrary); state which adjacent inputs combine.
 - Eliminate clichés (consult the Insight Report's cliche_avoidance).
 
+ANTI-GENERIC DIRECTIVE — the difference between forgettable and memorable:
+- BEFORE generating, name the 3 most generic/obvious solutions for THIS brief
+  (e.g. "a leaf for eco", "a shield for security", "blue for tech"). Every
+  family MUST visibly depart from all three; state how.
+- Each family must commit to ONE distinctive memory hook — the single detail a
+  viewer recalls an hour later (a negative-space reveal, an unexpected
+  proportion, a material treatment, a bespoke letterform quirk). Name it.
+- Choose colour and typography FROM the injected Color and Typography volumes,
+  not from habit. A 🔴/🟠 originality-risk choice (sea-of-blue, default
+  Helvetica/Inter, eco-leaf-green) requires an explicit refresh justification.
+- Write in sensory/material language, never vague adjectives. "Single-weight 2u
+  strokes, matte, on warm sand; wordmark set in a customised old-style serif" —
+  NOT "clean, modern, professional". Adjective-only descriptions are failure.
+
 VISUAL LANGUAGE must be concrete, not one-word:
 - forms: name a geometric/organic system (e.g. "concentric circles on a 1:√2 grid")
 - treatment: stroke weight / finish logic (e.g. "single-weight 2u strokes, matte")
@@ -242,7 +257,11 @@ nest or rename fields). Generate 3-5 families under "families":
 Give each family a distinct single-letter label ("A", "B", "C", ...).
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
-    + lic_knowledge.knowledge_block(["RS-LIC-PH-005", "RS-LIC-SY-VOLUME"])
+    + lic_knowledge.knowledge_block([
+        "RS-LIC-PH-005", "RS-LIC-SY-VOLUME",
+        "RS-LIC-CL-VOLUME", "RS-LIC-TY-VOLUME", "RS-LIC-ID-VOLUME",
+    ])
+    + "\n\n" + _exemplars.CREATE_STYLE_ANCHOR
 )
 
 

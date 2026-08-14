@@ -38,6 +38,7 @@ class PipelineStage(str, Enum):
     INSIGHT = "insight"
     CREATE = "create"
     JUDGE = "judge"
+    CLIENT_FIT = "client_fit"
     CONCEPT_PROMPT = "concept_prompt"
     SSB = "ssb"
     SKETCH = "sketch"
@@ -132,6 +133,10 @@ class Project(ProjectSummary):
     concept_prompts: Optional[List[Dict[str, Any]]] = None
     ssb: Optional[Dict[str, Any]] = None
     presentation: Optional[Dict[str, Any]] = None
+    client_persona: Optional[Dict[str, Any]] = None      # Client Preference Predictor — persona
+    appeal_report: Optional[Dict[str, Any]] = None       # Client Preference Predictor — ranked appeal
+    contest_brief: Optional[Dict[str, Any]] = None       # Decoded contest brief (Stage 3)
+    contest_feedback: Optional[List[Dict[str, Any]]] = None  # Revealed in-contest preferences (Stage 4)
     workshop_state: Optional[Dict[str, Any]] = None
     workshop_share_token: Optional[str] = None
     sketches: List[SketchOut] = []
@@ -183,6 +188,21 @@ class WorkshopState(BaseModel):
     answers: List[WorkshopAnswer] = []
     intent_extractions: List[Dict[str, str]] = []  # {preference, intent}
     estimated_minutes_remaining: float = 15.0
+
+
+class IntentExtractionRequest(BaseModel):
+    """Input to the Intent Extraction sub-engine (LOG-DISC-001)."""
+    preference: str  # a client's stated preference, e.g. "I want blue"
+
+
+class IntentExtraction(BaseModel):
+    """Decoded strategic intent behind a stated preference.
+
+    "I want blue" -> "I want trust"; "I want a shield" -> "I want security".
+    """
+    preference: str
+    intent: str
+    reasoning: str
 
 
 # ─── Strategy Engine (LOG-STRAT-001) ───────────────────────────────────
@@ -380,6 +400,104 @@ class FamilyJudgeResult(BaseModel):
     classification: str  # recommended | develop | reject
     concept_dna: ConceptDNA
     refinement_recommendations: List[str] = []
+
+
+# ─── Client Preference Predictor (Client Fit) ──────────────────────────
+#
+# LogoMind's answer to "what will THIS client love?" — a reasoning-based
+# preference model, NOT a literal neural/brain-response measurement. It builds
+# a persona of the specific decision-maker from their brief, then predicts how
+# strongly each Concept Family will resonate with THAT persona and ranks them.
+# Honesty is structural: every prediction carries explicit confidence and a
+# caveat about how much signal a brief alone provides.
+
+class ClientPersona(BaseModel):
+    """A model of THIS client's likely taste, inferred from the brief + context.
+
+    Predicts aesthetic lean and boldness tolerance so downstream stages can aim
+    at the client's taste rather than a generic 'good design' average.
+    """
+    one_line: str  # "A pragmatic fintech founder who prizes clarity over cleverness"
+    archetype: str  # e.g. "The Pragmatist" | "The Bold Disruptor" | "The Heritage Guardian"
+    taste_signals: List[str]  # concrete signals observed in the brief
+    decoded_intents: List[Dict[str, str]] = []  # [{stated, intent}] e.g. "blue" -> "trust"
+    aesthetic_lean: str  # minimal | bold | elegant | playful | technical | heritage | organic
+    boldness_tolerance: str  # conservative | moderate | adventurous
+    must_haves: List[str] = []
+    must_avoids: List[str] = []
+    references: List[str] = []
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+class FamilyAppeal(BaseModel):
+    """One Concept Family scored for predicted resonance with THIS client."""
+    family_label: str
+    client_appeal_score: float = Field(ge=0, le=100)  # predicted resonance for THIS client
+    rank: int  # 1 = strongest predicted
+    predicted_response: str  # one vivid line in the client's emotional vocabulary
+    appeal_drivers: List[str]  # why it resonates with THIS client (persona-relative)
+    appeal_risks: List[str]  # why it might miss for THIS client
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+class AppealReport(BaseModel):
+    """Client Preference Predictor output — ranks families by predicted client appeal.
+
+    The decision screen: which direction is the safest bet to win THIS client,
+    and why. Designed to differ from the Judge (design excellence) — a family
+    can score high with the jury but lower with a conservative client, and the
+    predictor says so explicitly.
+    """
+    persona: ClientPersona
+    family_appeal: List[FamilyAppeal]  # ranked by client_appeal_score desc
+    recommended_family: str  # family_label of rank 1
+    reasoning: str  # 2-3 sentences: why the top family is the safest bet to win
+    caveat: str  # honest limit, e.g. "brief-only; refine with contest feedback"
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+# ─── Contest Intelligence (Stage 3 + 4) ─────────────────────────────────
+#
+# Two contest-specific inputs that sharpen the Client Preference Predictor:
+# (3) a decoded contest brief — messy freelancer.com text -> structured signals,
+# and (4) revealed preferences — what the client actually liked/disliked mid-contest.
+
+class ContestBrief(BaseModel):
+    """A contest brief decoded into structured, usable signals.
+
+    Freelancer.com briefs are semi-structured free text. This normalises them so
+    the persona engine gets clean must-haves/avoids/colors instead of prose.
+    """
+    company_name: Optional[str] = None
+    industry: Optional[str] = None
+    tagline: Optional[str] = None
+    dos: List[str] = []
+    donts: List[str] = []
+    colors_preferred: List[str] = []
+    colors_avoided: List[str] = []
+    style_keywords: List[str] = []
+    must_include: List[str] = []
+    must_avoid: List[str] = []
+    references: List[str] = []
+    decoded_summary: str  # readable synthesis of the contest intent
+    confidence: ConfidenceLevel = ConfidenceLevel.C3
+
+
+class ContestBriefDecodeRequest(BaseModel):
+    """Raw contest text to decode (Stage 3)."""
+    raw_text: str
+
+
+class ContestSignal(BaseModel):
+    """One observed in-contest preference signal (Stage 4)."""
+    kind: str  # liked | disliked | comment
+    trait: str  # what was liked/disliked/commented, e.g. "minimal layouts"
+    note: Optional[str] = None
+
+
+class ContestRefineRequest(BaseModel):
+    """Add revealed-preference signals and re-run the prediction (Stage 4)."""
+    signals: List[ContestSignal]
 
 
 # ─── SSB (PROD-SSB-001) ────────────────────────────────────────────────

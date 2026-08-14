@@ -14,11 +14,12 @@ deterministically.
 
 import json
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pydantic import ValidationError
 
 from . import lic_knowledge
+from . import _exemplars
 from .ai_orchestrator import get_ai_orchestrator, parse_json_response
 from ..schemas import ConceptPromptResult
 
@@ -60,6 +61,17 @@ MISSION:
 6. List the specific clichés (from Insight) deliberately NOT prompted.
 7. Assign an honest confidence (LM-STD-003): how well-supported is this
    executable concept by the upstream strategy? Never fake it.
+
+ANTI-GENERIC DIRECTIVE — each prompt must be vivid and specific, not templated:
+- Read the family's visual_language (palette, treatment, composition) and the
+  Brand DNA from the input, and NAME those specifics in every prompt: exact
+  colours ("deep teal dominant, warm sand secondary, ivory accent"), stroke
+  weight, material finish, proportion/grid logic. Never fall back to "modern,
+  clean, professional" — a prompt that could describe a thousand logos fails.
+- Each variant must contain ONE distinctive, renderable hook (a negative-space
+  move, a specific grid, a bespoke letterform treatment, a material finish).
+- Lead each prompt with the strongest visual idea, not the brand name. The
+  brand name is data the designer adds; your job is the unforgettable image.
 
 HARD RULES:
 - Every variant's emphasis must trace to a Brand DNA meaning.
@@ -104,6 +116,7 @@ model_adaptations:
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
     + lic_knowledge.knowledge_block(["RS-LIC-PH-005"])
+    + "\n\n" + _exemplars.CONCEPT_PROMPT_STYLE_ANCHOR
 )
 
 
@@ -160,11 +173,46 @@ def _normalize_concept_prompt(data: Any) -> Dict[str, Any]:
     return out
 
 
+def _client_steer_block(client_persona: Optional[Dict[str, Any]], is_recommended: bool) -> str:
+    """Compact instruction steering concept-prompt writing toward THIS client's taste.
+
+    Returns "" when no persona exists, so the happy path is unaffected. When a
+    Client Fit persona is present, every prompt variant is nudged to aim at the
+    modelled decision-maker rather than generic design excellence.
+    """
+    if not client_persona:
+        return ""
+    one_line = client_persona.get("one_line", "")
+    lean = client_persona.get("aesthetic_lean", "")
+    bold = client_persona.get("boldness_tolerance", "")
+    intents = client_persona.get("decoded_intents") or []
+    must_have = client_persona.get("must_haves") or []
+    must_avoid = client_persona.get("must_avoids") or []
+    intents_str = "; ".join(
+        f"{i.get('stated', '')}->{i.get('intent', '')}"
+        for i in intents if isinstance(i, dict)
+    ) or "none decoded"
+    rec_line = (
+        "\nNOTE: This family is the CLIENT-PREDICTED WINNER (rank 1). Lean INTO "
+        "the persona's taste — make this the most on-brief, most loveable variant set."
+        if is_recommended else ""
+    )
+    return (
+        f"\nCLIENT TASTE STEER — write prompts THIS client will love, not generic excellence:\n"
+        f"  persona: {one_line} | aesthetic lean: {lean} | boldness: {bold}\n"
+        f"  decoded intents: {intents_str}\n"
+        f"  must-have: {', '.join(must_have) or 'none stated'} | "
+        f"must-avoid: {', '.join(must_avoid) or 'none stated'}{rec_line}\n"
+    )
+
+
 async def compose_concept_prompt(
     family: Dict[str, Any],
     judge_result: Dict[str, Any],
     brand_dna: Dict[str, Any],
     insight_report: Dict[str, Any],
+    client_persona: Optional[Dict[str, Any]] = None,
+    is_recommended: bool = False,
 ) -> ConceptPromptResult:
     """Run the Concept Prompt Engine on ONE Concept Family (Stage: concept_prompt).
 
@@ -172,12 +220,16 @@ async def compose_concept_prompt(
     adaptations, a composition wireframe spec, rationale, and the clichés
     avoided. Generates no images; makes no creative decision (FD-015).
 
-    Real models sometimes truncate the (long) JSON response mid-stream or use
-    field-name aliases. On a validation failure we retry once with a higher
-    token budget and a "finish the JSON" nudge; before each validation attempt
-    we run the defensive normalizer.
+    When a Client Fit ``client_persona`` is supplied, the generated prompts are
+    steered toward that client's modelled taste; ``is_recommended`` marks the
+    rank-1 family for extra emphasis. Real models sometimes truncate the (long)
+    JSON response mid-stream or use field-name aliases. On a validation failure
+    we retry once with a higher token budget and a "finish the JSON" nudge; if
+    that also fails we fall back to a chunked two-pass. The defensive normalizer
+    runs before each validation attempt.
     """
     orchestrator = get_ai_orchestrator()
+    steer = _client_steer_block(client_persona, is_recommended)
 
     user_prompt = f"""Concept Family to execute:
 {json.dumps(family, indent=2, default=str)}
@@ -189,8 +241,7 @@ Brand DNA (the concept must trace to this):
 {json.dumps(brand_dna, indent=2, default=str)}
 
 Insight Report (clichés to avoid):
-{json.dumps(insight_report, indent=2, default=str)}
-
+{json.dumps(insight_report, indent=2, default=str)}{steer}
 Produce the executable concept for this family: four variants, five model
 adaptations, the wireframe spec, rationale, and clichés avoided.
 """
@@ -226,5 +277,102 @@ adaptations, the wireframe spec, rationale, and clichés avoided.
             temperature=0.6,  # slightly lower for a more compliant second pass
             max_tokens=3200,
         )
-        return ConceptPromptResult(**_normalize_concept_prompt(parse_json_response(response)))
+        try:
+            return ConceptPromptResult(**_normalize_concept_prompt(parse_json_response(response)))
+        except (ValidationError, ValueError) as second_err:
+            # Both single-shot attempts truncated/malformed — free/quantised
+            # models routinely can't emit this large schema in one response.
+            # Final fallback: split into two smaller, reliable calls and merge.
+            logger.warning(
+                "Concept Prompt second attempt failed (%s); using chunked two-pass fallback.",
+                second_err.__class__.__name__,
+            )
+            return await _compose_concept_prompt_two_pass(
+                family, judge_result, brand_dna, insight_report,
+                client_persona, is_recommended,
+            )
+
+
+# Canonical top-level keys of ConceptPromptResult, used to sanitize the merged
+# two-pass output so stray fields never trip a strict schema.
+_CONCEPT_CANONICAL_KEYS = (
+    "family_label", "core_concept", "variants",
+    "model_adaptations", "wireframe", "rationale",
+    "cliches_avoided", "confidence",
+)
+
+
+async def _compose_concept_prompt_two_pass(
+    family: Dict[str, Any],
+    judge_result: Dict[str, Any],
+    brand_dna: Dict[str, Any],
+    insight_report: Dict[str, Any],
+    client_persona: Optional[Dict[str, Any]] = None,
+    is_recommended: bool = False,
+) -> ConceptPromptResult:
+    """Chunked fallback: split the large concept-prompt schema into two smaller
+    LLM calls and merge, so a truncating free model can still complete the stage.
+
+    Pass 1 → core_concept + the four variants (the creative heart).
+    Pass 2 → model_adaptations + wireframe + rationale + clichés + confidence.
+    Each call produces a small, reliable JSON object; merged they satisfy the
+    full ConceptPromptResult schema. Only reached after both single-shot
+    attempts fail, so the happy path is unaffected.
+    """
+    orchestrator = get_ai_orchestrator()
+    steer = _client_steer_block(client_persona, is_recommended)
+    context = f"""Concept Family to execute:
+{json.dumps(family, indent=2, default=str)}
+
+Judge evaluation of this family:
+{json.dumps(judge_result, indent=2, default=str)}
+
+Brand DNA (the concept must trace to this):
+{json.dumps(brand_dna, indent=2, default=str)}
+
+Insight Report (clichés to avoid):
+{json.dumps(insight_report, indent=2, default=str)}{steer}"""
+    # Pass 1: the creative core — core_concept + four variants.
+    pass1_sys = (
+        CONCEPT_PROMPT_SYSTEM_PROMPT
+        + "\n\nFALLBACK PASS 1 of 2 — return ONLY {family_label, core_concept, "
+        "variants}. Emit exactly four variants (minimal, detailed, "
+        "typographic-led, symbolic). Do NOT include model_adaptations, wireframe, "
+        "rationale, cliches_avoided, or confidence in THIS response."
+    )
+    pass1 = await orchestrator.complete(
+        system_prompt=pass1_sys,
+        user_prompt=context + "\nProduce family_label, core_concept, and the four variants ONLY.",
+        response_format="json",
+        temperature=0.7,
+        max_tokens=1600,
+    )
+    part1 = _normalize_concept_prompt(parse_json_response(pass1))
+
+    # Pass 2: the supporting structure, given the variants pass 1 chose.
+    pass2_sys = (
+        CONCEPT_PROMPT_SYSTEM_PROMPT
+        + "\n\nFALLBACK PASS 2 of 2 — the variants already exist (provided below). "
+        "Return ONLY {family_label, core_concept, model_adaptations, wireframe, "
+        "rationale, cliches_avoided, confidence}. Do NOT regenerate variants."
+    )
+    pass2 = await orchestrator.complete(
+        system_prompt=pass2_sys,
+        user_prompt=(
+            context
+            + f"\nVariants already decided (do not regenerate):\n"
+            f"{json.dumps(part1.get('variants', []), indent=2, default=str)}\n\n"
+            "Now produce family_label, core_concept, the five model_adaptations, "
+            "the wireframe spec, rationale, cliches_avoided, and confidence."
+        ),
+        response_format="json",
+        temperature=0.6,
+        max_tokens=1800,
+    )
+    part2 = _normalize_concept_prompt(parse_json_response(pass2))
+
+    # Merge — part1 (variants/core_concept) wins on overlap; strip stray keys.
+    merged = {**part2, **part1}
+    merged = {k: v for k, v in merged.items() if k in _CONCEPT_CANONICAL_KEYS}
+    return ConceptPromptResult(**merged)
 

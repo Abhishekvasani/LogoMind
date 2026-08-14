@@ -97,6 +97,164 @@ def _first_field(block: str, label: str) -> str:
     return line
 
 
+def _slice_between(md: str, start_anchor: str, end_anchors: tuple, max_chars: int = 3500) -> str:
+    """Slice from `start_anchor` to the first `end_anchor` found after it.
+
+    Falls back to a char-bounded slice if no end anchor matches. Returns "" if
+    the start anchor isn't found (engine degrades gracefully).
+    """
+    start = md.find(start_anchor)
+    if start == -1:
+        return ""
+    end = len(md)
+    for anchor in end_anchors:
+        pos = md.find(anchor, start + len(start_anchor))
+        if pos != -1:
+            end = min(end, pos)
+    end = min(end, start + max_chars)
+    return md[start:end].strip()
+
+
+def _slice_bs001_positioning(md: str) -> str:
+    """Positioning Statement template + Positioning Audit."""
+    return _slice_between(
+        md,
+        "**The Positioning Statement.**",
+        ("**The Sacrifice Test.**", "**Positioning Failure Modes.**", "## ", "---"),
+    )
+
+
+def _slice_bs002_differentiation(md: str) -> str:
+    """Differentiation Audit (Three Tests) + Five Dimensions + False Differentiation Detector."""
+    return _slice_between(
+        md,
+        "**The Differentiation Audit.**",
+        ("**How It Passes the Three Tests.**", "**Case Study", "**Common False"),
+        max_chars=4500,
+    )
+
+
+def _slice_ph003_simplicity(md: str) -> str:
+    """Reduction Sequence + Four Tests of a Simple Mark."""
+    return _slice_between(
+        md,
+        "**The Professional Reduction Sequence.**",
+        ("**Simplicity Resolves Subjectivity.**", "**Professional Questions", "**The Four Failure"),
+    )
+
+
+def _slice_ph004_clarity(md: str) -> str:
+    """Clarity Audit + Four Clarity Fixes."""
+    return _slice_between(
+        md,
+        "**The Clarity Audit.**",
+        ("**Clarity Resolves Subjectivity.**", "**Professional Questions", "**The Four Clarity Failures"),
+    )
+
+
+def _slice_color_volume(md: str) -> str:
+    """Compact the 10 colour entries to one row each + the Colour Selection Framework.
+
+    Per entry: psychology, variations, originality risk, best pairings, best
+    for — the fields the Create engine cross-references to choose and justify a
+    palette instead of defaulting to the sea-of-blue/green generic choice.
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-CL-\d+) — (.+)$", md, re.MULTILINE):
+        cid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 1500
+        block = md[block_start:block_end]
+        psych = _first_field(block, "Psychology")
+        variations = _first_field(block, "Variations")
+        risk = _first_field(block, "Originality Risk").replace("Originality Risk:", "").strip()
+        pairings = _first_field(block, "Best Pairings")
+        best_for = _first_field(block, "Best For")
+        rows.append(
+            f"- {name} ({cid}): psych=[{psych}]; variations=[{variations}]; "
+            f"risk={risk}; pairings=[{pairings}]; best_for=[{best_for}]"
+        )
+    body = "\n".join(rows)
+    framework = _slice_between(
+        md,
+        "## Colour Selection Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=2000,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Colour Selection Framework (apply when choosing palette) ---\n{framework}"
+
+
+def _slice_type_volume(md: str) -> str:
+    """Compact the 10 type categories to one row each + the Typography Selection Framework.
+
+    Per entry: personality, industry fit, emotional associations, originality
+    risk, best for — so the Create engine grounds its typography direction in
+    letterform personality rather than the default Helvetica/Inter.
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-TY-\d+) — (.+)$", md, re.MULTILINE):
+        tid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 1500
+        block = md[block_start:block_end]
+        personality = _first_field(block, "Personality")
+        fit = _first_field(block, "Industry Fit")
+        emo = _first_field(block, "Emotional Associations")
+        risk = _first_field(block, "Originality Risk").replace("Originality Risk:", "").strip()
+        best_for = _first_field(block, "Best For")
+        rows.append(
+            f"- {name} ({tid}): personality=[{personality}]; fit=[{fit}]; "
+            f"emotion=[{emo}]; risk={risk}; best_for=[{best_for}]"
+        )
+    body = "\n".join(rows)
+    framework = _slice_between(
+        md,
+        "## Typography Selection Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=2000,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Typography Selection Framework (apply when choosing type) ---\n{framework}"
+
+
+def _slice_identity_volume(md: str) -> str:
+    """Compact the 10 identity concepts (name + definition) + the Logo Types table.
+
+    Gives the Create engine the structural vocabulary (negative space, grids,
+    stroke weight, symmetry, optical correction, scale behaviour) and the
+    operational logo-type classification, so composition is a craft decision
+    rather than a default centred-mark habit.
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-ID-\d+) — (.+)$", md, re.MULTILINE):
+        iid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 1500
+        block = md[block_start:block_end]
+        definition = _first_field(block, "Definition")
+        rows.append(f"- {name} ({iid}): {definition}")
+    body = "\n".join(rows)
+    # The Five Types table + strategic-choice factors are the most operational part.
+    logo_types = _slice_between(
+        md,
+        "**The Five Types:**",
+        ("**Common Mistakes:**",),
+        max_chars=2500,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Logo Types classification (RS-LIC-ID-008) ---\n{logo_types}"
+
+
 # ─── Registry ───────────────────────────────────────────────────────────
 
 
@@ -117,6 +275,41 @@ _REGISTRY: Tuple[ExtractSpec, ...] = (
         lic_id="RS-LIC-SY-VOLUME",
         filename="RS-LIC-SY-VOLUME.md",
         slicer=_slice_symbol_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-BS-001",
+        filename="RS-LIC-BS-001_Brand_Positioning.md",
+        slicer=_slice_bs001_positioning,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-BS-002",
+        filename="RS-LIC-BS-002_Brand_Differentiation.md",
+        slicer=_slice_bs002_differentiation,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-003",
+        filename="RS-LIC-PH-003_Simplicity.md",
+        slicer=_slice_ph003_simplicity,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-004",
+        filename="RS-LIC-PH-004_Clarity.md",
+        slicer=_slice_ph004_clarity,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-CL-VOLUME",
+        filename="RS-LIC-CL-VOLUME.md",
+        slicer=_slice_color_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-TY-VOLUME",
+        filename="RS-LIC-TY-VOLUME.md",
+        slicer=_slice_type_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-ID-VOLUME",
+        filename="RS-LIC-ID-VOLUME.md",
+        slicer=_slice_identity_volume,
     ),
 )
 

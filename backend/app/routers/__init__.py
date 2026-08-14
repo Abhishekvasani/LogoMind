@@ -20,7 +20,9 @@ from ..schemas import (
     CreateEngineResult, FamilyJudgeResult, SSB, CoachFeedback,
     WorkshopState, WorkshopAnswer,
     SketchUpload, SketchOut, DecisionLogEntry,
-    ConceptPromptResult,
+    ConceptPromptResult, AppealReport,
+    IntentExtractionRequest, IntentExtraction,
+    ContestBrief, ContestBriefDecodeRequest, ContestRefineRequest,
 )
 from ..services.discovery_engine import analyse_brief, extract_intent, synthesize_brief
 from ..services.engines import (
@@ -28,6 +30,8 @@ from ..services.engines import (
     judge_family, compose_ssb, critique_sketch, build_presentation,
 )
 from ..services.concept_engine import compose_concept_prompt
+from ..services.client_fit_engine import predict_client_appeal
+from ..services.contest_engine import decode_contest_brief, contest_brief_to_enrichment
 
 
 router = APIRouter()
@@ -64,6 +68,7 @@ _STAGE_NAMES = {
     "insight": "Insight",
     "create": "Concept Families",
     "judge": "Judge",
+    "client_fit": "Client Fit",
     "concept_prompt": "Concept Prompt",
     "ssb": "Strategic Sketch Brief",
     "sketch": "Sketch Coach",
@@ -77,6 +82,7 @@ _STAGE_ESTIMATES = {
     "insight": (30, 120),
     "create": (60, 240),
     "judge": (180, 540),
+    "client_fit": (30, 120),
     "concept_prompt": (180, 720),
     "ssb": (30, 120),
     "sketch": (20, 60),
@@ -296,6 +302,63 @@ async def complete_workshop(project_id: int, db: Session = Depends(get_db)):
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# INTENT EXTRACTION (LOG-DISC-001 sub-engine) — utility
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/decode-intent", response_model=IntentExtraction)
+async def decode_intent(req: IntentExtractionRequest):
+    """Decode a client's stated preference into the strategic intent behind it.
+
+    "I want blue" -> "I want trust"; "I want a shield" -> "I want security".
+    A quick utility for reading between the lines of a contest brief.
+    """
+    result = await extract_intent(req.preference)
+    return IntentExtraction(**result)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# STAGE 3: CONTEST BRIEF DECODER (freelancer.com brief -> structured signals)
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/decode-contest-brief", response_model=ContestBrief)
+@with_stage_error("client_fit")
+async def decode_contest_brief_route(req: ContestBriefDecodeRequest):
+    """Decode a pasted logo-contest brief into structured signals (Stage 3).
+
+    Utility endpoint: returns company/industry/colors/do's/don'ts/etc. so the
+    new-project form can confirm them before creating the project.
+    """
+    return await decode_contest_brief(req.raw_text)
+
+
+@router.post("/projects/{project_id}/contest-brief", response_model=Project)
+@with_stage_error("client_fit")
+async def attach_contest_brief(project_id: int, req: ContestBriefDecodeRequest, db: Session = Depends(get_db)):
+    """Decode a contest brief and attach it to a project (Stage 3).
+
+    Stores the structured ContestBrief, enriches the project's client_brief with
+    a readable summary of the decoded requirements (so Discovery/Strategy also
+    benefit), and fills company_name/industry if they were empty.
+    """
+    project = _get_project(db, project_id)
+    brief = await decode_contest_brief(req.raw_text)
+
+    project.contest_brief = brief.model_dump()
+    # Fill company/industry if the decoded brief provides them and the project lacks them.
+    if not project.company_name and brief.company_name:
+        project.company_name = brief.company_name
+    if (not project.industry or project.industry.strip().lower() == "unspecified") and brief.industry:
+        project.industry = brief.industry
+    # Enrich the brief so downstream stages (Discovery, Strategy, Client Fit) see
+    # the structured requirements, not just the raw prose.
+    project.client_brief = (project.client_brief or "").rstrip() + "\n\n" + contest_brief_to_enrichment(brief)
+
+    db.commit()
+    _log_decision(db, project_id, "Contest brief decoded and attached", stage="client_fit")
+    return project
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # STAGE 4: STRATEGY ENGINE (LOG-STRAT-001)
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -438,6 +501,98 @@ def select_family(project_id: int, family_label: str, db: Session = Depends(get_
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# STAGE: CLIENT PREFERENCE PREDICTOR (Client Fit)
+# ═══════════════════════════════════════════════════════════════════════
+
+@router.post("/projects/{project_id}/client-fit", response_model=AppealReport)
+@with_stage_error("client_fit")
+async def run_client_fit(project_id: int, db: Session = Depends(get_db)):
+    """Run the Client Preference Predictor (Client Fit stage).
+
+    Builds a persona of THIS client from the brief + context, then predicts how
+    strongly each Concept Family will resonate with that persona and ranks them.
+    Honest preference prediction — not literal neuroscience (see report caveat).
+    Requires Concept Families (Create); uses Strategy + Insight as context.
+    """
+    project = _get_project(db, project_id)
+    if not project.concept_families:
+        raise HTTPException(status_code=400, detail="Concept Families required. Run Create first.")
+
+    result = await predict_client_appeal(
+        company_name=project.company_name,
+        industry=project.industry,
+        client_brief=project.client_brief,
+        discovery_summary=project.discovery_summary,
+        brand_dna=project.brand_dna,
+        insight_report=project.insight_report,
+        concept_families=project.concept_families,
+        judge_report=project.judge_report,
+        contest_brief=project.contest_brief,
+        contest_feedback=project.contest_feedback,
+    )
+
+    project.client_persona = result.persona.model_dump()
+    project.appeal_report = result.model_dump()
+    # Don't regress a project that has already moved past Client Fit.
+    if project.stage in ("entry", "discovery", "workshop", "strategy", "insight", "create", "judge"):
+        project.stage = "client_fit"
+    db.commit()
+
+    _log_decision(
+        db, project_id,
+        f"Client Fit: recommended Family {result.recommended_family} "
+        f"(appeal {result.family_appeal[0].client_appeal_score:.0f}/100)",
+        stage="client_fit",
+    )
+    return result
+
+
+@router.post("/projects/{project_id}/client-fit/refine", response_model=AppealReport)
+@with_stage_error("client_fit")
+async def refine_client_fit(project_id: int, req: ContestRefineRequest, db: Session = Depends(get_db)):
+    """Stage 4 — fold the client's revealed in-contest preferences into the prediction.
+
+    Appends the supplied signals (liked/disliked traits, comments) to the
+    project's accumulated contest feedback, then re-runs the Client Preference
+    Predictor with that feedback as the highest-signal input. This is how the
+    prediction adapts to what the client actually does in the contest, not just
+    what the brief said.
+    """
+    project = _get_project(db, project_id)
+    if not project.concept_families:
+        raise HTTPException(status_code=400, detail="Concept Families required. Run Create first.")
+
+    # Accumulate signals (never overwrite — feedback compounds across the contest).
+    existing = list(project.contest_feedback or [])
+    existing.extend(s.model_dump() for s in req.signals)
+    project.contest_feedback = existing
+
+    result = await predict_client_appeal(
+        company_name=project.company_name,
+        industry=project.industry,
+        client_brief=project.client_brief,
+        discovery_summary=project.discovery_summary,
+        brand_dna=project.brand_dna,
+        insight_report=project.insight_report,
+        concept_families=project.concept_families,
+        judge_report=project.judge_report,
+        contest_brief=project.contest_brief,
+        contest_feedback=project.contest_feedback,
+    )
+    project.client_persona = result.persona.model_dump()
+    project.appeal_report = result.model_dump()
+    db.commit()
+
+    _log_decision(
+        db, project_id,
+        f"Client Fit refined with {len(req.signals)} contest signal(s); "
+        f"now recommends Family {result.recommended_family}",
+        stage="client_fit",
+    )
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # STAGE: CONCEPT PROMPT ENGINE (LOG-CP-001)
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -461,6 +616,11 @@ async def compose_project_concept_prompts(project_id: int, db: Session = Depends
     # honour per-family evaluation and refinements.
     judge_by_label = {j.get("family_label"): j for j in project.judge_report}
 
+    # If a Client Fit prediction exists, steer every prompt toward the client's
+    # modelled taste and flag the rank-1 (recommended) family for extra emphasis.
+    recommended_label = (project.appeal_report or {}).get("recommended_family")
+    persona = project.client_persona
+
     results = []
     for family in project.concept_families:
         result = await compose_concept_prompt(
@@ -468,6 +628,8 @@ async def compose_project_concept_prompts(project_id: int, db: Session = Depends
             judge_result=judge_by_label.get(family.get("family_label"), {}),
             brand_dna=project.brand_dna,
             insight_report=project.insight_report,
+            client_persona=persona,
+            is_recommended=(family.get("family_label") == recommended_label),
         )
         results.append(result)
 
