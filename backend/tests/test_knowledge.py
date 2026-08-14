@@ -69,3 +69,41 @@ def test_added_slicers_resolve():
     ):
         content = lk.get(lic_id)
         assert content, f"{lic_id} resolved empty — slicer or source file may have shifted"
+
+
+def test_every_registered_lic_resolves():
+    """ALL registry entries (19 volumes) resolve to a non-empty extract.
+
+    An empty extract silently degrades the engine that injects it, so the full
+    registry is guarded here, not just hand-picked ids.
+    """
+    lk.load(force=True)
+    assert lk._REGISTRY, "registry is empty"
+    for spec in lk._REGISTRY:
+        content = lk.get(spec.lic_id)
+        assert content, f"{spec.lic_id} ({spec.filename}) resolved empty"
+
+
+def test_engine_prompts_carry_knowledge():
+    """Every knowledge-injecting engine prompt actually contains a block.
+
+    Guards the wiring itself: a dropped knowledge_block() call (e.g. during a
+    prompt refactor) would silently return the engine to ungrounded behaviour.
+    """
+    from app.services import engines, client_fit_engine, concept_engine
+
+    lk.load(force=True)
+    cases = [
+        (engines.STRATEGY_SYSTEM_PROMPT, "RS-LIC-BS-001"),      # 5 BS frameworks
+        (engines.INSIGHT_SYSTEM_PROMPT, "RS-LIC-PH-008"),       # Trend Taxonomy
+        (engines.INSIGHT_SYSTEM_PROMPT, "RS-LIC-SY-VOLUME"),    # cliché detection
+        (engines.CREATE_SYSTEM_PROMPT, "RS-LIC-SY-VOLUME"),
+        (engines.JUDGE_SYSTEM_PROMPT, "RS-LIC-PH-003"),         # simplicity dim
+        (engines.SSB_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),        # grids / logo types
+        (engines.COACH_SYSTEM_PROMPT, "RS-LIC-PH-004"),         # clarity audit
+        (client_fit_engine.CLIENT_FIT_SYSTEM_PROMPT, "RS-LIC-BS-005"),  # archetypes
+        (concept_engine.CONCEPT_PROMPT_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),
+    ]
+    for prompt, marker in cases:
+        assert "CANONICAL LOGOMIND KNOWLEDGE" in prompt, "knowledge block missing"
+        assert f"--- {marker} ---" in prompt, f"{marker} not injected"

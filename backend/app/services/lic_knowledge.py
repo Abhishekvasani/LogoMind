@@ -255,6 +255,117 @@ def _slice_identity_volume(md: str) -> str:
     return f"{body}\n\n--- Logo Types classification (RS-LIC-ID-008) ---\n{logo_types}"
 
 
+# The ten remaining LIC volumes share the 11-section textbook template: each
+# carries one operational core (an audit/test/framework run) bracketed by
+# "**The <Framework>.**" and "**Common Professional Mistakes.**". The slicers
+# below pull exactly that run — the tables and questions an engine can apply —
+# never the narrative galleries.
+
+
+def _slice_ph001_meaning(md: str) -> str:
+    """Professional Design Sequence + pre-sketching questions."""
+    return _slice_between(
+        md,
+        "**The Professional Design Sequence.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_ph002_purpose(md: str) -> str:
+    """Purpose-Discovery Sequence + pre-strategy questions."""
+    return _slice_between(
+        md,
+        "**The Professional Purpose-Discovery Sequence.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_ph006_memorability(md: str) -> str:
+    """Four Anchors of Memorability + Recall Test."""
+    return _slice_between(
+        md,
+        "**The Four Anchors of Memorability.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_ph007_authenticity(md: str) -> str:
+    """Authenticity Audit + Specificity Principle."""
+    return _slice_between(
+        md,
+        "**The Authenticity Audit.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_ph008_timelessness(md: str) -> str:
+    """Timelessness Audit + Trend Taxonomy + Timelessness Test.
+
+    The Trend Taxonomy (timeless/emerging/short-lived/overused) is the Insight
+    engine's trend-classification scheme.
+    """
+    return _slice_between(
+        md,
+        "**The Timelessness Audit.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_ph009_relevance(md: str) -> str:
+    """Relevance Audit + Relevance Dial + Forced-Relevance Test.
+
+    The Relevance Dial supplies the timeless↔trend-forward mix ratios the
+    Insight engine cites.
+    """
+    return _slice_between(
+        md,
+        "**The Relevance Audit.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_ph010_consistency(md: str) -> str:
+    """Consistency Audit + Coherence/Uniformity Spectrum + Consistency Test."""
+    return _slice_between(
+        md,
+        "**The Consistency Audit.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_bs003_audience(md: str) -> str:
+    """Audience Definition Framework + audience→identity calibration."""
+    return _slice_between(
+        md,
+        "**The Audience Definition Framework.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_bs004_personality(md: str) -> str:
+    """Personality Definition Framework + personality→identity mapping."""
+    return _slice_between(
+        md,
+        "**The Personality Definition Framework.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+    )
+
+
+def _slice_bs005_archetypes(md: str) -> str:
+    """Archetype Audit + the Twelve Classical Archetypes diagnostic table +
+    archetype→personality→identity mapping.
+
+    The twelve-archetype table is the persona vocabulary the Client Fit engine
+    models its client archetype against, so keep a generous cap.
+    """
+    return _slice_between(
+        md,
+        "**The Archetype Audit.**",
+        ("**Common Professional Mistakes.**", "**Case Study", "## "),
+        max_chars=4000,
+    )
+
+
 # ─── Registry ───────────────────────────────────────────────────────────
 
 
@@ -310,6 +421,56 @@ _REGISTRY: Tuple[ExtractSpec, ...] = (
         lic_id="RS-LIC-ID-VOLUME",
         filename="RS-LIC-ID-VOLUME.md",
         slicer=_slice_identity_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-001",
+        filename="RS-LIC-PH-001_Meaning.md",
+        slicer=_slice_ph001_meaning,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-002",
+        filename="RS-LIC-PH-002_Purpose.md",
+        slicer=_slice_ph002_purpose,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-006",
+        filename="RS-LIC-PH-006_Memorability.md",
+        slicer=_slice_ph006_memorability,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-007",
+        filename="RS-LIC-PH-007_Authenticity.md",
+        slicer=_slice_ph007_authenticity,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-008",
+        filename="RS-LIC-PH-008_Timelessness.md",
+        slicer=_slice_ph008_timelessness,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-009",
+        filename="RS-LIC-PH-009_Relevance.md",
+        slicer=_slice_ph009_relevance,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PH-010",
+        filename="RS-LIC-PH-010_Consistency.md",
+        slicer=_slice_ph010_consistency,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-BS-003",
+        filename="RS-LIC-BS-003_Target_Audience.md",
+        slicer=_slice_bs003_audience,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-BS-004",
+        filename="RS-LIC-BS-004_Brand_Personality.md",
+        slicer=_slice_bs004_personality,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-BS-005",
+        filename="RS-LIC-BS-005_Brand_Archetypes.md",
+        slicer=_slice_bs005_archetypes,
     ),
 )
 

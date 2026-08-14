@@ -79,4 +79,12 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        # Which LIC knowledge extracts actually resolved — a silent empty
+        # extract degrades engine grounding with no error, so surface it here.
+        "knowledge": {
+            "loaded": lic_knowledge.is_loaded(),
+            "available": lic_knowledge.available_lics(),
+        },
+    }

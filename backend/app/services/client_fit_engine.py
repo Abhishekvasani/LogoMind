@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import ValidationError
 
 from .ai_orchestrator import get_ai_orchestrator, parse_json_response
+from . import lic_knowledge
 from ..schemas import AppealReport, ClientPersona, FamilyAppeal, ConfidenceLevel
 
 CLIENT_FIT_SYSTEM_PROMPT = """You are LOGOS Client Insight, the Client Preference Predictor of LogoMind.
@@ -101,7 +102,13 @@ Respond as JSON with EXACTLY this schema (use these field names verbatim):
 
 Include one family_appeal entry for EVERY family provided. Return ONLY the JSON
 object. No prose, no code fences, no commentary.
-"""
+""" + lic_knowledge.knowledge_block([
+    # Ground the persona's decoded intents and taste in the canonical volumes:
+    # colour psychology (decoding "blue" -> trust), symbol meanings (decoding
+    # "a shield" -> security), type personality (aesthetic lean), and the
+    # twelve-archetype vocabulary the persona's `archetype` field draws from.
+    "RS-LIC-CL-VOLUME", "RS-LIC-TY-VOLUME", "RS-LIC-SY-VOLUME", "RS-LIC-BS-005",
+])
 
 
 def _normalize_appeal_report(data: Dict[str, Any], family_labels: List[str]) -> Dict[str, Any]:

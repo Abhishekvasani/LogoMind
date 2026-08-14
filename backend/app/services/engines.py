@@ -57,7 +57,9 @@ nest or rename fields; every non-optional field is required):
 }
 
 Return ONLY the JSON object. No prose, no code fences, no commentary.
-"""
+""" + lic_knowledge.knowledge_block([
+    "RS-LIC-BS-001", "RS-LIC-BS-002", "RS-LIC-BS-003", "RS-LIC-BS-004", "RS-LIC-BS-005",
+])
 
 
 async def build_brand_dna(discovery_summary: Dict[str, Any]) -> BrandDNA:
@@ -108,7 +110,9 @@ nest or rename fields; every non-optional field is required):
 
 The two numbers in trend_vs_timeless_balance must sum to 1.0.
 Return ONLY the JSON object. No prose, no code fences, no commentary.
-"""
+""" + lic_knowledge.knowledge_block([
+    "RS-LIC-PH-008", "RS-LIC-PH-009", "RS-LIC-SY-VOLUME",
+])
 
 
 async def generate_insight(
@@ -357,7 +361,12 @@ originality, memorability, authenticity, timelessness, relevance, consistency,
 brand_fit. Each score is 0.0-10.0. composite is 0.0-10.0.
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
-    + lic_knowledge.knowledge_block(["RS-LIC-PH-005"])
+    # Ground the craft dimensions with their canonical audits/tests: originality
+    # (PH-005), simplicity (PH-003), clarity (PH-004), memorability (PH-006),
+    # timelessness (PH-008). The remaining dimensions are judged from context.
+    + lic_knowledge.knowledge_block([
+        "RS-LIC-PH-005", "RS-LIC-PH-003", "RS-LIC-PH-004", "RS-LIC-PH-006", "RS-LIC-PH-008",
+    ])
 )
 
 
@@ -482,7 +491,7 @@ nest or rename fields; every field is required):
 Include 5-7 sketch_missions. start_with must be concrete, actionable guidance
 (e.g. "Begin with a circular grid; sketch 10 keystone variations; test at 16px").
 Return ONLY the JSON object. No prose, no code fences, no commentary.
-"""
+""" + lic_knowledge.knowledge_block(["RS-LIC-ID-VOLUME"])
 
 
 def _select_chosen_family(
@@ -628,7 +637,7 @@ nest or rename fields; every non-optional field is required):
 
 Frame suggestions as questions where possible. Return ONLY the JSON object.
 No prose, no code fences, no commentary.
-"""
+""" + lic_knowledge.knowledge_block(["RS-LIC-PH-003", "RS-LIC-PH-004"])
 
 
 async def critique_sketch(

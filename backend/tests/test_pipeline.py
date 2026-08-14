@@ -24,7 +24,11 @@ def test_app_boots(client: TestClient):
     """
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    body = response.json()
+    assert body["status"] == "healthy"
+    # Knowledge extracts must also have resolved (engines inject them).
+    assert body["knowledge"]["loaded"] is True
+    assert "RS-LIC-PH-005" in body["knowledge"]["available"]
 
 
 # ─── Helpers ───────────────────────────────────────────────────────────
