@@ -704,7 +704,11 @@ Respond as JSON with EXACTLY this schema (use these field names verbatim):
 }
 
 Return ONLY the JSON object. No prose, no code fences, no commentary.
-"""
+""" + lic_knowledge.knowledge_block([
+    # The Objection Taxonomy grounds objection_handling (answer the armoured
+    # question with craft evidence); the decision-maker types tailor tone.
+    "RS-LIC-PSY-VOLUME",
+])
 
 
 async def build_presentation(

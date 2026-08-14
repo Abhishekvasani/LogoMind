@@ -406,6 +406,64 @@ def _slice_industry_volume(md: str) -> str:
     return f"{body}\n\n--- Industry Intelligence Framework (apply when working per-category) ---\n{framework}"
 
 
+def _slice_client_psychology_volume(md: str) -> str:
+    """Compact the decision-maker types to one row each + the Feedback Decoder,
+    Objection Taxonomy, and Client Psychology Framework.
+
+    The type rows carry aesthetic lean + boldness tolerance — the exact fields
+    the Client Fit engine's persona predicts — plus recognition cues and how to
+    win them. The two tables serve feedback interpretation (objection handling
+    in the Presentation engine).
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-PSY-\d+) — (.+)$", md, re.MULTILINE):
+        pid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 2000
+        block = md[block_start:block_end]
+        cues = _first_field(block, "Recognition Cues")
+        if not cues:
+            continue  # the decoder/taxonomy entries are appended as tables below
+        values = _first_field(block, "What They Value")
+        lean = _first_field(block, "Aesthetic Lean")
+        boldness = _first_field(block, "Boldness Tolerance")
+        feedback = _first_field(block, "Feedback Style")
+        win = _first_field(block, "How to Win Them")
+        watch = _first_field(block, "Watch Out")
+        rows.append(
+            f"- {name} ({pid}): cues=[{cues}]; values=[{values}]; lean={lean}; "
+            f"boldness={boldness}; feedback=[{feedback}]; win=[{win}]; risk=[{watch}]"
+        )
+    body = "\n".join(rows)
+    decoder = _slice_between(
+        md,
+        "## RS-LIC-PSY-009 — The Feedback Decoder",
+        ("## RS-LIC-PSY-010",),
+        max_chars=3200,
+    )
+    objections = _slice_between(
+        md,
+        "## RS-LIC-PSY-010 — The Objection Taxonomy",
+        ("## Volume Metadata",),
+        max_chars=3200,
+    )
+    framework = _slice_between(
+        md,
+        "## Client Psychology Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=1600,
+    )
+    if not body:
+        return ""
+    return (
+        f"{body}\n\n--- The Feedback Decoder (translate taste-language) ---\n{decoder}"
+        f"\n\n--- The Objection Taxonomy (answer the armoured question) ---\n{objections}"
+        f"\n\n--- Client Psychology Framework ---\n{framework}"
+    )
+
+
 # ─── Registry ───────────────────────────────────────────────────────────
 
 
@@ -516,6 +574,11 @@ _REGISTRY: Tuple[ExtractSpec, ...] = (
         lic_id="RS-LIC-IND-VOLUME",
         filename="RS-LIC-IND-VOLUME.md",
         slicer=_slice_industry_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PSY-VOLUME",
+        filename="RS-LIC-PSY-VOLUME.md",
+        slicer=_slice_client_psychology_volume,
     ),
 )
 

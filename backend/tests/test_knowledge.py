@@ -104,6 +104,8 @@ def test_engine_prompts_carry_knowledge():
         (engines.SSB_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),        # grids / logo types
         (engines.COACH_SYSTEM_PROMPT, "RS-LIC-PH-004"),         # clarity audit
         (client_fit_engine.CLIENT_FIT_SYSTEM_PROMPT, "RS-LIC-BS-005"),  # archetypes
+        (client_fit_engine.CLIENT_FIT_SYSTEM_PROMPT, "RS-LIC-PSY-VOLUME"),  # decider types
+        (engines.PRESENTATION_SYSTEM_PROMPT, "RS-LIC-PSY-VOLUME"),  # objection taxonomy
         (concept_engine.CONCEPT_PROMPT_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),
     ]
     for prompt, marker in cases:
@@ -126,3 +128,24 @@ def test_industry_volume_content():
         assert marker in extract, f"industry slice missing '{marker}'"
     # A known cliché map must survive the compaction (sample check).
     assert "Dumbbell" in extract or "dumbbell" in extract
+
+
+def test_client_psychology_volume_content():
+    """The Client Psychology slice carries its three systems.
+
+    Client Fit predicts personas from the type rows (which must carry the
+    aesthetic-lean / boldness-tolerance fields); Presentation answers
+    objections from the taxonomy; the decoder must keep its key phrases.
+    """
+    lk.load(force=True)
+    extract = lk.get("RS-LIC-PSY-VOLUME")
+    assert "RS-LIC-PSY-001" in extract and "RS-LIC-PSY-008" in extract
+    for marker in (
+        "lean=", "boldness=",                      # persona-prediction fields
+        "The Feedback Decoder",                    # taste-language table
+        "The Objection Taxonomy",                  # presentation objection source
+        "Client Psychology Framework",
+    ):
+        assert marker in extract, f"psychology slice missing '{marker}'"
+    # Signature decoded phrases must survive the slice (sample check).
+    assert "Make it pop" in extract and "too simple" in extract.lower()
