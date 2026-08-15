@@ -172,13 +172,88 @@ Each entry is a compact LIC covering the type category's personality, industry f
 
 ---
 
+## RS-LIC-TY-011 — Condensed Sans
+
+**Definition:** Narrow-width sans-serifs built for tight space and tall stacks.
+
+**Personality:** Efficient, urban, muscular, no-nonsense
+**Industry Fit:** Logistics, sports, news media, industrial, retail signage
+**Emotional Associations:** Speed, density, grit, momentum
+**Examples:** Oswald, Roboto Condensed, Barlow Condensed, Din Condensed (the industrial classic)
+**Originality Risk:** 🟠 Moderate — DIN-condensed industrial revival is busy; esports stacks crowded
+**Pairing:** Pairs with a wide companion for contrast of width; one condensed family per system
+**Best For:** Brands needing signage-grade impact and vertical rhythm
+**LKG Relationships:** → Efficiency, → Momentum, → Industry
+
+---
+
+## RS-LIC-TY-012 — Extended Sans
+
+**Definition:** Wide-tracked sans-serifs that stretch horizontally for presence.
+
+**Personality:** Confident, modern, spacious, bold-but-calm
+**Industry Fit:** Technology, fashion streetwear, media, automotive, sports
+**Emotional Associations:** Presence, openness, contemporary confidence
+**Examples:** Eurostile Extended (retro-tech), Neue Haas Grotesk Wide, Archivo Expanded, Space Grotesk
+**Originality Risk:** 🟠 Moderate — the streetwear/tech wide wave is active; use with restraint in long names
+**Pairing:** Best as the sole voice — wide type pairs poorly with second personalities
+**Best For:** Short brand names wanting widescreen presence
+**LKG Relationships:** → Confidence, → Presence, → Modernity
+
+---
+
+## RS-LIC-TY-013 — Blackletter
+
+**Definition:** The dense calligraphic scripts of medieval manuscript tradition; the oldest display voice.
+
+**Personality:** Heritage, craftsmanship, tradition, drama, tattoo-culture edge
+**Industry Fit:** Craft brewing, tattoo/barber culture, heritage goods, heavy music, news mastheads (legacy)
+**Emotional Associations:** History, intensity, authenticity, rebellion (modern subculture reading)
+**Examples:** Fraktur, Old English, UnifrakturMaguntia
+**Originality Risk:** 🔴 High — tattoo/barber/newspaper cliché density is extreme; legibility collapses at small sizes
+**Pairing:** Only ever display; pairs with clean grotesque for any body text
+**Best For:** Heritage-intensity brands with short names and a subculture to honour
+**LKG Relationships:** → Heritage, → Craft, → Intensity
+
+---
+
+## RS-LIC-TY-014 — Non-Latin / Multilingual Systems
+
+**Definition:** Type strategy for brands living across scripts — Latin + Arabic, Devanagari, CJK, and beyond.
+
+**Personality:** Global-minded, inclusive, considered
+**Industry Fit:** Global brands, regional champions selling worldwide, diaspora brands, government/multilingual services
+**Emotional Associations:** Respect, belonging, professionalism across markets
+**Examples:** Noto families (pan-script), IBM Plex (its script expansions), custom dual-script systems (Latin + Arabic house styles)
+**Originality Risk:** 🟢 Low — most brands do this badly; doing it well is differentiation itself
+**Pairing:** Superfamilies with matched script siblings beat mixing foundries; weight parity matters more than style flair
+**Best For:** Any brand whose audience reads more than one script — the system is the identity
+**LKG Relationships:** → Inclusivity, → Global reach, → Craft
+
+---
+
+## RS-LIC-TY-015 — Variable / Fluid Type
+
+**Definition:** Single-file typefaces with adjustable axes (weight, width, optical size); the responsive-age type system.
+
+**Personality:** Adaptive, technical-forward, systematic, alive
+**Industry Fit:** Digital-first brands, data visualisation, media, design tools, tech platforms
+**Emotional Associations:** Motion, responsiveness, modern engineering
+**Examples:** Inter (variable), Roboto Flex, Din Variable,Recursive
+**Originality Risk:** 🟢 Low — the capability is underused; animated weight/width responses are a fresh system signature
+**Pairing:** One variable family can BE the whole system — axes replace multiple fonts
+**Best For:** Digital products where the identity responds (weight shifts on scroll, width on viewport)
+**LKG Relationships:** → Adaptivity, → Systems, → Motion
+
+---
+
 ## Volume Metadata
 
 | Field | Value |
 |-------|-------|
-| Total categories | 10 (starter set) |
+| Total categories | 15 (starter set) |
 | Full volume target | 40+ categories and detailed pairing guides |
-| Categories covered | Sans (Humanist, Geometric, Grotesque), Serif (Transitional, Old-Style, Modern, Slab), Script, Monospace, Display/Custom |
+| Categories covered | Sans (Humanist, Geometric, Grotesque, Condensed, Extended), Serif (Transitional, Old-Style, Modern, Slab), Script, Monospace, Display/Custom, Blackletter, Non-Latin Systems, Variable/Fluid |
 | Most overused | Grotesque (Helvetica/Inter — needs customisation) |
 | Most original | Display/Custom, Slab Serif, Monospace |
 

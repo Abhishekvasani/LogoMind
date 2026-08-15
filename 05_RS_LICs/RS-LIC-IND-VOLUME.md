@@ -188,12 +188,84 @@ Each entry covers the category's core signal (what its customers need to feel), 
 
 ---
 
+## RS-LIC-IND-015 — Travel & Hospitality
+
+**Core Signal:** Escape and welcome — "you arrive a stranger, you leave restored"
+**Symbol Conventions:** Pin, plane, palm, sun-horizon, key, umbrella (beach), folded map
+**Colour Conventions:** Sky/ocean blues, sunset gradients, sand neutrals
+**Typography Conventions:** Friendly humanist sans; script accents (boutique); wide-tracked caps (premium resorts)
+**Clichés to Avoid:** Plane-around-globe, palm-tree-sunset, pin-on-island, suitcase, generic wave, "passport stamp" badges
+**Opportunities:** The destination's actual geometry (coastline, skyline, contour lines); arrival thresholds (doorway/arch); local craft patterns executed with modern restraint
+**LKG Relationships:** → RS-LIC-CL-023 Sky Blue, → Escape, → Welcome
+
+---
+
+## RS-LIC-IND-016 — Pets & Animal Care
+
+**Core Signal:** Love and trust — "my best friend is safe with you"
+**Symbol Conventions:** Paw, heart, bone, pet silhouette (breed-specific), house-pet hybrids
+**Colour Conventions:** Warm friendly palettes (coral, teal, yellow); paw-pink for grooming
+**Typography Conventions:** Rounded friendly sans; chunky playful display; tail-wag letterforms (custom)
+**Clichés to Avoid:** Paw (the category default), paw-in-heart, bone, dog+cat silhouettes facing each other, whisker marks
+**Opportunities:** Breed-specific craft (the actual dog's silhouette as custom geometry); the bond gesture abstracted (two forms leaning); medical-grade trust for vet care (a clinical counter to the cute default)
+**LKG Relationships:** → RS-LIC-SY-043 Paw, → Companionship, → Trust
+
+---
+
+## RS-LIC-IND-017 — Crypto & Web3
+
+**Core Signal:** Futurity and self-custody — "money/code for the next era"
+**Symbol Conventions:** Coin, hexagon, node networks, animal mascots (bull/bear/apes), Ω and sci glyphs
+**Colour Conventions:** Near-black + electric accents (cyan/violet/lime); gold for "digital gold" narratives
+**Typography Conventions:** Geometric/extended sans; monospace (code-native); bespoke letterforms with cut terminals
+**Clichés to Avoid:** Bitcoin-riff circles, generic coin, rocket-to-the-moon, diamond hands, bull horns on a coin, "glowing orb"
+**Opportunities:** Protocol honesty (the actual mechanism rendered as form — hashing, staking, Merkle geometry); restraint as contrarianism in a shouty category; monospace-led credibility for infra brands
+**LKG Relationships:** → RS-LIC-IND-001 Fintech, → Futurity, → Self-custody
+
+---
+
+## RS-LIC-IND-018 — Automotive & Mobility
+
+**Core Signal:** Motion and engineering pride — "built to move, built to last"
+**Symbol Conventions:** Badge/shield (heritage), wheel, chevrons, speed lines, horse/badge (legacy), lightning (EV)
+**Colour Conventions:** Silver/chrome, racing red, near-black; EV-era accents (electric cyan)
+**Typography Conventions:** Extended bold sans; custom badge lettering; slanted italics (speed — careful)
+**Clichés to Avoid:** Winged badges, generic wheel-with-wing, speedometer, lightning-on-car (EV default), chrome bevel everything
+**Opportunities:** EV-era reset (clean geometry vs combustion chrome); the drivetrain abstracted; mobility-as-network (routes) for services rather than metal
+**LKG Relationships:** → RS-LIC-CL-014 Silver, → Motion, → Engineering
+
+---
+
+## RS-LIC-IND-019 — Logistics & Delivery
+
+**Core Signal:** Reliability at speed — "it arrives, every time, on time"
+**Symbol Conventions:** Arrow, box/parcel, route lines, chevrons, truck silhouette, node networks
+**Colour Conventions:** Safety orange/yellow + charcoal, navy (B2B trust), green (sustainability angle)
+**Typography Conventions:** Heavy condensed sans (signage lineage); sturdy grotesque; tracking numbers as texture (mono)
+**Clichés to Avoid:** Box-with-arrow, globe-and-arrow (see B2B), truck side-view, speed lines, paper-plane (delivery-app wave)
+**Opportunities:** The route as the mark (origin→destination geometry); stack/warehouse systems; honest industrial craft (chevron stacks that mean sorting, not decoration)
+**LKG Relationships:** → RS-LIC-SY-030 Chevron, → Reliability, → Speed
+
+---
+
+## RS-LIC-IND-020 — Kids & Family
+
+**Core Signal:** Joy and safety — "made for little humans, trusted by big ones"
+**Symbol Conventions:** Balloon, star, rainbow, smile, rounded creatures, building blocks
+**Colour Conventions:** Bright primaries; soft pastels (premium kids); rainbow gradients
+**Typography Conventions:** Rounded sans (terminal friendliness); chunky display; hand-drawn (craft — careful at scale)
+**Clichés to Avoid:** Rainbow arch, balloon, generic smiley, stork (newborn), ABC blocks, crayon scribbles
+**Opportunities:** Growth geometry (ascenders as growing forms); parental-trust counter-signals (a kids brand adults don't find saccharine); one sophisticated accent colour in a category screaming with six
+**LKG Relationships:** → RS-LIC-CL-004 Yellow, → Joy, → Safety
+
+---
+
 ## Volume Metadata
 
 | Field | Value |
 |-------|-------|
-| Total categories | 14 (starter set) |
-| Full volume target | 30+ categories incl. automotive, travel/hospitality, pets, crypto/web3, agriculture, logistics, energy, kids/family |
+| Total categories | 20 (starter set) |
+| Full volume target | 30+ categories — add: agriculture, energy/utilities, events, religious orgs, sports clubs, government/civic, media/streaming |
 | Coverage approach | Core signal + conventions (context) + clichés (hard constraints) + opportunities (white space) |
 | Highest cliché density | Coffee & Café, Fitness, Real Estate, Nonprofit |
 | Feeds | Insight (conventions/clichés/opportunities), Create (per-category conventions), Client Fit (industry context) |

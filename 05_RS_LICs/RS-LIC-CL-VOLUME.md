@@ -272,15 +272,113 @@ Each entry covers the colour's emotional associations, industry conventions, cul
 
 ---
 
+## RS-LIC-CL-019 — Copper / Bronze
+
+**Psychology:** Craft, warmth, durability, honest industry, artisanal metal
+**Industry Conventions:** Craft goods, hardware, coffee roasting, artisanal food, interiors
+**Variations:** Brushed Copper (warm craft), Bronze (heritage, durability), Rose-Copper (contemporary warmth), Patina Verdigris (aged character)
+**Originality Risk:** 🟢 Low — warmer and rarer than gold/silver; the metallic-with-soul choice
+**Cultural Notes:** Bronze-age heritage; olympic bronze (third) is minor baggage
+**Best Pairings:** Deep Teal (modern craft classic), Charcoal (industrial warmth), Cream (artisanal)
+**Accessibility:** As a flat tone, mid-contrast; metallic renders need a flat fallback (see PRD)
+**Best For:** Craft/artisanal brands wanting metallic warmth without gold's luxury shout
+**LKG Relationships:** → Craft, → Warmth, → Durability
+
+---
+
+## RS-LIC-CL-020 — Champagne / Soft Gold
+
+**Psychology:** Understated luxury, celebration, refinement, quiet wealth
+**Industry Conventions:** Premium hospitality, weddings, beauty, high-end consulting
+**Variations:** Champagne (soft, warm), Pale Gold (delicate premium), Antique Gold (heritage)
+**Originality Risk:** 🟢 Low-Moderate — the tasteful alternative to saturated gold
+**Cultural Notes:** Celebration universal; reads European-elegant broadly
+**Best Pairings:** Charcoal (premium contrast), Blush (wedding classic), Deep Green (festive heritage)
+**Accessibility:** Light metallics fail on white — needs dark ground or outline
+**Best For:** Premium brands whose luxury whispers instead of shouts
+**LKG Relationships:** → Luxury, → Celebration, → Refinement
+
+---
+
+## RS-LIC-CL-021 — Ecru / Oatmeal
+
+**Psychology:** Calm, organic minimalism, textural warmth, unhurried confidence
+**Industry Conventions:** Slow fashion, ceramics, wellness interiors, artisanal bakery
+**Variations:** Ecru (raw linen), Oatmeal (hearty neutral), Greige (grey-beige balance), Pampas (dusty soft)
+**Originality Risk:** 🟢 Low — the quiet rise of texture-led brands; pairs with type-led marks
+**Cultural Notes:** Neutral; natural-dye lineage reads sustainable
+**Best Pairings:** Charcoal (quiet contrast), Terracotta (organic warmth), Sage (soft nature)
+**Accessibility:** Background-only; dark text required
+**Best For:** Slow/organic brands where white is too clinical and cream too sweet
+**LKG Relationships:** → Calm, → Organic, → Simplicity
+
+---
+
+## RS-LIC-CL-022 — Charcoal
+
+**Psychology:** Serious sophistication, grounded authority, modern gravity
+**Industry Conventions:** Architecture, premium B2B, menswear, editorial
+**Variations:** Charcoal (soft-black sophistication), Graphite (technical), Ink (literary depth)
+**Originality Risk:** 🟢 Low as a base — the approachable alternative to pure black
+**Cultural Notes:** Neutral; universally "serious"
+**Best Pairings:** Any accent (charcoal tempers); Copper (warm sophistication), Coral (modern energy)
+**Accessibility:** Near-black contrast with light text; excellent
+**Best For:** Brands wanting black's authority with human warmth
+**LKG Relationships:** → Authority, → Sophistication, → Gravity
+
+---
+
+## RS-LIC-CL-023 — Sky Blue
+
+**Psychology:** Openness, optimism, approachability, clarity, daybreak
+**Industry Conventions:** Healthcare (gentle), SaaS (friendly), airlines (sky legacy), kids
+**Variations:** Sky (open, airy), Powder (soft, calm), Cornflower (bright, friendly), Glacier (cool, clean)
+**Originality Risk:** 🟠 Moderate — friendlier cousin of corporate blue; SaaS-friendly wave
+**Cultural Notes:** Near-universal positive; sky associations
+**Best Pairings:** Navy (depth + lift), White (clarity), Coral (friendly contrast)
+**Accessibility:** Lighter shades need dark text; strong on navy
+**Best For:** Approachable tech and care brands needing trust without navy's formality
+**LKG Relationships:** → Openness, → Optimism, → Clarity
+
+---
+
+## RS-LIC-CL-024 — Lavender
+
+**Psychology:** Gentleness, imagination, calm care, youthful elegance
+**Industry Conventions:** Skincare, sleep/wellness, kids' premium, creative tools
+**Variations:** Lavender (soft, calm), Lilac (light, playful), Amethyst-soft (quiet luxury), Wisteria (romantic)
+**Originality Risk:** 🟢 Low-Moderate — purple's gentle edge; less claimed than violet
+**Cultural Notes:** Flower of calm broadly; LGBTQ+ pride palette includes lavender (context-aware)
+**Best Pairings:** Deep Purple (family depth), Charcoal (modern softness), Cream (tender warmth)
+**Accessibility:** Mid-light; dark text usually required
+**Best For:** Gentle care and creative brands needing softness with imagination
+**LKG Relationships:** → Calm, → Imagination, → Care
+
+---
+
+## RS-LIC-CL-025 — Peach
+
+**Psychology:** Sweetness, youth, sociability, warmth without heat
+**Industry Conventions:** Food (sweet), kids, social apps, hospitality (friendly)
+**Variations:** Peach (sweet warm), Apricot (brighter, energetic), Nectar (soft, premium-fruit), Sunset-Peach (gradient warmth)
+**Originality Risk:** 🟠 Moderate — the friendly-app wave; sunsets are gradient cliché
+**Cultural Notes:** Neutral-positive; fruit sweetness universal
+**Best Pairings:** Teal (fresh complementary), Charcoal (grounded sweetness), Cream (soft on soft — careful)
+**Accessibility:** Light; dark text only
+**Best For:** Sociable food/app brands wanting warmth red over-delivers
+**LKG Relationships:** → Sweetness, → Youth, → Sociability
+
+---
+
 ## Volume Metadata
 
 | Field | Value |
 |-------|-------|
-| Total colours | 18 (starter set) |
+| Total colours | 25 (starter set) |
 | Full volume target | 50+ colours with detailed hex ranges and accessibility data |
-| Categories covered | Primary (blue, green, red, yellow), Secondary (purple, orange, pink, magenta), Neutrals (black, white, brown, grey, silver), Modern (teal, indigo, olive, coral, mint/sage) |
+| Categories covered | Primary (blue, green, red, yellow), Secondary (purple, orange, pink, magenta), Neutrals (black, white, brown, grey, silver, charcoal, ecru), Metallics (gold, silver, copper, champagne), Modern (teal, indigo, olive, coral, mint/sage, sky, lavender, peach) |
 | Most overused | Blue (finance/tech default), Green (eco default) |
-| Most original | Magenta, Indigo, Olive, Coral, Teal/Turquoise, Brown/Earth Tones |
+| Most original | Magenta, Indigo, Olive, Copper/Bronze, Coral, Teal/Turquoise, Ecru/Oatmeal |
 
 ---
 

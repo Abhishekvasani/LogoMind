@@ -166,13 +166,16 @@ def test_expanded_volumes_carry_new_content():
     """
     lk.load(force=True)
     sy = lk.get("RS-LIC-SY-VOLUME")
-    assert "RS-LIC-SY-033" in sy, "symbol expansion (33 entries) missing"
-    assert "Lion" in sy and "Shield" in sy
+    assert "RS-LIC-SY-050" in sy, "symbol expansion (50 entries) missing"
+    assert "Lion" in sy and "Shield" in sy and "Wolf" in sy and "Speech Bubble" in sy
     cl = lk.get("RS-LIC-CL-VOLUME")
-    assert "RS-LIC-CL-018" in cl, "colour expansion (18 entries) missing"
+    assert "RS-LIC-CL-025" in cl, "colour expansion (25 entries) missing"
     assert "Colour Accessibility Standards" in cl and "WCAG" in cl
     ty = lk.get("RS-LIC-TY-VOLUME")
+    assert "RS-LIC-TY-015" in ty, "type expansion (15 categories) missing"
     assert "Weight, Case & Tracking Semantics" in ty and "Pairing" in ty
+    ind = lk.get("RS-LIC-IND-VOLUME")
+    assert "RS-LIC-IND-020" in ind, "industry expansion (20 categories) missing"
     prd = lk.get("RS-LIC-PRD-VOLUME")
     assert "Production Checklist Framework" in prd and "16px" in prd
     con = lk.get("RS-LIC-CON-VOLUME")
@@ -180,4 +183,5 @@ def test_expanded_volumes_carry_new_content():
     tm = lk.get("RS-LIC-TM-VOLUME")
     assert "Trademark Check Framework" in tm and "Fanciful" in tm
     psy = lk.get("RS-LIC-PSY-VOLUME")
+    assert "RS-LIC-PSY-015" in psy, "psychology expansion (12 types) missing"
     assert "Rationale Narrative" in psy

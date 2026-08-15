@@ -12,7 +12,7 @@ related:
 conformance: "Conforms to LM-STD-001 through LM-STD-006."
 ---
 
-# Client Psychology — Starter Set (8 Types + 3 Systems)
+# Client Psychology — Starter Set (12 Types + 3 Systems)
 
 > *The hardest design problem in the room is rarely the mark — it is the person approving it. Read the decision-maker as carefully as the brief.*
 
@@ -124,6 +124,58 @@ Three systems plus a narrative craft: **decision-maker types** (recognise who ap
 
 ---
 
+## RS-LIC-PSY-012 — The Investor
+
+**Recognition Cues:** Traction and metrics language; asks for the "moat"; references other portfolio companies
+**What They Value:** Defensibility and exit logic — the brand as an asset that compounds
+**Aesthetic Lean:** Institutional-modern; benchmarked against portfolio norms
+**Boldness Tolerance:** Moderate — bold if the category winner is bold; safety in precedent
+**Feedback Style:** Comparative ("X company does this"); delayed (board cycles)
+**How to Win Them:** Show the brand as durable IP — distinctiveness, protectability (TM check), system scale; borrowed evidence beats promise
+**Watch Out:** Design by portfolio envy — the strategy becomes another company's ghost
+**LKG Relationships:** → Defensibility, → Scale, → Evidence
+
+---
+
+## RS-LIC-PSY-013 — The Franchise Operator
+
+**Recognition Cues:** Multi-location language; "replicable", "signage", "rollout"; operations vocabulary
+**What They Value:** Replicability and consistency — one identity that survives 200 locations and a franchisee's cousin's print shop
+**Aesthetic Lean:** Bold, simple, signage-first
+**Boldness Tolerance:** Moderate — bold enough for the highway, safe enough for a franchise agreement
+**Feedback Style:** Practical: "will it read at 40 mph?", "can every vendor reproduce it?"
+**How to Win Them:** Lead with production (PRD volume): scale tests, one-colour versions, vendor-proof specs; consistency rules are their love language
+**Watch Out:** Over-systematising kills charm — the mark must survive replication AND stay lovable
+**LKG Relationships:** → Consistency, → Replicability, → Practicality
+
+---
+
+## RS-LIC-PSY-014 — The Public-Sector Buyer
+
+**Recognition Cues:** Procurement language; accessibility and inclusion requirements; stakeholder/public mentioned as "the community"; long approval trails
+**What They Value:** Inclusivity, accessibility, process-defensibility — decisions that survive audit and serve everyone
+**Aesthetic Lean:** Clear, dignified, accessible; no fashion risk
+**Boldness Tolerance:** Conservative — every citizen is a stakeholder
+**Feedback Style:** Committee-sourced (see PSY-002) with accessibility and budget constraints layered on
+**How to Win Them:** Evidence of compliance (WCAG, clear space, reproduce-ability) presented as care for all users; plain-language rationale
+**Watch Out:** Averaging into invisibility — civic dignity still needs one memorable gesture
+**LKG Relationships:** → Inclusivity, → Clarity, → Accountability
+
+---
+
+## RS-LIC-PSY-015 — The Influencer-Founder
+
+**Recognition Cues:** First-person-singular brand ("my audience"); follower metrics; content-native language ("recognisable", "my aesthetic")
+**What They Value:** Continuity of persona — the mark must feel like an extension of a face the audience already knows
+**Aesthetic Lean:** Whatever their personal aesthetic already is; consistency with existing content beats strategy theory
+**Boldness Tolerance:** Varies wildly with persona; the audience's expectation is the real bound
+**Feedback Style:** Fast, vibe-based, screenshot-comparative; audience comments arrive as data
+**How to Win Them:** Show the mark living inside their existing world (thumbnail, merch, intro card) before showing theory
+**Watch Out:** Persona drift — the brand outgrows the person; design the escape hatch (a mark that can stand alone later)
+**LKG Relationships:** → Identity, → Continuity, → Audience-intimacy
+
+---
+
 ## RS-LIC-PSY-009 — The Feedback Decoder
 
 Taste-language is compressed meaning. Decode the phrase, confirm the decoded meaning in the client's own words, then design the fix.
@@ -180,7 +232,7 @@ Every objection is a question wearing armour. Answer the underlying question wit
 
 | Field | Value |
 |-------|-------|
-| Decision-maker types | 8 (starter set) |
+| Decision-maker types | 12 (target reached: original 8 + Investor, Franchise Operator, Public-Sector Buyer, Influencer-Founder) |
 | Systems | Feedback Decoder (12 phrases), Objection Taxonomy (9 objections), Rationale Narrative (the Meaning → Evidence → Application → Consequence arc) |
 | Full volume target | 12+ types incl. the Investor, the Franchise Operator, the Public-Sector Buyer; 30+ decoded phrases; cross-cultural negotiation notes |
 | Feeds | Client Fit (persona modelling — types carry aesthetic lean + boldness tolerance), Presentation (objection handling), strategy rationale framing |

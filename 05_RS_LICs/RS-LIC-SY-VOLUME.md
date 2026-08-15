@@ -535,15 +535,288 @@ Each symbol is a compact LIC: Definition, Meanings, Industries, Emotional Associ
 
 ---
 
+## RS-LIC-SY-034 — Wolf
+
+**Definition:** The pack predator; loyalty and fierce independence in one silhouette.
+
+**Primary Meanings:** Loyalty (pack), instinct, endurance, wilderness
+**Secondary Meanings:** Guardianship, appetite (hunger for the market), lone-wolf independence
+**Industries:** Esports, outdoor, security, craft brewing, sports teams
+**Emotional Associations:** Belonging, ferocity, resilience
+**Originality Risk:** 🔴 Very High in esports (the geometric-wolf wave saturated it); 🟠 elsewhere
+**Combination Potential:** Moderate — with monograms, shields, moon (cliché), mountain
+**Cultural Notes:** Predator fear in agrarian cultures; totem positive in many indigenous traditions
+**Avoid When:** Esports unless the treatment is structurally novel; moon-howl is wallpaper
+**LKG Relationships:** → Loyalty, → Instinct, → Wilderness
+
+---
+
+## RS-LIC-SY-035 — Horse
+
+**Definition:** The domesticated power animal; motion and heritage's oldest brand animal.
+
+**Primary Meanings:** Power, freedom, speed, nobility, service (labour)
+**Secondary Meanings:** Heritage (studs/cavalry), transport legacy, wager (racing)
+**Industries:** Automotive (heritage), equestrian, insurance (legacy brands), luxury (fashion houses), racing
+**Emotional Associations:** Vitality, grace, strength
+**Originality Risk:** 🔴 High — fashion-house horses (Hermès pattern) and car-badge stallions crowd the field
+**Combination Potential:** Moderate — with carriages, chess pieces (knight), initials
+**Cultural Notes:** Status across cultures; unicorn adjacency (see Imaginary creatures)
+**Avoid When:** Automotive/luxury without a structural twist — badge-style horses are a genre of their own
+**LKG Relationships:** → Power, → Heritage, → Motion
+
+---
+
+## RS-LIC-SY-036 — Bee
+
+**Definition:** The industrious insect; diligence with a sting — and a natural hexagon partner.
+
+**Primary Meanings:** Diligence, cooperation, productivity, sweetness (honey)
+**Secondary Meanings:** Community (hive), Manchester's worker-bee civic symbol, small-but-mighty
+**Industries:** Productivity SaaS, food (honey), civic/Manchester, co-working
+**Emotional Associations:** Busyness, warmth, purpose
+**Originality Risk:** 🟠 Moderate — rising with productivity-tool branding
+**Combination Potential:** High — hexagon wings (geometric synergy), letterform integration, hive patterns
+**Cultural Notes:** Royal/napoleonic eagles' opposite; positive labor symbol broadly
+**Avoid When:** Pure decoration; a bee must earn its place with the hive/hexagon system behind it
+**LKG Relationships:** → Diligence, → Community, → Productivity
+
+---
+
+## RS-LIC-SY-037 — Fish
+
+**Definition:** The aquatic vertebrate; abundance and faith's ancient sign.
+
+**Primary Meanings:** Abundance, adaptability, faith (ichthys), fluidity
+**Secondary Meanings:** Christianity (early symbol), seafood quality, transformation (salmon)
+**Industries:** Seafood, aquaculture, faith-based orgs, finance (bull/bear kin — rare)
+**Emotional Associations:** Freshness, calm, provision
+**Originality Risk:** 🟠 Moderate — seafood defaults; the ichthys outline carries religious meaning
+**Combination Potential:** Moderate — waves, hooks (fishing), negative space
+**Cultural Notes:** Christian ichthys; prosperity in Chinese tradition (fish = surplus)
+**Avoid When:** Seafood as a literal fish-on-plate; verify religious reading is intended
+**LKG Relationships:** → Abundance, → Fluidity, → Faith
+
+---
+
+## RS-LIC-SY-038 — Butterfly
+
+**Definition:** The transformed insect; metamorphosis rendered as form.
+
+**Primary Meanings:** Transformation, beauty, rebirth, lightness
+**Secondary Meanings:** Mental health (hope), diversity, ephemerality
+**Industries:** Beauty, wellness, coaching/therapy, nonprofits
+**Emotional Associations:** Delicacy, hope, change
+**Originality Risk:** 🔴 High — beauty/wellness default; symmetry-butterfly marks are everywhere
+**Combination Potential:** Moderate — negative space inside wings, letterform fusion
+**Cultural Notes:** Soul symbolism across traditions (Greek psyche); transformation positive broadly
+**Avoid When:** Beauty/wellness as bare glyph — the transformation story must be structural
+**LKG Relationships:** → Transformation, → Beauty, → Hope
+
+---
+
+## RS-LIC-SY-039 — Owl
+
+**Definition:** The nocturnal sage; wisdom's assigned animal since Athens.
+
+**Primary Meanings:** Wisdom, vigilance (night vision), knowledge, Athena's companion
+**Secondary Meanings:** Education, finance ("wise" investing — rare), night economy
+**Industries:** Education, publishing, sleep-tech (playful inversions)
+**Emotional Associations:** Intelligence, mystery, calm watchfulness
+**Originality Risk:** 🔴 Very High — the education cliché the Industry volume names
+**Combination Potential:** Moderate — book pairings (double cliché), monogram eyes
+**Cultural Notes:** Wisdom (West); death omen in some folk traditions — check market
+**Avoid When:** Education outright — the #1 advice; graduation-owl worse
+**LKG Relationships:** → Wisdom, → Knowledge, → Vigilance
+
+---
+
+## RS-LIC-SY-040 — Eagle
+
+**Definition:** The soaring apex bird; state power and precision vision.
+
+**Primary Meanings:** Power, vision, freedom, national identity
+**Secondary Meanings:** Precision (eyesight), aviation, imperialism (careful), delivery (speed)
+**Industries:** Aviation, defence, government, sports, logistics
+**Emotional Associations:** Aspiration, authority, pride
+**Originality Risk:** 🔴 Very High — national seals and airlines own the silhouette space
+**Combination Potential:** Low-Moderate — shields, flags, letters (all densely claimed)
+**Cultural Notes:** National bird (USA, others); double-headed eagles carry specific state meanings
+**Avoid When:** Aviation/government-adjacent — registrability is poor and gravitas rings hollow without substance
+**LKG Relationships:** → Power, → Vision, → Freedom
+
+---
+
+## RS-LIC-SY-041 — Dragon
+
+**Definition:** The mythic serpent; East's fortune and West's fire.
+
+**Primary Meanings:** Power, fortune (East), mastery, mythic scale
+**Secondary Meanings:** Gaming (final-boss energy), Wales (national), Chinese New Year
+**Industries:** Gaming, esports, fintech (dragon wealth), entertainment, Asian brands
+**Emotional Associations:** Awe, excitement, strength
+**Originality Risk:** 🔴 High in gaming; the low-poly dragon wave followed the wolf
+**Combination Potential:** Moderate — with pearls (Eastern), letters, flame
+**Cultural Notes:** OPPOSITE readings: auspicious (East) vs menacing (West) — the rendering must pick its tradition deliberately
+**Avoid When:** Cross-cultural ambiguity is unresolvable for the market; generic gaming menace
+**LKG Relationships:** → Power, → Fortune, → Myth
+
+---
+
+## RS-LIC-SY-042 — Bear
+
+**Definition:** The great strength animal; protective power with warmth underneath.
+
+**Primary Meanings:** Strength, protection, wilderness, courage
+**Secondary Meanings:** Recovery markets (bull/bear — inverted), childhood (teddy), California/Russia (regional)
+**Industries:** Outdoors, finance (rare, careful), craft food, security
+**Emotional Associations:** Safety, ruggedness, gentle power
+**Originality Risk:** 🟠 Moderate — less saturated than wolf/lion; geometric-bear wave exists
+**Combination Potential:** High — with mountains, paw geometry, monograms
+**Cultural Notes:** National/regional symbolism (Russia, Finland, California flag); teddy softening
+**Avoid When:** Finance (bear = falling markets — meaning collision); cartoon without warmth strategy
+**LKG Relationships:** → Strength, → Protection, → Wilderness
+
+---
+
+## RS-LIC-SY-043 — Paw
+
+**Definition:** The animal trace; pets and tracking rendered as a friendly geometric.
+
+**Primary Meanings:** Companionship (pets), tracking (analytics), animal care
+**Secondary Meanings:** Footprint (journey/sustainability), playfulness
+**Industries:** Pet care, veterinary, animal nonprofits, analytics (paw = data trail — playful)
+**Emotional Associations:** Warmth, care, play
+**Originality Risk:** 🔴 High in pet care (the category's default)
+**Combination Potential:** High — letterform pads (custom counts), heart fusion (cliché), data-dots
+**Cultural Notes:** Neutral; universally legible
+**Avoid When:** Pet care as the bare paw — differentiate via structure (paw-as-heart is taken; try paw-as-location-pin)
+**LKG Relationships:** → Companionship, → Care, → Play
+
+---
+
+## RS-LIC-SY-044 — Cross / Plus
+
+**Definition:** The intersection of faith's oldest sign and addition's operator.
+
+**Primary Meanings:** Faith, health (medical cross), addition (plus = more/benefits)
+**Secondary Meanings:** Location (map pin crosshair), meeting point, Switzerland (national)
+**Industries:** Healthcare, faith orgs, fintech (plus plans), pharma
+**Emotional Associations:** Care, salvation, benefit
+**Originality Risk:** 🔴 High — medical crosses are regulated in some markets (red cross protection!); plus-marks crowd fintech
+**Combination Potential:** High — negative space, letterform integration (t, +)
+**Cultural Notes:** THE red cross is legally protected (Geneva Conventions) — never render a red cross on white in health contexts
+**Avoid When:** Healthcare without checking local red-cross law; faith contexts where unintended
+**LKG Relationships:** → Care, → Faith, → Benefit
+
+---
+
+## RS-LIC-SY-045 — Knot
+
+**Definition:** The bound form; unity and craft's tactile geometry.
+
+**Primary Meanings:** Unity, connection, strength (the strongest knot), craft
+**Secondary Meanings:** Marriage (tying), Celtic heritage (endless knots), sailing, memory (kerchief)
+**Industries:** Jewelry, events/weddings, craft goods, consulting (partnership)
+**Emotional Associations:** Commitment, intricacy, togetherness
+**Originality Risk:** 🟢 Low-Moderate — underused outside Celtic contexts
+**Combination Potential:** High — endless variations, letterform weaving, rope-to-line systems
+**Cultural Notes:** Celtic knotwork (trinity readings); quen (Chinese) longevity knots
+**Avoid When:** Rarely — check the knot doesn't read as tangle/confusion at 16px
+**LKG Relationships:** → Unity, → Commitment, → Craft
+
+---
+
+## RS-LIC-SY-046 — Pillar / Column
+
+**Definition:** The load-bearing vertical; civilisation's stability sign.
+
+**Primary Meanings:** Stability, support, institution, endurance
+**Secondary Meanings:** Law (courthouse), architecture, knowledge (library stacks), spine
+**Industries:** Legal, finance (heritage), government, insurance, construction
+**Emotional Associations:** Trust, permanence, order
+**Originality Risk:** 🔴 High in legal/finance — the listed cliché; paired-pillar marks are a genre
+**Combination Potential:** Moderate — pediment/pillar systems, letterform stems
+**Cultural Notes:** Classical orders (Doric/Ionic/Corinthian) carry education-level nuance; state architecture
+**Avoid When:** Legal/finance as bare columns — the keystone/arch carries the same meaning with more originality
+**LKG Relationships:** → Stability, → Institution, → Support
+
+---
+
+## RS-LIC-SY-047 — Torch
+
+**Definition:** The carried flame; enlightenment passed hand to hand.
+
+**Primary Meanings:** Enlightenment, liberty (Statue), knowledge (passed on), hope
+**Secondary Meanings:** Education (lamp of learning), athletics (relay), vigil (remembrance)
+**Industries:** Education, libraries, nonprofits, energy (historical)
+**Emotional Associations:** Inspiration, guidance, continuity
+**Originality Risk:** 🟠 Moderate — institutional but less crowded than owl/book in education
+**Combination Potential:** High — flame geometry, letterform flames, relay systems
+**Cultural Notes:** Olympic relay; liberty's torch; amal (unit of light) across traditions
+**Avoid When:** Education paired with book/owl (triple cliché); flame too literal for fire-risk sectors
+**LKG Relationships:** → Enlightenment, → Liberty, → Knowledge
+
+---
+
+## RS-LIC-SY-048 — Lock
+
+**Definition:** The security mechanism; padlock as trust's hardware.
+
+**Primary Meanings:** Security, privacy, reliability (locked in)
+**Secondary Meanings:** Fintech (locked rates), crypto (the lock-key pair), commitment
+**Industries:** Cybersecurity, fintech, privacy tools, insurance
+**Emotional Associations:** Safety, control, certainty
+**Originality Risk:** 🔴 Very High — the cybersecurity default; lock-on-shield doubly so
+**Combination Potential:** Moderate — keyholes as negative space, letterform shackles
+**Cultural Notes:** Neutral; universally legible
+**Avoid When:** Security/cyber — the category's wallpaper; the keystone or arch says protection without the stock lock
+**LKG Relationships:** → Security, → Privacy, → Certainty
+
+---
+
+## RS-LIC-SY-049 — Grid / Node Network
+
+**Definition:** The connected lattice; systems and networks as visible structure.
+
+**Primary Meanings:** Connection, system, intelligence (distributed), scale
+**Secondary Meanings:** Data (nodes), community (mesh), infrastructure
+**Industries:** Technology, telecom, logistics, energy (smart grid), data platforms
+**Emotional Associations:** Order, capability, interconnection
+**Originality Risk:** 🟠 Moderate — the honest alternative to the globe, but dot-connection marks are spreading
+**Combination Potential:** High — letterform nodes, route maps, constellation systems
+**Cultural Notes:** Neutral; reads technical
+**Avoid When:** The network is decorative (random dots); every node should mean something countable
+**LKG Relationships:** → Connection, → System, → Intelligence
+
+---
+
+## RS-LIC-SY-050 — Speech Bubble
+
+**Definition:** The conversation mark; dialogue made visible.
+
+**Primary Meanings:** Conversation, communication, voice, service (support)
+**Secondary Meanings:** Chat (messaging), feedback, community (stacked bubbles)
+**Industries:** Messaging apps, customer support, podcasts, media (commentary), education (dialogue)
+**Emotional Associations:** Openness, responsiveness, friendliness
+**Originality Risk:** 🔴 High — the support-software default; bubble-with-quotes doubly so
+**Combination Potential:** High — negative space (faces in bubbles), letterform bubbles, stacked systems
+**Cultural Notes:** Neutral; comic-strip lineage reads playful
+**Avoid When:** Support/chat categories as the bare bubble — put the brand's specific conversation inside (a meaning, a letter, a face)
+**LKG Relationships:** → Communication, → Voice, → Service
+
+---
+
 ## Volume Metadata
 
 | Field | Value |
 |-------|-------|
-| Total symbols | 33 (starter set) |
-| Full volume target | 150+ symbols (add: wolf, horse, bee, fish, butterfly, owl, eagle, dragon; cross, knot, labyrinth, pillar, torch, bell, gear, lock, book, camera, grid/node forms) |
-| Categories covered | Geometric (circle, triangle, hexagon, diamond, spiral, chevron), Celestial (orbit, star, sun, moon), Metaphorical (bridge, keystone, anchor, compass, tree, wave, mountain, leaf, hand, arrow, key, wing, flame, eye, bolt, droplet, globe), Emblematic (shield, crown, heart), Creature (bird, lion), Letter-based (monogram) |
-| Most overused | Leaf (eco), Arrow (tech), Shield (security), Globe (B2B reach), Heart (care), Lightning (energy/esports), Bird (current minimal wave), Lion (luxury/esports) |
-| Most original | Keystone, Orbit/Ring System, Growth Rings, Spiral, Diamond-as-geometry, Moon (negative-space partner) |
+| Total symbols | 50 (starter set) |
+| Full volume target | 150+ symbols (add: unicorn, phoenix, deer, rabbit, elephant, octopus, turtle; book, camera, bell, gear, hourglass, seed, feather, ribbon, banner, flag, mountain-range systems; abstract: burst, wave-particle, mobius, triskelion) |
+| Categories covered | Geometric (circle, triangle, hexagon, diamond, spiral, chevron, grid/network), Celestial (orbit, star, sun, moon), Metaphorical (bridge, keystone, anchor, compass, tree, wave, mountain, leaf, hand, arrow, key, wing, flame, eye, bolt, droplet, globe, knot, pillar, torch, lock, speech bubble), Emblematic (shield, crown, heart, cross), Creature (bird, lion, wolf, horse, bee, fish, butterfly, owl, eagle, dragon, bear, paw), Letter-based (monogram) |
+| Most overused | Leaf (eco), Arrow (tech), Shield (security), Globe (B2B reach), Heart (care), Lightning (energy/esports), Bird (minimal wave), Lion (luxury/esports), Wolf (esports), Owl (education), Lock (cybersecurity), Speech bubble (support) |
+| Most original | Keystone, Orbit/Ring System, Growth Rings, Spiral, Diamond-as-geometry, Moon (negative-space partner), Knot, Grid/Node (when every node means something) |
+| Legal note | The red cross on white is protected (Geneva Conventions) — see RS-LIC-SY-044 and RS-LIC-TM-VOLUME |
 
 ---
 
