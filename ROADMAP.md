@@ -1,10 +1,10 @@
 ---
 doc_id: LM-ROAD-001
 title: LogoMind Complete Roadmap
-version: 5.0
+version: 5.1
 status: Living Document
 governance_level: L1 — Planning
-last_reviewed: 2026-07-17
+last_reviewed: 2026-08-14
 ---
 
 # LogoMind Complete Roadmap
@@ -20,28 +20,33 @@ last_reviewed: 2026-07-17
 ```
 ✅ Phase 0 — Foundation              COMPLETE
 ✅ Phase 1 — Repository Governance   COMPLETE
-✅ Phase 2 — Knowledge Production    COMPLETE (6 of 6 starter volumes)
+✅ Phase 2 — Knowledge Production    COMPLETE (24 volumes: 6 original + 5 new domains, catalogs expanded)
    ✅ Philosophy Series (10 LICs)
    ✅ Brand Strategy Series (5 LICs)
-   ✅ Symbol Intelligence (15 symbols)
-   ✅ Typography Intelligence (10 type categories)
-   ✅ Color Intelligence (10 colours)
+   ✅ Symbol Intelligence (33 symbols — expanded from 15)
+   ✅ Typography Intelligence (10 categories + semantics/pairing)
+   ✅ Color Intelligence (18 colours + WCAG standards)
    ✅ Identity Thinking (10 concepts)
-✅ Phase 3 — LOGOS Engine Specs      COMPLETE (9 engines fully specified)
-✅ Phase 4 — Product Specification   COMPLETE (7 deliverables, 23 MVP features defined)
-✅ Phase 5 — Technical Build         COMPLETE (runnable codebase, full pipeline)
+   ✅ Industry Intelligence (14 categories)
+   ✅ Client Psychology (8 decision-maker types + 3 systems)
+   ✅ Production & Deliverables (6 entries + checklist)
+   ✅ Contest Dynamics (6 entries + signal framework)
+   ✅ Trademark & Distinctiveness (4 entries + check framework)
+✅ Phase 3 — LOGOS Engine Specs      COMPLETE (12 engines specified, incl. Concept Prompt, Client Fit, Contest Decoder)
+✅ Phase 4 — Product Specification   COMPLETE (7+ deliverables, 23 MVP features defined)
+✅ Phase 5 — Technical Build         COMPLETE (13-stage pipeline, 24 knowledge volumes wired into 9 engines)
 ⬜ Phase 6 — Launch                  NEXT
 ```
 
-**As of 2026-07-17 (v5.0):** Five major phases complete. LogoMind is now **runnable software** — not just a specification. The full LOGOS pipeline is implemented end-to-end: a designer can create a project, run Discovery, generate Brand DNA, explore Concept Families, receive a Strategic Sketch Brief, and export a client presentation.
+**As of 2026-08-14 (v5.1):** Five major phases complete. LogoMind is **runnable software** — a designer can create a project, run Discovery, generate Brand DNA, explore Concept Families, predict client appeal (Client Fit), compose model-ready concept prompts, receive a Strategic Sketch Brief, and export a client presentation — with every knowledge-grounded engine reasoning over the LIC corpus.
 
 The codebase includes:
-- **Backend (FastAPI)**: all 9 pipeline stages, model-independent AI orchestration, SQLite (dev) / PostgreSQL (prod)
-- **Frontend (Next.js + Tailwind)**: all 8 screens, stage-routed project workspace
-- **Mock AI provider**: deterministic responses for testing without an API key
-- **OpenAI provider**: production-ready with a real API key
+- **Backend (FastAPI)**: all 13 pipeline stages (incl. Client Fit, Concept Prompt), model-independent AI orchestration, SQLite (dev) / PostgreSQL (prod), 29-test suite
+- **Frontend (Next.js + Tailwind)**: 10+ screens/views, stage-routed workspace, Claude-inspired dark theme with light/dark toggle
+- **Knowledge layer**: `lic_knowledge.py` loads and slices all 24 volumes at startup; 9 of 10 LLM engines inject curated extracts (`/health` reports the state)
+- **AI providers**: Mock (deterministic, no key), OpenAI, OpenRouter (free models), NVIDIA NIM
 
-What remains before launch (Phase 6): authentication, file upload, production deployment, test suite, and the Symbol Intelligence knowledge volume (which will enrich the Create Engine).
+What remains before launch (Phase 6): authentication, file upload, production deployment, and Alembic migrations. (The test suite and the Symbol Intelligence expansion — previously listed here — are done.)
 
 ---
 
@@ -82,7 +87,7 @@ What remains before launch (Phase 6): authentication, file upload, production de
 
 ---
 
-## Phase 2 — Knowledge Production 🔄 IN PROGRESS
+## Phase 2 — Knowledge Production ✅ COMPLETE
 
 *Goal:* Build the first 10 Reference Standard LICs (the Philosophy Series). This is the **core intellectual property** of LogoMind.
 
@@ -122,18 +127,19 @@ What remains before launch (Phase 6): authentication, file upload, production de
 
 The Brand Strategy Series forms a coherent strategic foundation: Positioning (the slot) ← Differentiation (what makes it defensible) + Target Audience (who it's for) → Personality (the character) → Archetypes (the deep pattern beneath personality). Together with the Philosophy Series, LogoMind now has both *what a logo must be* and *how to understand the brand it's for*.
 
-### Future Volumes (planned, not yet started)
+### Knowledge Expansion (2026-08)
 
-The original Foundation Library envisioned 6 volumes. Two are complete (Philosophy, Brand Strategy). Four remain:
+The original Foundation Library's 4 remaining starter volumes (Identity, Symbol, Typography, Color) are complete — and 5 new domains were added that the engine specs had cited as dependencies:
 
-| Volume | Purpose | Priority |
-|--------|---------|----------|
-| **Identity Thinking** | How identity systems work as systems | Medium — supports Phase 3 engine design |
-| **Symbol Intelligence** | Symbols, meanings, cultural considerations | High — large content volume; supports Create Engine |
-| **Typography Intelligence** | Type personality, pairing, industry suitability | Medium |
-| **Color Intelligence** | Emotional/cultural associations, accessibility | Medium |
+| Volume | Status | Feeds |
+|--------|--------|-------|
+| **Industry Intelligence** (14 categories: conventions, cliché maps, opportunities) | ✅ | Insight, Create |
+| **Client Psychology** (8 decision-maker types, Feedback Decoder, Objection Taxonomy, Rationale Narrative) | ✅ | Client Fit, Presentation |
+| **Production & Deliverables** (scale test, formats, clear space, handoff) | ✅ | Concept Prompt, Coach, SSB |
+| **Contest Dynamics** (formats, rating signals, no-feedback loops) | ✅ | Client Fit refine loop |
+| **Trademark & Distinctiveness** (spectrum, refusal grounds, clearance) | ✅ | Judge |
 
-These volumes can proceed in parallel with Phase 3 engine specification — they do not need to block each other.
+All 24 volumes are loaded and sliced at startup by `backend/app/services/lic_knowledge.py`; expansion targets per volume are recorded in each volume's metadata table.
 
 ### Phase 2 Success Criteria
 - [x] 10 Philosophy Series LICs published as Reference Standards ✅
@@ -161,7 +167,7 @@ Critical findings per LIC: RS-LIC-001 (0, foundation), 002 (2), 003 (1), 004 (1)
 
 *Goal:* Turn engine architecture into full, engineerable specifications.
 
-### The 9 Fully Specified Engines
+### The Fully Specified Engines
 
 | # | Engine | Spec ID | Status | Signature Contribution |
 |---|--------|---------|--------|------------------------|
@@ -175,6 +181,9 @@ Critical findings per LIC: RS-LIC-001 (0, foundation), 002 (2), 003 (1), 004 (1)
 | 8 | **Judge Engine** (Design Jury) | LOG-JUDGE-001 | ✅ Approved | 10-dimension scoring + Creative Council; Concept DNA |
 | 9 | **Sketch Coach** | LOG-COACH-001 | ✅ Approved | Guidance not prescription; conversational mentor |
 | 10 | **Presentation Builder** | LOG-PRESENT-001 | ✅ Approved | "Reasoning sells"; 3 voices (Mentor/Strategist/CD) |
+| 11 | **Concept Prompt Engine** | LOG-CP-001 | ✅ Approved | Executable concepts: 4 prompt variants + model adaptations + wireframe spec |
+| 12 | **Client Fit** (Client Preference Predictor) | LOG-CFP-001 | ✅ Approved | Persona modelling + per-family appeal ranking; contest-signal refine loop |
+| 13 | **Contest Brief Decoder** | LOG-CBD-001 | ✅ Approved | Freelancer-style brief → structured ContestBrief; enrichment, never invention |
 
 ### Phase 3 Success Criteria — All Met
 - [x] All engines have full specifications following the Engine Blueprint Standard
@@ -186,7 +195,7 @@ Critical findings per LIC: RS-LIC-001 (0, foundation), 002 (2), 003 (1), 004 (1)
 ### The Complete LOGOS Pipeline
 
 ```
-Client Brief
+Client Brief (+ optional Contest Brief decoded)
     ↓
 LOGOS Discover     ← Understand the client (3 modes)
     ↓
@@ -197,6 +206,10 @@ LOGOS Insight      ← Research the category (clichés, trends, competitors)
 LOGOS Create       ← Generate Concept Families (signature feature)
     ↓
 LOGOS Judge        ← Evaluate (Creative Council + 10-dimension scoring)
+    ↓
+LOGOS Client Fit   ← Predict which family THIS client will love (persona + appeal ranking)
+    ↓
+LOGOS Concept Prompt ← Executable concepts (prompt variants + wireframes)
     ↓
 Strategic Sketch Brief (SSB) ← THE PRIMARY OUTPUT TO THE DESIGNER
     ↓
@@ -261,92 +274,33 @@ Brief Analysis → Discovery Workshop → Brand DNA → Insight Report
 
 | Layer | Status | Files |
 |-------|--------|-------|
-| **Database models** | ✅ Complete | `backend/app/__init__.py` (Project, User, Sketch, ConceptFamily, DecisionLog, LMKCEntry) |
-| **API contracts** | ✅ Complete | `backend/app/schemas/__init__.py` (Pydantic schemas for all 9 stages) |
-| **API routes** | ✅ Complete | `backend/app/routers/__init__.py` (full pipeline: projects, discovery, workshop, strategy, insight, create, judge, SSB, sketch, presentation) |
-| **AI orchestration** | ✅ Complete | `backend/app/services/ai_orchestrator.py` (Mock + OpenAI providers) |
-| **Engine services** | ✅ Complete | `backend/app/services/discovery_engine.py` + `engines.py` (all 9 engines) |
-| **Dashboard** | ✅ Complete | `frontend/src/app/page.tsx` |
-| **New Project** | ✅ Complete | `frontend/src/app/projects/new/page.tsx` |
-| **Project workspace** | ✅ Complete | `frontend/src/app/projects/[id]/page.tsx` (stage-routed) |
-| **Workshop view** | ✅ Complete | `frontend/src/components/WorkshopView.tsx` |
-| **Strategy view** | ✅ Complete | `frontend/src/components/StrategyView.tsx` |
-| **Insight view** | ✅ Complete | `frontend/src/components/InsightView.tsx` |
-| **Concept Families view** | ✅ Complete | `frontend/src/components/ConceptFamiliesView.tsx` |
-| **SSB + Sketch view** | ✅ Complete | `frontend/src/components/SSBView.tsx` |
-| **Presentation view** | ✅ Complete | `frontend/src/components/PresentationView.tsx` |
+| **Database models** | ✅ Complete | `backend/app/models/__init__.py` (Project incl. client_persona, appeal_report, contest_brief, contest_feedback; User, Sketch, DecisionLog) |
+| **API contracts** | ✅ Complete | `backend/app/schemas/__init__.py` (Pydantic schemas for all 13 stages + contest/client-fit blocks) |
+| **API routes** | ✅ Complete | `backend/app/routers/__init__.py` (full pipeline + client-fit, contest-brief, concept-prompts, intent extraction) |
+| **AI orchestration** | ✅ Complete | `backend/app/services/ai_orchestrator.py` (Mock + OpenAI + OpenRouter + NVIDIA NIM, retry + tolerant JSON parsing) |
+| **Knowledge loader** | ✅ Complete | `backend/app/services/lic_knowledge.py` (24 volumes loaded + sliced at startup, injected into 9 engines) |
+| **Engine services** | ✅ Complete | `discovery_engine.py`, `engines.py`, `concept_engine.py`, `client_fit_engine.py`, `contest_engine.py` (+ `_exemplars.py` style anchors) |
+| **Tests** | ✅ Complete | `backend/tests/` (29 tests: pipeline walks, contest, knowledge wiring + content guards) |
+| **Dashboard / New Project** | ✅ Complete | `frontend/src/app/page.tsx`, `projects/new/page.tsx` |
+| **Project workspace** | ✅ Complete | `frontend/src/app/projects/[id]/page.tsx` (13-stage routed) |
+| **Stage views** | ✅ Complete | Workshop, Strategy, Insight, ConceptFamilies, ClientFit (incl. contest decoder + refine loop), ConceptPrompt (specimen sheet), SSB/Sketch, Presentation |
+| **Shared components** | ✅ Complete | `StageStatus` (progress + retry), `Wireframe` (SVG renderer + export), `ThemeToggle` (dark/light) |
+| **Theme system** | ✅ Complete | Claude-inspired dark default + paper light theme; token-driven (`tailwind.config.js` + `globals.css`) |
 | **Setup docs** | ✅ Complete | `PHASE5_README.md` |
 
 ### Phase 5 Success Criteria — Met
-- [x] All 9 pipeline stages implemented in the backend
-- [x] All 8 frontend screens implemented
-- [x] Model-independent AI orchestration (Mock + OpenAI)
+- [x] All 13 pipeline stages implemented in the backend
+- [x] All frontend screens implemented (incl. Client Fit and Concept Prompt)
+- [x] Model-independent AI orchestration (Mock / OpenAI / OpenRouter / NIM)
 - [x] Full pipeline testable without an API key (mock provider)
+- [x] Automated test suite (29 backend tests)
 - [x] API documented at `/docs` (Swagger/OpenAPI)
 
 ### Deferred to Phase 6 / Post-Launch
 - ⬜ Authentication (currently single demo user)
 - ⬜ File upload for sketches (currently description-based)
-- ⬜ Alembic migrations (using auto-create for dev)
-- ⬜ Test suite
+- ⬜ Alembic migrations (using auto-create + runtime SQLite column migration for dev)
 - ⬜ Production deployment scripts
-- ⬜ Symbol Intelligence volume integration (Create Engine uses general knowledge until built)
-
----
-
-## Phase 4 — Product Specification
-
-*Goal:* Define what designers actually experience — before writing code.
-
-| Deliverable | Status |
-|-------------|--------|
-| Product Vision Document (what the product is, who it's for) | 📋 |
-| User Personas (Freelancer, Agency, Entrepreneur) | 📋 |
-| User Journey (Project → Discovery → SSB → Sketch → Critique → Presentation) | 📋 |
-| Screen Architecture (Dashboard, Project, Discovery Workshop, SSB, Sketch Workspace, Presentation) | 📋 |
-| Brand Discovery Workshop — full UX spec (adaptive branching, question bank, fallback paths) | 📋 |
-| Strategic Sketch Brief — output template (final form) | 📋 |
-| Feature Backlog (Must Have / Should Have / Nice to Have / Future) | 📋 |
-
-### Phase 4 Success Criteria
-- [ ] A designer can read the Product Spec and understand exactly what they would experience
-- [ ] Every screen has a defined purpose and single responsibility
-- [ ] The SSB output format is finalised and tested with at least 3 sample briefs
-
----
-
-## Phase 5 — Technical Build
-
-*Goal:* Build the software. Knowledge first, software second — so this comes after the brain is excellent.
-
-### Tech Stack (Decided)
-- **Frontend:** React + Next.js, Tailwind CSS
-- **Backend:** Python + FastAPI
-- **Database:** PostgreSQL
-- **AI Orchestration:** Python services (model-independent)
-- **Auth:** Better Auth / Clerk
-- **Hosting:** Vercel + Railway/Render
-
-### Build Order (Build From the Inside Out — CTO Decision #016)
-
-| Step | Deliverable |
-|------|-------------|
-| 5.1 | Database schema (Project, Brief, Brand DNA, Concept Families, SSB, Sketches) |
-| 5.2 | API contracts (REST/GraphQL endpoints) |
-| 5.3 | AI orchestration layer (LOGOS engine orchestration, model-independent) |
-| 5.4 | LMKC/LKG storage and query layer |
-| 5.5 | Backend services (Project Engine, Prompt Engine, Knowledge Base) |
-| 5.6 | Frontend — Dashboard + Project creation |
-| 5.7 | Frontend — Brand Discovery Workshop |
-| 5.8 | Frontend — SSB viewer + Sketch workspace |
-| 5.9 | Frontend — Presentation builder + Export |
-| 5.10 | Authentication + User accounts + Project history |
-
-### Phase 5 Success Criteria
-- [ ] A designer can create a project, run discovery, and receive an SSB
-- [ ] The system reasons through the full LOGOS pipeline (not just one prompt)
-- [ ] LMKC/LKG is queryable and feeds the engines
-- [ ] Deployed and accessible
 
 ---
 
@@ -397,7 +351,7 @@ Everything shares the same intelligence core (LOGOS + LMKC).
 
 ## Immediate Next Steps (Recommended)
 
-> **Updated 2026-07-17 (v5.0). Five phases complete. LogoMind is now runnable software. Phase 6 (Launch) is next.**
+> **Updated 2026-08-14 (v5.1). Knowledge system at 24 volumes / 9 grounded engines; test suite in place. Phase 6 (Launch) is next.**
 
 ### 1. 🟢 Push the latest commits to GitHub
 ```
@@ -418,7 +372,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Create a project. Walk through the pipeline. Experience LogoMind end-to-end.
+Open `http://localhost:3000`. Create a project. Walk through the 13-stage pipeline — including Client Fit (with a pasted contest brief) and the Concept Prompt specimen sheet. Run `pytest backend/tests` for the 29-test suite.
 
 ### 3. 🟢 Move to Phase 6 — Launch preparation
 
@@ -427,36 +381,33 @@ Phase 6 deliverables:
 |------|------|
 | 6.1 | **Authentication** — user accounts, project ownership |
 | 6.2 | **File upload** — real sketch upload (not description-only) |
-| 6.3 | **Symbol Intelligence starter volume** — 25-40 LICs to enrich the Create Engine |
-| 6.4 | **Test suite** — backend + frontend automated tests |
-| 6.5 | **Production deployment** — Vercel (frontend) + Railway/Render (backend) |
-| 6.6 | **Beta testing** — real designers on real projects |
-| 6.7 | **Public launch** |
+| 6.3 | **Alembic migrations** — replace runtime auto-create |
+| 6.4 | **Production deployment** — Vercel (frontend) + Railway/Render (backend) |
+| 6.5 | **Beta testing** — real designers on real projects |
+| 6.6 | **Public launch** |
 
-### 4. 🟠 Build the Symbol Intelligence starter volume
+### 4. 🟠 Continue catalog expansion toward declared targets
 
-When the Create Engine is being used with real AI (not mock), its output quality depends directly on the knowledge it reasons over. Build a **starter Symbol Intelligence volume: 25–40 high-value symbol LICs** — the most common symbols across categories, with meanings, cultural considerations, originality assessments, and combination possibilities.
-
-This is the just-in-time knowledge work we deferred from earlier — now is when the Create Engine needs it.
+The starter catalogs are functional but below their own targets: symbols 33/150+, colours 18/50+, type categories 10/40+, industries 14/30+, PSY types 8/12+. Each volume's metadata table records the target. Highest leverage next: symbols (the cliché-dense territory Create navigates) and industries.
 
 ### 5. 🟠 Validate on a real project with real AI
 
-Set `LOGOMIND_AI_PROVIDER=openai` with your API key. Take a real client brief through the full pipeline. Where does the output shine? Where is it thin? This is the highest-value validation activity available — it reveals exactly what to improve before launch.
+Set `LOGOMIND_AI_PROVIDER=nim` (or `openai`/`openrouter`) with your API key. Take a real client brief through the full pipeline. Where does the output shine? Where is it thin? This is the highest-value validation activity available — it reveals exactly what to improve before launch.
 
 ---
 
-## A Note on the v5.0 Milestone
+## A Note on the v5.1 Milestone
 
-Five phases complete. LogoMind has crossed from specification to software:
+Five phases complete. LogoMind has crossed from specification to software — and the software now reasons over its own corpus:
 
 - **Phase 0 (Foundation):** Why LogoMind exists
 - **Phase 1 (Governance):** How knowledge is governed
-- **Phase 2 (Knowledge):** What good identity design is (15 LICs)
-- **Phase 3 (Reasoning):** How LOGOS thinks (9 engines + LRL)
-- **Phase 4 (Product):** What the designer experiences (7 product specs)
-- **Phase 5 (Software):** The running application (full pipeline implemented)
+- **Phase 2 (Knowledge):** What good identity design is (24 volumes across 11 domains)
+- **Phase 3 (Reasoning):** How LOGOS thinks (13 engines + LRL)
+- **Phase 4 (Product):** What the designer experiences (8 product specs)
+- **Phase 5 (Software):** The running application (13-stage pipeline, 9 knowledge-grounded engines, tested)
 
-The project is now a **runnable product** — not just a specification. What remains is hardening (auth, tests, deployment) and enrichment (Symbol Intelligence, more LIC volumes). The intellectual core is complete; the software exists; the launch path is clear.
+The project is a **runnable product** whose engines inject curated extracts of their own knowledge base. What remains is hardening (auth, file upload, deployment, migrations) and catalog expansion toward each volume's declared target. The intellectual core is complete; the software exists; the launch path is clear.
 
 **Reason. Create. Refine.**
 

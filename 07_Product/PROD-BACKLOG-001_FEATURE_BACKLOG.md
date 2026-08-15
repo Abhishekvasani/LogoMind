@@ -64,6 +64,20 @@ These features are required for LogoMind to deliver its core promise. Without th
 
 **23 Must-Have features.** This is the MVP. Everything else can wait.
 
+### v1.1 additions (shipped 2026-08, beyond the original 23)
+
+| # | Feature | Persona | Engine / Screen | Status |
+|---|---------|---------|-----------------|--------|
+| 24+ | **Client Preference Predictor** (persona + per-family appeal ranking) | Maya | LOG-CFP-001 + Client Fit view | ✅ Shipped |
+| 24+ | **Contest Brief Decoder** (paste → structured brief → enrich) | Maya | LOG-CBD-001 + Client Fit view | ✅ Shipped |
+| 24+ | **Contest refine loop** (revealed preferences re-predict) | Maya | LOG-CFP-001 §5 + Client Fit view | ✅ Shipped |
+| 24+ | **Concept Prompt Engine** (variants + model adaptations + wireframes) | Maya | LOG-CP-001 + Concept Prompt view | ✅ Shipped |
+| 24+ | **Knowledge-grounded engines** (24 LIC volumes injected) | All | `lic_knowledge.py` | ✅ Shipped |
+| 24+ | **Dark theme + toggle** (Claude-inspired, dark default) | All | Theme system | ✅ Shipped |
+| 24+ | **Backend test suite** (29 tests) | All | `backend/tests/` | ✅ Shipped |
+
+**Status notes on the original 23:** #7 (Brand DNA editing), #16 (SSB export to PDF/Markdown), #19 (Progressive Disclosure) and #22 (user accounts) remain open; #17 (sketch upload) is description-based pending file upload; the rest are implemented.
+
 ---
 
 ## 🟠 Should Have — v1.0 or v1.1

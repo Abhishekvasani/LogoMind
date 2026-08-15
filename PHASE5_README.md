@@ -120,11 +120,12 @@ Each stage:
 
 ## Status
 
-**Phase 5 v1.0** — complete codebase with:
-- ✅ All 9 pipeline stages implemented (backend)
-- ✅ All 8 frontend screens implemented
-- ✅ Mock AI provider (deterministic, no API key needed)
-- ✅ OpenAI provider (production-ready, requires key)
+**Phase 5 v1.1** — complete codebase with:
+- ✅ All 13 pipeline stages implemented (backend, incl. Client Fit + Concept Prompt)
+- ✅ All frontend screens implemented (10 stage views, dark/light theme)
+- ✅ 24 LIC knowledge volumes loaded + injected into 9 engines (`/health` reports state)
+- ✅ Mock, OpenAI, OpenRouter, and NVIDIA NIM providers
+- ✅ Backend test suite — `pytest backend/tests` (29 tests)
 - ✅ Full API surface documented at `/docs`
 
 **Not yet implemented (deferred):**

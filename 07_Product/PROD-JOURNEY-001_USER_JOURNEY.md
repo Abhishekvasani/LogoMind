@@ -20,7 +20,7 @@ conformance: "This document conforms to LM-STD-001 through LM-STD-006."
 
 ## Overview
 
-A LogoMind project has **nine stages**, grouped into **four phases**. Each stage maps to one or more LOGOS engines working behind the scenes, but Maya never sees the engines — she sees their output.
+A LogoMind project has **thirteen stages**, grouped into **four phases**. Each stage maps to one or more LOGOS engines working behind the scenes, but Maya never sees the engines — she sees their output.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -30,15 +30,20 @@ A LogoMind project has **nine stages**, grouped into **four phases**. Each stage
 │  ENTRY        DISCOVERY        STRATEGY         EXPLORATION      │
 │  ─────        ─────────        ────────         ───────────      │
 │  1. Start     2. Discover      4. Strategise    6. Explore      │
-│               3. Workshop                       5. Insight      │
+│               3. Workshop                       7. Insight      │
+│                                                8. Evaluate      │
+│                                                9. Client Fit    │
+│                                               10. Concept       │
 │                                                                  │
 │  CRAFT        DELIVERY                                          │
 │  ─────        ────────                                          │
-│  7. Sketch    9. Present                                        │
-│  8. Critique                                                    │
+│  11. Sketch   13. Present                                       │
+│  12. Critique                                                   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+> **v1.1 addition:** after the Judge (8. Evaluate), the designer may paste a freelancer-style contest brief (Contest Brief Decoder), predict which family THIS client will love (**Client Fit**, 9), and compose model-ready executable concepts (**Concept Prompt**, 10) before the SSB. Both are optional on the critical path — the designer can skip from Judge to SSB.
 
 ---
 
@@ -364,7 +369,7 @@ When she uploads a sketch, the Sketch Coach (LOG-COACH-001) responds conversatio
 
 ## The Emotional Arc
 
-Across the nine stages, Maya's emotional journey is:
+Across the thirteen stages, Maya's emotional journey is:
 
 ```
 Stage 1 (Start):        Neutral → Mild engagement
@@ -374,8 +379,10 @@ Stage 4 (Strategy):     Empowerment → "I understand this brand deeply"
 Stage 5 (Insight):      Clarity → "I know where to differentiate"
 Stage 6 (Create):       Stimulation → "New directions I wouldn't have considered"
 Stage 7 (Judge):        Confidence → "I know what to refine and why"
-Stage 8 (Sketch):       Ownership → "I'm crafting with intention"
-Stage 9 (Present):      Pride → "I can defend this work strategically"
+Stage 8 (Client Fit):   Insight → "I finally understand THIS client's taste"
+Stage 9 (Concept):      Readiness → "A prompt I can execute tonight"
+Stage 10 (Sketch):      Ownership → "I'm crafting with intention"
+Stage 11 (Present):     Pride → "I can defend this work strategically"
 ```
 
 The emotional target: Maya feels like a **strategically grounded creative professional** — not a technician executing a brief, but a thinker making defensible decisions.

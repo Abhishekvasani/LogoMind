@@ -19,7 +19,7 @@ conformance: "This document conforms to LM-STD-001 through LM-STD-006."
 
 ## 1. The Screen Inventory
 
-LogoMind has **eight major screens** in v1. Each has a single responsibility and a single primary action.
+LogoMind has **ten major screens** in v1. Each has a single responsibility and a single primary action.
 
 | # | Screen | Single Responsibility | Primary Action |
 |---|--------|----------------------|----------------|
@@ -29,10 +29,14 @@ LogoMind has **eight major screens** in v1. Each has a single responsibility and
 | 4 | **Strategy View** | Display and refine Brand DNA | "Approve Brand DNA" |
 | 5 | **Insight View** | Display category research | "Continue to Create" |
 | 6 | **Concept Families** | Display generated creative territories | "Select Family" |
+| 6b | **Client Fit** | Predict which family THIS client will love | "Predict Client Appeal" (incl. contest-brief decoder + refine loop) |
+| 6c | **Concept Prompt** | Specimen sheet of executable concepts | "Compose Concept Prompts" / copy prompts, export wireframes |
 | 7 | **SSB + Sketch Workspace** | Deliver the brief; receive sketches | "Request Presentation" / "Upload Sketch" |
 | 8 | **Presentation View** | Deliver the client deck | "Export Presentation" |
 
-A 9th screen — **Judge Report** — appears as a tab within the Concept Families screen rather than as a separate screen, because evaluation and selection happen together.
+A further screen — **Judge Report** — appears as a tab within the Concept Families screen rather than as a separate screen, because evaluation and selection happen together.
+
+> **v1.1 additions:** **Client Fit** (6b) and **Concept Prompt** (6c) sit between Judge and SSB. Both are skippable — the critical path allows Judge → SSB directly. The app ships with a Claude-inspired dark theme by default and a light/dark toggle in the header.
 
 ---
 
