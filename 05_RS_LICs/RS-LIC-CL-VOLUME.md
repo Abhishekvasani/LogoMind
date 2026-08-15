@@ -160,15 +160,127 @@ Each entry covers the colour's emotional associations, industry conventions, cul
 
 ---
 
+## RS-LIC-CL-011 — Pink / Rose
+
+**Psychology:** Warmth, playfulness, romance, gentleness, modern boldness (hot pink)
+**Industry Conventions:** Beauty, fashion, confectionery, women's health; hot pink for bold/edgy brands
+**Variations:** Rose (muted, sophisticated), Hot Pink (bold, energetic), Blush (soft, premium), Salmon (edible, warm)
+**Originality Risk:** 🟢 Low-Moderate — rising but less saturated than blue/green; hot pink is the current differentiation play
+**Cultural Notes:** Western gender coding is softening — millennial pink proved its breadth; verify market-by-market
+**Best Pairings:** Charcoal (sophistication), Deep Green (botanical), Cream (softness)
+**Accessibility:** Light pinks fail on white; pair with dark text or use as accent only
+**Best For:** Brands wanting warmth with modern edge; beauty without cliché
+**LKG Relationships:** → Warmth, → Playfulness, → Softness
+
+---
+
+## RS-LIC-CL-012 — Magenta / Fuchsia
+
+**Psychology:** Boldness, creativity, unconventional energy, spectacle
+**Industry Conventions:** Telecommunications (T-Mobile legacy), entertainment, challenger tech
+**Variations:** Electric Magenta (digital, energetic), Deep Fuchsia (dramatic, rich)
+**Originality Risk:** 🟢 Low — distinctive and owned by few (a famous telecom guards it in their class)
+**Cultural Notes:** Neutral; reads synthetic/digital rather than natural
+**Best Pairings:** Near-black (max drama), White (clarity), Lime (unforgettable, use sparingly)
+**Accessibility:** Strong on white and black; excellent text-accent contrast
+**Best For:** Challenger brands that must be noticed and remembered
+**LKG Relationships:** → Boldness, → Creativity, → Energy
+
+---
+
+## RS-LIC-CL-013 — Grey
+
+**Psychology:** Balance, neutrality, sophistication, professionalism, understatement
+**Industry Conventions:** Corporate B2B, consultancies, architecture, industrial
+**Variations:** Cool Grey (corporate, precise), Warm Grey (humane, premium), Graphite (technical, modern)
+**Originality Risk:** 🟠 Moderate as the SOUL of a brand (grey-on-grey anonymity); 🟢 Low as a supporting neutral
+**Cultural Notes:** Neutral-to-dull connotations ("grey area", "grey man") — needs form to carry emotion
+**Best Pairings:** Any accent (grey amplifies); Black (monochrome authority)
+**Accessibility:** Mid-greys fail as text on both extremes; calculate — never assume
+**Best For:** Brands letting FORM speak (architecture, industrial), or as the calm base for one vivid accent
+**LKG Relationships:** → Balance, → Neutrality, → Sophistication
+
+---
+
+## RS-LIC-CL-014 — Silver / Metallic
+
+**Psychology:** Precision, technology, premium engineering, futurism
+**Industry Conventions:** Automotive, hardware, appliances, fintech (chrome-coin legacy)
+**Variations:** Brushed Silver (industrial craft), Chrome (futuristic, bold), Platinum (luxury, quiet)
+**Originality Risk:** 🟠 Moderate — metallic renders need dimension (gradients/shine), fighting flat-logo trends
+**Cultural Notes:** Universally "engineered"; second-place medal baggage is minor
+**Best Pairings:** Black (premium tech), Deep Blue (corporate engineering)
+**Accessibility:** True metallics are gradients, not flat colours — always define a flat fallback for accessibility and reproduction
+**Best For:** Engineering-led premium brands; automotive/hardware heritage
+**LKG Relationships:** → Precision, → Engineering, → Futurism
+
+---
+
+## RS-LIC-CL-015 — Indigo
+
+**Psychology:** Depth, wisdom, intuition, premium-mystique, calm authority
+**Industry Conventions:** Spiritual/wellness (third-eye legacy), premium tech, education
+**Variations:** Deep Indigo (mysterious, premium), Periwinkle (soft, approachable)
+**Originality Risk:** 🟢 Low — sits between blue and purple, inheriting trust without either default
+**Cultural Notes:** Dye heritage (India's indigo trade); spiritual associations in wellness contexts
+**Best Pairings:** Amber/Gold (warm contrast), Cream (approachable depth), White (clarity)
+**Accessibility:** Strong contrast on white; test deep indigo on black
+**Best For:** Trust-meets-depth brands — edtech, wellness-tech, premium consulting
+**LKG Relationships:** → Wisdom, → Depth, → Calm Authority
+
+---
+
+## RS-LIC-CL-016 — Olive / Khaki
+
+**Psychology:** Earthiness, resilience, practicality, maturity, military-honesty
+**Industry Conventions:** Outdoor, workwear, heritage craft, natural goods
+**Variations:** Olive Drab (utilitarian), Sage-Olive (soft, modern), Moss (forest-floor organic)
+**Originality Risk:** 🟢 Low — underused; carries green's nature without eco-cliché
+**Cultural Notes:** Military association is real but reads "durable" more than "war" in branding
+**Best Pairings:** Cream (heritage warmth), Rust (organic richness), Charcoal (utility)
+**Accessibility:** Mid-tone; test with white and black text per shade
+**Best For:** Durable-natural brands; outdoor and craft without the leaf
+**LKG Relationships:** → Resilience, → Earthiness, → Practicality
+
+---
+
+## RS-LIC-CL-017 — Coral
+
+**Psychology:** Warmth, friendliness, approachability, optimism, coastal vitality
+**Industry Conventions:** Hospitality, travel (coastal), health-tech (Pantone Living Coral legacy), food
+**Variations:** Living Coral (warm, alive), Salmon-Coral (edible), Deep Coral (richer, grounded)
+**Originality Risk:** 🟢 Low-Moderate — warm and welcoming without red's aggression; underused
+**Cultural Notes:** Neutral-to-positive; ocean-conservation connotations rising
+**Best Pairings:** Teal (complementary coastal classic), Navy (warm-cool balance), Sand (sun-warmed neutral)
+**Accessibility:** Light corals need dark text; strong as accent
+**Best For:** Approachable health/hospitality; warmth that red over-delivers
+**LKG Relationships:** → Warmth, → Friendliness, → Vitality
+
+---
+
+## RS-LIC-CL-018 — Mint / Sage (Soft Green Pastels)
+
+**Psychology:** Freshness, calm, cleanliness, gentle renewal, modern softness
+**Industry Conventions:** Wellness, skincare, clean food, DTC startups, health
+**Variations:** Mint (cool, clean), Sage (grey-green, sophisticated), Eucalyptus (spa-natural)
+**Originality Risk:** 🟠 Rising — the DTC wellness wave has claimed much of this territory
+**Cultural Notes:** Neutral; universally "clean"
+**Best Pairings:** Charcoal (modern edge), Terracotta (warm balance), Cream (softness on softness — risky)
+**Accessibility:** Fails as text on white; background/accent role only with dark text
+**Best For:** Clean-wellness and DTC brands; gentleness without clinical white
+**LKG Relationships:** → Freshness, → Calm, → Cleanliness
+
+---
+
 ## Volume Metadata
 
 | Field | Value |
 |-------|-------|
-| Total colours | 10 (starter set) |
+| Total colours | 18 (starter set) |
 | Full volume target | 50+ colours with detailed hex ranges and accessibility data |
-| Categories covered | Primary (blue, green, red, yellow), Secondary (purple, orange), Neutrals (black, white, brown), Modern (teal) |
+| Categories covered | Primary (blue, green, red, yellow), Secondary (purple, orange, pink, magenta), Neutrals (black, white, brown, grey, silver), Modern (teal, indigo, olive, coral, mint/sage) |
 | Most overused | Blue (finance/tech default), Green (eco default) |
-| Most original | Teal/Turquoise, Purple, Brown/Earth Tones |
+| Most original | Magenta, Indigo, Olive, Coral, Teal/Turquoise, Brown/Earth Tones |
 
 ---
 
@@ -184,6 +296,29 @@ Each entry covers the colour's emotional associations, industry conventions, cul
 | Creativity / Innovation | Purple, Orange, Teal | Grey (boring) |
 | Craft / Artisanal | Brown, Cream, Forest Green | Neon colours |
 | Technology / Modern | Geometric Blue, Black, Teal | Brown (dated) |
+
+---
+
+## Colour Accessibility Standards
+
+**Contrast rules (WCAG 2.1):** Body text needs 4.5:1 against its background; large text and essential UI shapes need 3:1. A logo is a "graphical object" — 3:1 against adjacent colours is the professional floor.
+
+| Pair | Typical ratio | Verdict |
+|------|--------------|---------|
+| White on Navy / Black / Deep Indigo | 10:1+ | Safe everywhere |
+| White on Teal (mid) | ~3.5:1 | Large sizes only |
+| White on Yellow / Mint / Coral (light) | <2:1 | Fails — flip to dark text |
+| Charcoal on Cream / Blush | 8:1+ | Safe everywhere |
+| Grey on White (mid-grey) | ~3:1 | Fails for text |
+| Deep colours on Deep colours | varies | Calculate — never assume |
+
+**Colour-blind safety (~8% of men have some form):**
+- Never let red-vs-green be the ONLY difference between two elements — add shape, label, or lightness
+- Deuteranopia (most common) collapses red/green toward khaki; check palettes in a simulator
+- Blue/orange is the classic colour-blind-safe complementary pair
+- The one-colour test (PRD-004) doubles as the colour-blind test: a mark that survives monochrome survives colour-blindness
+
+**Deliverable rule:** every palette ships with at least one contrast-verified text pair (accent on background AND background on accent) — write the ratios into the guideline sheet.
 
 ---
 

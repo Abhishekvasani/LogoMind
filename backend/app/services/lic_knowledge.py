@@ -183,9 +183,18 @@ def _slice_color_volume(md: str) -> str:
         ("*LogoMind Principle", "## Volume Metadata"),
         max_chars=2000,
     )
+    accessibility = _slice_between(
+        md,
+        "## Colour Accessibility Standards",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=2200,
+    )
     if not body:
         return ""
-    return f"{body}\n\n--- Colour Selection Framework (apply when choosing palette) ---\n{framework}"
+    parts = f"{body}\n\n--- Colour Selection Framework (apply when choosing palette) ---\n{framework}"
+    if accessibility:
+        parts += f"\n\n--- Colour Accessibility Standards (WCAG + colour-blind rules) ---\n{accessibility}"
+    return parts
 
 
 def _slice_type_volume(md: str) -> str:
@@ -216,12 +225,21 @@ def _slice_type_volume(md: str) -> str:
     framework = _slice_between(
         md,
         "## Typography Selection Framework",
-        ("*LogoMind Principle", "## Volume Metadata"),
+        ("## Weight, Case", "## Volume Metadata"),
         max_chars=2000,
+    )
+    semantics = _slice_between(
+        md,
+        "## Weight, Case & Tracking Semantics",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=2600,
     )
     if not body:
         return ""
-    return f"{body}\n\n--- Typography Selection Framework (apply when choosing type) ---\n{framework}"
+    parts = f"{body}\n\n--- Typography Selection Framework (apply when choosing type) ---\n{framework}"
+    if semantics:
+        parts += f"\n\n--- Weight, Case & Tracking Semantics + Pairing Rules ---\n{semantics}"
+    return parts
 
 
 def _slice_identity_volume(md: str) -> str:
@@ -455,13 +473,125 @@ def _slice_client_psychology_volume(md: str) -> str:
         ("*LogoMind Principle", "## Volume Metadata"),
         max_chars=1600,
     )
+    rationale = _slice_between(
+        md,
+        "## RS-LIC-PSY-011 — The Rationale Narrative",
+        ("## Volume Metadata",),
+        max_chars=1800,
+    )
     if not body:
         return ""
     return (
         f"{body}\n\n--- The Feedback Decoder (translate taste-language) ---\n{decoder}"
         f"\n\n--- The Objection Taxonomy (answer the armoured question) ---\n{objections}"
+        f"\n\n--- The Rationale Narrative (Meaning → Evidence → Application → Consequence) ---\n{rationale}"
         f"\n\n--- Client Psychology Framework ---\n{framework}"
     )
+
+
+def _slice_production_volume(md: str) -> str:
+    """Compact the production entries to one row each + the Production Checklist.
+
+    Scale/stroke craft, file formats, colour versions, clear space, and handoff
+    standards — the constraints a concept must survive, used by Concept Prompt
+    (scale-aware wireframes), Sketch Coach (production pitfalls), and SSB.
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-PRD-\d+) — (.+)$", md, re.MULTILINE):
+        pid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 2000
+        block = md[block_start:block_end]
+        definition = _first_field(block, "Definition")
+        best_for = _first_field(block, "Best For")
+        # Pull the concrete rule lines too — they are the operational core.
+        rule_lines = [
+            line.strip().lstrip("*") for line in block.split("\n")
+            if line.strip().startswith("**At ") or line.strip().startswith("**Minimum")
+            or line.strip().startswith("**Favicon") or line.strip().startswith("**Monochrome")
+        ]
+        rules = "; ".join(rule_lines)[:400]
+        rows.append(f"- {name} ({pid}): {definition} {('| rules: ' + rules) if rules else ''} | feeds=[{best_for}]")
+    body = "\n".join(rows)
+    checklist = _slice_between(
+        md,
+        "## Production Checklist Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=1800,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Production Checklist Framework (test every concept) ---\n{checklist}"
+
+
+def _slice_contest_volume(md: str) -> str:
+    """Compact the contest-dynamics entries to one row each + the Signal
+    Framework.
+
+    Formats, the brief reality, rating/elimination signals, reading the room,
+    and iteration discipline — the interpretation layer for the Client Fit
+    refine loop's contest feedback.
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-CON-\d+) — (.+)$", md, re.MULTILINE):
+        cid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 2000
+        block = md[block_start:block_end]
+        definition = _first_field(block, "Definition")
+        best_for = _first_field(block, "Best For")
+        rows.append(f"- {name} ({cid}): {definition} | feeds=[{best_for}]")
+    body = "\n".join(rows)
+    signals = _slice_between(
+        md,
+        "## Contest Signal Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=1800,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Contest Signal Framework (interpret ratings/eliminations/silence) ---\n{signals}"
+
+
+def _slice_trademark_volume(md: str) -> str:
+    """Compact the trademark entries to one row each + the Trademark Check.
+
+    The distinctiveness spectrum, refusal grounds, clearance basics, and
+    red flags — grounding the Judge engine's risk signalling with the legal
+    axis under "is it different enough?".
+    """
+    rows = []
+    for m in re.finditer(r"^## (RS-LIC-TM-\d+) — (.+)$", md, re.MULTILINE):
+        tid, name = m.group(1), m.group(2)
+        block_start = m.end()
+        block_end = md.find("\n---\n", block_start)
+        if block_end == -1:
+            block_end = block_start + 2000
+        block = md[block_start:block_end]
+        definition = _first_field(block, "Definition")
+        best_for = _first_field(block, "Best For")
+        # The distinctiveness spectrum levels are TM-001's operational core —
+        # keep them in the compacted row.
+        spectrum = [
+            line.strip() for line in block.split("\n")
+            if re.match(r"\*\*(Generic|Descriptive|Suggestive|Arbitrary|Fanciful)", line.strip())
+        ]
+        spec_txt = (" spectrum=[" + " ".join(spectrum) + "]") if spectrum else ""
+        rows.append(f"- {name} ({tid}): {definition}{spec_txt} | feeds=[{best_for}]")
+    body = "\n".join(rows)
+    check = _slice_between(
+        md,
+        "## Trademark Check Framework",
+        ("*LogoMind Principle", "## Volume Metadata"),
+        max_chars=1500,
+    )
+    if not body:
+        return ""
+    return f"{body}\n\n--- Trademark Check Framework (distinctiveness risk) ---\n{check}"
 
 
 # ─── Registry ───────────────────────────────────────────────────────────
@@ -579,6 +709,21 @@ _REGISTRY: Tuple[ExtractSpec, ...] = (
         lic_id="RS-LIC-PSY-VOLUME",
         filename="RS-LIC-PSY-VOLUME.md",
         slicer=_slice_client_psychology_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-PRD-VOLUME",
+        filename="RS-LIC-PRD-VOLUME.md",
+        slicer=_slice_production_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-CON-VOLUME",
+        filename="RS-LIC-CON-VOLUME.md",
+        slicer=_slice_contest_volume,
+    ),
+    ExtractSpec(
+        lic_id="RS-LIC-TM-VOLUME",
+        filename="RS-LIC-TM-VOLUME.md",
+        slicer=_slice_trademark_volume,
     ),
 )
 

@@ -12,11 +12,11 @@ related:
 conformance: "Conforms to LM-STD-001 through LM-STD-006."
 ---
 
-# Client Psychology — Starter Set (8 Types + 2 Systems)
+# Client Psychology — Starter Set (8 Types + 3 Systems)
 
 > *The hardest design problem in the room is rarely the mark — it is the person approving it. Read the decision-maker as carefully as the brief.*
 
-Three systems: **decision-maker types** (recognise who approves, predict what they can love), the **feedback decoder** (translate taste-language into designable meaning), and the **objection taxonomy** (answer the question underneath the pushback).
+Three systems plus a narrative craft: **decision-maker types** (recognise who approves, predict what they can love), the **feedback decoder** (translate taste-language into designable meaning), the **objection taxonomy** (answer the question underneath the pushback), and the **rationale narrative** (make every decision legible to non-designers).
 
 ---
 
@@ -163,12 +163,25 @@ Every objection is a question wearing armour. Answer the underlying question wit
 
 ---
 
+## RS-LIC-PSY-011 — The Rationale Narrative
+
+**Definition:** The repeatable structure that makes a design decision legible to non-designers — the story shape behind every "Design Rationale" section and objection response.
+**The Arc:** Meaning → Evidence → Application → Consequence. (1) What the brand means; (2) what that meaning demanded of the form — traced choice by choice; (3) how it behaves where it lives (favicon, signage, app); (4) what the audience will feel/do because of it.
+**Rule of One:** Every visual choice gets exactly one reason — the strongest. Stacked reasons dilute; the committee smells doubt.
+**Evidence over adjectives:** Never "clean and modern" — instead "one stroke weight, so the mark survives 16px" (testable claim). Adjectives are opinions; tests are facts.
+**Land the cost of NO:** State what the rejected alternative would have cost ("the illustrative direction would fail embroidery and favicon — your mark dies in the places you actually compete").
+**Close with the client's words:** End on the brief's own language, returned as fulfilled promises.
+**Best For:** Presentation rationale sections, objection responses, the Q&A section, contest entry descriptions.
+**LKG Relationships:** → Meaning, → Evidence, → Persuasion
+
+---
+
 ## Volume Metadata
 
 | Field | Value |
 |-------|-------|
 | Decision-maker types | 8 (starter set) |
-| Systems | Feedback Decoder (12 phrases), Objection Taxonomy (9 objections) |
+| Systems | Feedback Decoder (12 phrases), Objection Taxonomy (9 objections), Rationale Narrative (the Meaning → Evidence → Application → Consequence arc) |
 | Full volume target | 12+ types incl. the Investor, the Franchise Operator, the Public-Sector Buyer; 30+ decoded phrases; cross-cultural negotiation notes |
 | Feeds | Client Fit (persona modelling — types carry aesthetic lean + boldness tolerance), Presentation (objection handling), strategy rationale framing |
 | Caution | Types are priors, not verdicts — evidence in the brief always overrides the type |

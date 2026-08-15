@@ -101,12 +101,17 @@ def test_engine_prompts_carry_knowledge():
         (engines.CREATE_SYSTEM_PROMPT, "RS-LIC-SY-VOLUME"),
         (engines.CREATE_SYSTEM_PROMPT, "RS-LIC-IND-VOLUME"),    # per-category clichés
         (engines.JUDGE_SYSTEM_PROMPT, "RS-LIC-PH-003"),         # simplicity dim
+        (engines.JUDGE_SYSTEM_PROMPT, "RS-LIC-TM-VOLUME"),      # distinctiveness risk
         (engines.SSB_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),        # grids / logo types
+        (engines.SSB_SYSTEM_PROMPT, "RS-LIC-PRD-VOLUME"),       # production notes
         (engines.COACH_SYSTEM_PROMPT, "RS-LIC-PH-004"),         # clarity audit
+        (engines.COACH_SYSTEM_PROMPT, "RS-LIC-PRD-VOLUME"),     # production constraints
         (client_fit_engine.CLIENT_FIT_SYSTEM_PROMPT, "RS-LIC-BS-005"),  # archetypes
         (client_fit_engine.CLIENT_FIT_SYSTEM_PROMPT, "RS-LIC-PSY-VOLUME"),  # decider types
+        (client_fit_engine.CLIENT_FIT_SYSTEM_PROMPT, "RS-LIC-CON-VOLUME"),  # contest signals
         (engines.PRESENTATION_SYSTEM_PROMPT, "RS-LIC-PSY-VOLUME"),  # objection taxonomy
         (concept_engine.CONCEPT_PROMPT_SYSTEM_PROMPT, "RS-LIC-ID-VOLUME"),
+        (concept_engine.CONCEPT_PROMPT_SYSTEM_PROMPT, "RS-LIC-PRD-VOLUME"),  # scale-aware wireframes
     ]
     for prompt, marker in cases:
         assert "CANONICAL LOGOMIND KNOWLEDGE" in prompt, "knowledge block missing"
@@ -149,3 +154,30 @@ def test_client_psychology_volume_content():
         assert marker in extract, f"psychology slice missing '{marker}'"
     # Signature decoded phrases must survive the slice (sample check).
     assert "Make it pop" in extract and "too simple" in extract.lower()
+
+
+def test_expanded_volumes_carry_new_content():
+    """The Tier-2 expansions survive slicing with their new payload intact.
+
+    Symbols (33 rows incl. the new cliché-heavy creatures/emblems), colours
+    (18 rows + WCAG accessibility), typography (weight/case/tracking +
+    pairing), production (checklist), contest (signal framework), trademark
+    (distinctiveness spectrum).
+    """
+    lk.load(force=True)
+    sy = lk.get("RS-LIC-SY-VOLUME")
+    assert "RS-LIC-SY-033" in sy, "symbol expansion (33 entries) missing"
+    assert "Lion" in sy and "Shield" in sy
+    cl = lk.get("RS-LIC-CL-VOLUME")
+    assert "RS-LIC-CL-018" in cl, "colour expansion (18 entries) missing"
+    assert "Colour Accessibility Standards" in cl and "WCAG" in cl
+    ty = lk.get("RS-LIC-TY-VOLUME")
+    assert "Weight, Case & Tracking Semantics" in ty and "Pairing" in ty
+    prd = lk.get("RS-LIC-PRD-VOLUME")
+    assert "Production Checklist Framework" in prd and "16px" in prd
+    con = lk.get("RS-LIC-CON-VOLUME")
+    assert "Contest Signal Framework" in con and "RS-LIC-CON-006" in con
+    tm = lk.get("RS-LIC-TM-VOLUME")
+    assert "Trademark Check Framework" in tm and "Fanciful" in tm
+    psy = lk.get("RS-LIC-PSY-VOLUME")
+    assert "Rationale Narrative" in psy

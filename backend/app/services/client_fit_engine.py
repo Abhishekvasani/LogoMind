@@ -105,13 +105,14 @@ object. No prose, no code fences, no commentary.
 """ + lic_knowledge.knowledge_block([
     # Ground the persona's decoded intents and taste in the canonical volumes:
     # colour psychology (decoding "blue" -> trust), symbol meanings (decoding
-    # "a shield" -> security), type personality (aesthetic lean), the
-    # twelve-archetype vocabulary the persona's `archetype` field draws from,
-    # and the decision-maker types (whose aesthetic-lean/boldness-tolerance
-    # profiles are literally the persona's predicted fields — priors, never
-    # verdicts; the brief's evidence overrides).
-    "RS-LIC-CL-VOLUME", "RS-LIC-TY-VOLUME", "RS-LIC-SY-VOLUME", "RS-LIC-BS-005",
-    "RS-LIC-PSY-VOLUME",
+    # "a shield" -> security), the twelve-archetype vocabulary the persona's
+    # `archetype` field draws from, the decision-maker types (whose
+    # aesthetic-lean/boldness-tolerance profiles are literally the persona's
+    # predicted fields — priors, never verdicts; the brief's evidence
+    # overrides), and contest dynamics (interpreting revealed preferences —
+    # ratings, eliminations, silence — in the refine loop).
+    "RS-LIC-CL-VOLUME", "RS-LIC-SY-VOLUME", "RS-LIC-BS-005",
+    "RS-LIC-PSY-VOLUME", "RS-LIC-CON-VOLUME",
 ])
 
 

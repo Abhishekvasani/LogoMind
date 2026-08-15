@@ -365,8 +365,10 @@ Return ONLY the JSON object. No prose, no code fences, no commentary.
     # Ground the craft dimensions with their canonical audits/tests: originality
     # (PH-005), simplicity (PH-003), clarity (PH-004), memorability (PH-006),
     # timelessness (PH-008). The remaining dimensions are judged from context.
+    # The trademark volume adds the legal-risk axis to the risk signalling.
     + lic_knowledge.knowledge_block([
         "RS-LIC-PH-005", "RS-LIC-PH-003", "RS-LIC-PH-004", "RS-LIC-PH-006", "RS-LIC-PH-008",
+        "RS-LIC-TM-VOLUME",
     ])
 )
 
@@ -492,7 +494,7 @@ nest or rename fields; every field is required):
 Include 5-7 sketch_missions. start_with must be concrete, actionable guidance
 (e.g. "Begin with a circular grid; sketch 10 keystone variations; test at 16px").
 Return ONLY the JSON object. No prose, no code fences, no commentary.
-""" + lic_knowledge.knowledge_block(["RS-LIC-ID-VOLUME"])
+""" + lic_knowledge.knowledge_block(["RS-LIC-ID-VOLUME", "RS-LIC-PRD-VOLUME"])
 
 
 def _select_chosen_family(
@@ -638,7 +640,7 @@ nest or rename fields; every non-optional field is required):
 
 Frame suggestions as questions where possible. Return ONLY the JSON object.
 No prose, no code fences, no commentary.
-""" + lic_knowledge.knowledge_block(["RS-LIC-PH-003", "RS-LIC-PH-004"])
+""" + lic_knowledge.knowledge_block(["RS-LIC-PH-003", "RS-LIC-PH-004", "RS-LIC-PRD-VOLUME"])
 
 
 async def critique_sketch(

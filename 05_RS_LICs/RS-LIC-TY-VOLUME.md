@@ -200,4 +200,39 @@ When the Create Engine recommends typography direction, it applies this framewor
 
 ---
 
+## Weight, Case & Tracking Semantics
+
+The same typeface says different things depending on how it is set — these micro-choices carry personality as strongly as the letterform choice itself.
+
+| Choice | Signal sent | Risk when misused |
+|--------|-------------|-------------------|
+| Bold / Black weight | Confidence, presence, momentum | Aggression; fills small counters — fails favicon |
+| Regular / Medium | Composure, editorial calm | Timidity at distance; needs size to compensate |
+| Light weight | Refinement, premium airiness | Invisible at small sizes; the thin-stroke trap |
+| ALL-CAPS | Authority, ceremony, order | Shouts in long strings; legibility drops past ~3 words |
+| lowercase | Approachability, digital-native ease | Understates authority; risky for institutional brands |
+| Title Case | Balance, traditional professionalism | Neutral to a fault — no signal is also a choice |
+| Wide tracking (caps) | Prestige, luxury spacing | Pretension if overdone; letter-spacing lowercase is a craft error |
+| Tight tracking | Density, momentum, modern editorial | Collision at small sizes; illegible when extreme |
+| Italic | Motion, voice, emphasis | Gimmick as identity default |
+
+---
+
+## Typography Pairing Rules
+
+A pairing works when the two typefaces share one clear trait (era, weight logic, or skeleton) and differ decisively in exactly one dimension. Two differences or more = visual noise.
+
+| Goal | The pattern | Example shape |
+|------|-------------|---------------|
+| Contrast of structure | Serif headline + geometric sans body | Didone + grotesque |
+| Contrast of scale | One family, two wildly different sizes | Single grotesque at 96/14 |
+| Contrast of voice | Neutral body + expressive display | Grotesque + custom script (logos only) |
+| Harmony | Same superfamily, different weights | Transitional serif + its sans sibling |
+| Anti-pattern | Two expressive faces together | Script + slab + display = cacophony |
+| Anti-pattern | Three or more families | No system survives it |
+
+Small-size law: whichever face carries body text must survive at 12-14px — display faces never carry body copy.
+
+---
+
 *LogoMind Principle: Typography is the brand's voice made visible. The right letterform personality matches the brand's character; the wrong one creates dissonance the audience feels but cannot name.*

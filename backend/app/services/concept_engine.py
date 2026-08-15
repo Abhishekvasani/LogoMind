@@ -116,8 +116,10 @@ model_adaptations:
 Return ONLY the JSON object. No prose, no code fences, no commentary.
 """
     # PH-005 grounds originality; ID-VOLUME grounds the wireframe spec (grid
-    # systems, proportion/scale, optical correction, the five logo types).
-    + lic_knowledge.knowledge_block(["RS-LIC-PH-005", "RS-LIC-ID-VOLUME"])
+    # systems, proportion/scale, optical correction, the five logo types);
+    # PRD-VOLUME keeps the wireframe production-viable (stroke floors, the
+    # 16px favicon test, scale behaviour).
+    + lic_knowledge.knowledge_block(["RS-LIC-PH-005", "RS-LIC-ID-VOLUME", "RS-LIC-PRD-VOLUME"])
     + "\n\n" + _exemplars.CONCEPT_PROMPT_STYLE_ANCHOR
 )
 
