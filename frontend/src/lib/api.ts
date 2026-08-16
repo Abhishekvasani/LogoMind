@@ -179,6 +179,33 @@ export const composeSSB = (projectId: number) =>
 export const uploadSketch = (projectId: number, data: { description?: string; design_intent?: string; linked_concept_family?: string; image_url?: string }) =>
   apiCall<any>(`/projects/${projectId}/sketches`, { method: "POST", body: JSON.stringify(data) });
 
+// Stage 8: upload a sketch IMAGE (multipart) + coach critique. Separate from
+// apiCall because the browser must set the multipart boundary itself.
+export const uploadSketchImage = async (
+  projectId: number,
+  image: File,
+  meta: { description?: string; design_intent?: string; linked_concept_family?: string } = {}
+): Promise<any> => {
+  const form = new FormData();
+  form.append("image", image);
+  if (meta.description) form.append("description", meta.description);
+  if (meta.design_intent) form.append("design_intent", meta.design_intent);
+  if (meta.linked_concept_family) form.append("linked_concept_family", meta.linked_concept_family);
+  const response = await fetch(`${API_BASE}/projects/${projectId}/sketches/upload`, {
+    method: "POST",
+    body: form,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({ detail: response.statusText }));
+    const detail = body?.detail;
+    if (detail && typeof detail === "object" && detail.stage && detail.detail) {
+      throw new StageApiError(detail as StageErrorPayload, response.status);
+    }
+    throw new Error(typeof detail === "string" ? detail : `API error: ${response.status}`);
+  }
+  return response.json();
+};
+
 // Stage 9: Presentation
 export const buildPresentation = (projectId: number) =>
   apiCall<any>(`/projects/${projectId}/presentation`, { method: "POST" });

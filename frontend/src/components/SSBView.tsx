@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Project, uploadSketch, buildPresentation } from "@/lib/api";
+import { Project, uploadSketch, uploadSketchImage, buildPresentation } from "@/lib/api";
 import { useStageAction } from "@/lib/useStageAction";
 import { StageStatus } from "@/components/StageStatus";
 
@@ -9,17 +9,31 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
   const { run, retry, running, elapsed, error } = useStageAction(onUpdate);
   const [sketchDesc, setSketchDesc] = useState("");
   const [sketchIntent, setSketchIntent] = useState("");
+  const [sketchFile, setSketchFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const ssb = project.ssb;
   const sketches = project.sketches || [];
 
+  const pickFile = (file: File | null) => {
+    setSketchFile(file);
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    setFilePreview(file ? URL.createObjectURL(file) : null);
+  };
+
   const handleUpload = () => {
-    if (!sketchDesc.trim()) return;
+    if (!sketchFile && !sketchDesc.trim()) return;
     const desc = sketchDesc;
     const intent = sketchIntent;
+    const file = sketchFile;
     run(async () => {
-      await uploadSketch(project.id, { description: desc, design_intent: intent });
+      if (file) {
+        await uploadSketchImage(project.id, file, { description: desc, design_intent: intent });
+      } else {
+        await uploadSketch(project.id, { description: desc, design_intent: intent });
+      }
       setSketchDesc("");
       setSketchIntent("");
+      pickFile(null);
     }, "sketch");
   };
 
@@ -204,11 +218,29 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
         <h2 className="text-lg font-medium">Sketch Workspace</h2>
 
         <div className="p-4 border border-rule rounded-lg bg-stock">
-          <label className="block text-sm font-medium mb-1">Upload Sketch (describe)</label>
+          <label className="block text-sm font-medium mb-1">Upload Sketch</label>
+          {filePreview && (
+            <div className="mb-2 relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={filePreview} alt="Sketch preview" className="w-full rounded border border-rule bg-paper" />
+              <button
+                onClick={() => pickFile(null)}
+                className="absolute top-2 right-2 px-2 py-0.5 text-xs bg-ink/80 text-stock rounded"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            className="w-full text-sm text-graphite file:mr-3 file:px-3 file:py-1.5 file:border file:border-rule file:rounded file:text-sm file:text-ink file:bg-surface-2 file:cursor-pointer mb-2"
+          />
           <textarea
             value={sketchDesc}
             onChange={(e) => setSketchDesc(e.target.value)}
-            placeholder="Describe your sketch…"
+            placeholder="Describe your sketch (required without an image)…"
             className="w-full p-2 border border-rule rounded text-sm mb-2 min-h-[80px] bg-paper text-ink focus:outline-none focus:border-ink/40"
           />
           <input
@@ -219,7 +251,7 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
           />
           <button
             onClick={handleUpload}
-            disabled={running || !sketchDesc.trim()}
+            disabled={running || (!sketchFile && !sketchDesc.trim())}
             className="px-3 py-1.5 bg-surface-2 rounded text-sm text-ink hover:bg-ink/15 disabled:opacity-50"
           >
             Submit for Coach Feedback
@@ -239,6 +271,10 @@ export function SSBView({ project, onUpdate }: { project: Project; onUpdate: () 
                     <span className="text-xs text-graphite">{sketch.coach_confidence}</span>
                   )}
                 </div>
+                {sketch.image_url && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={sketch.image_url} alt={`Sketch ${sketch.sketch_number}`} className="w-full rounded border border-rule mb-2 bg-paper" />
+                )}
                 {sketch.description && (
                   <p className="text-sm text-graphite mb-2">"{sketch.description}"</p>
                 )}

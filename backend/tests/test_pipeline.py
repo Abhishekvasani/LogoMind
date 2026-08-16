@@ -232,6 +232,62 @@ def test_strategy_requires_confidence(client: TestClient):
     assert "Brand Confidence" in r.json()["detail"]
 
 
+def test_sketch_image_upload(client: TestClient, tmp_path, monkeypatch):
+    """Multipart sketch upload stores the image and serves it back (Stage 8)."""
+    import app.routers as routers
+
+    # Redirect storage into the test's tmp dir so the suite stays hermetic.
+    monkeypatch.setattr(routers, "_UPLOAD_DIR", tmp_path)
+
+    project = _create_project(client)
+    pid = project["id"]
+
+    # A minimal valid 1x1 PNG.
+    png = bytes.fromhex(
+        "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+        "0000000d49444154789c626001000000050001a5f645400000000049454e44ae426082"
+    )
+    r = client.post(
+        f"/api/projects/{pid}/sketches/upload",
+        files={"image": ("sketch.png", png, "image/png")},
+        data={"description": "A geometric keystone mark.", "design_intent": "Convey stability."},
+    )
+    assert r.status_code == 200, r.text
+    sketch = r.json()
+    assert sketch["sketch_number"] == 1
+    assert sketch["image_url"] == f"/api/projects/{pid}/sketches/{sketch['id']}/image"
+
+    # The stored file exists and the serving endpoint returns it.
+    stored = list((tmp_path / str(pid)).glob("sketch-*.png"))
+    assert len(stored) == 1 and stored[0].read_bytes() == png
+    r = client.get(f"/api/projects/{pid}/sketches/{sketch['id']}/image")
+    assert r.status_code == 200
+    assert r.content == png
+
+    # It appears in the sketch list with feedback, and the stage advanced.
+    r = client.get(f"/api/projects/{pid}/sketches")
+    assert r.status_code == 200
+    listed = r.json()
+    assert len(listed) == 1 and listed[0]["image_url"]
+    assert listed[0]["coach_feedback"] is not None
+
+
+def test_sketch_image_upload_rejects_bad_type(client: TestClient, tmp_path, monkeypatch):
+    """Non-image content types must be rejected with a clear 400."""
+    import app.routers as routers
+
+    monkeypatch.setattr(routers, "_UPLOAD_DIR", tmp_path)
+    project = _create_project(client)
+    pid = project["id"]
+
+    r = client.post(
+        f"/api/projects/{pid}/sketches/upload",
+        files={"image": ("notes.txt", b"not an image", "text/plain")},
+    )
+    assert r.status_code == 400
+    assert "Unsupported image type" in r.json()["detail"]
+
+
 def test_provider_guard_rejects_openai_without_key(client: TestClient):
     """LOGOMIND_AI_PROVIDER=openai without a key must raise, not silently mock."""
     import os

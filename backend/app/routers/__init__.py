@@ -7,9 +7,12 @@ corresponding engine service.
 """
 
 import secrets
+import uuid
+from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -682,44 +685,133 @@ async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
     return result
 
 
-@router.post("/projects/{project_id}/sketches", response_model=CoachFeedback)
-@with_stage_error("sketch")
-async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Depends(get_db)):
-    """Upload a sketch and get Sketch Coach feedback (Stage 8 iteration)."""
-    project = _get_project(db, project_id)
+# Sketch image storage: local directory (dev/self-host). Override with
+# LOGOMIND_UPLOAD_DIR; files land in <upload_dir>/<project_id>/sketch-<n>-<uuid>.<ext>.
+import os as _os
+_UPLOAD_DIR = Path(_os.environ.get("LOGOMIND_UPLOAD_DIR", Path(__file__).resolve().parents[1] / "uploads"))
+_ALLOWED_IMAGE_TYPES = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif", "image/svg+xml": ".svg"}
+_MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
 
-    # Count existing sketches for numbering
-    existing = db.query(SketchModel).filter(SketchModel.project_id == project_id).count()
+
+async def _persist_sketch_with_critique(
+    db: Session,
+    project: ProjectModel,
+    description: str = None,
+    design_intent: str = None,
+    linked_concept_family: str = None,
+    image_url: str = None,
+    image_path: str = None,
+) -> SketchModel:
+    """Shared Stage-8 flow: coach critique + sketch persistence (LOG-COACH-001)."""
+    existing = db.query(SketchModel).filter(SketchModel.project_id == project.id).count()
     sketch_number = existing + 1
 
-    # Get Sketch Coach feedback
     linked_family = next(
-        (f for f in (project.concept_families or []) if f.get("family_label") == sketch.linked_concept_family),
-        {}
+        (f for f in (project.concept_families or []) if f.get("family_label") == linked_concept_family),
+        {},
     )
     feedback = await critique_sketch(
-        sketch_description=sketch.description or "",
-        design_intent=sketch.design_intent or "",
+        sketch_description=description or "",
+        design_intent=design_intent or "",
         linked_family=linked_family,
         brand_dna=project.brand_dna or {},
     )
 
-    # Persist the sketch
     sketch_record = SketchModel(
-        project_id=project_id,
+        project_id=project.id,
         sketch_number=sketch_number,
-        description=sketch.description,
-        design_intent=sketch.design_intent,
-        linked_concept_family=sketch.linked_concept_family,
-        image_url=sketch.image_url,
+        description=description,
+        design_intent=design_intent,
+        linked_concept_family=linked_concept_family,
+        image_url=image_url,
+        image_path=image_path,
         coach_feedback=feedback.model_dump(),
         coach_confidence=feedback.confidence.value,
     )
     db.add(sketch_record)
     project.stage = "sketch"
     db.commit()
+    return sketch_record
 
-    return feedback
+
+@router.post("/projects/{project_id}/sketches", response_model=CoachFeedback)
+@with_stage_error("sketch")
+async def upload_sketch(project_id: int, sketch: SketchUpload, db: Session = Depends(get_db)):
+    """Upload a sketch (description-based) and get Sketch Coach feedback (Stage 8 iteration)."""
+    project = _get_project(db, project_id)
+    record = await _persist_sketch_with_critique(
+        db, project,
+        description=sketch.description,
+        design_intent=sketch.design_intent,
+        linked_concept_family=sketch.linked_concept_family,
+        image_url=sketch.image_url,
+    )
+    # The coach feedback is the primary response; the sketch is persisted alongside.
+    return CoachFeedback(**record.coach_feedback)
+
+
+@router.post("/projects/{project_id}/sketches/upload", response_model=SketchOut)
+@with_stage_error("sketch")
+async def upload_sketch_image(
+    project_id: int,
+    image: UploadFile = File(...),
+    description: str = Form(None),
+    design_intent: str = Form(None),
+    linked_concept_family: str = Form(None),
+    db: Session = Depends(get_db),
+):
+    """Upload a sketch IMAGE (multipart) and get Sketch Coach feedback.
+
+    The file is stored under the uploads directory (see LOGOMIND_UPLOAD_DIR)
+    and served back via GET /projects/{id}/sketches/{sketch_id}/image, so the
+    workspace can render it directly. Coach critique still reasons over the
+    description + intent; the image is the designer's record (Stage 8).
+    """
+    project = _get_project(db, project_id)
+
+    ext = _ALLOWED_IMAGE_TYPES.get((image.content_type or "").lower())
+    if not ext:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported image type '{image.content_type}'. Allowed: png, jpeg, webp, gif, svg.",
+        )
+    data = await image.read()
+    if len(data) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="Image exceeds the 10 MB limit.")
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty image file.")
+
+    project_dir = _UPLOAD_DIR / str(project_id)
+    project_dir.mkdir(parents=True, exist_ok=True)
+    stored_name = f"sketch-{uuid.uuid4().hex[:8]}{ext}"
+    stored_path = project_dir / stored_name
+    stored_path.write_bytes(data)
+
+    record = await _persist_sketch_with_critique(
+        db, project,
+        description=description,
+        design_intent=design_intent,
+        linked_concept_family=linked_concept_family,
+        image_path=str(stored_path),
+    )
+    # Now that the record has an id, finalise the servable URL.
+    record.image_url = f"/api/projects/{project_id}/sketches/{record.id}/image"
+    db.commit()
+    return record
+
+
+@router.get("/projects/{project_id}/sketches/{sketch_id}/image")
+def get_sketch_image(project_id: int, sketch_id: int, db: Session = Depends(get_db)):
+    """Serve a stored sketch image (the workspace renders it directly)."""
+    _get_project(db, project_id)
+    sketch = (
+        db.query(SketchModel)
+        .filter(SketchModel.id == sketch_id, SketchModel.project_id == project_id)
+        .first()
+    )
+    if not sketch or not sketch.image_path or not Path(sketch.image_path).is_file():
+        raise HTTPException(status_code=404, detail="Sketch image not found.")
+    return FileResponse(sketch.image_path, media_type="application/octet-stream", filename=Path(sketch.image_path).name)
 
 
 @router.get("/projects/{project_id}/sketches", response_model=List[SketchOut])
