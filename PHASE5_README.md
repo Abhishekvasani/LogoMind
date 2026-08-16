@@ -118,6 +118,31 @@ Each stage:
 | **Stage-routed frontend** | One project page routes to the right component based on `stage` |
 | **Confidence levels everywhere** | LM-STD-003 — never fake certainty |
 
+## Database Migrations (Alembic)
+
+The schema's authoritative history lives in `backend/alembic/versions/`.
+
+```bash
+cd backend
+
+# Apply migrations to the configured DATABASE_URL
+alembic upgrade head
+
+# Create a migration after changing models in backend/app/models
+alembic revision --autogenerate -m "describe the change"
+
+# Existing dev database created before Alembic? Mark it as current:
+alembic stamp head
+```
+
+Notes:
+- `alembic/env.py` reuses the app's `DATABASE_URL` (honours `backend/.env`) and
+  imports the ORM metadata — SQLite runs in batch mode automatically.
+- Dev convenience unchanged: the app still auto-creates tables on boot; use
+  Alembic for tracked, reviewable schema changes going forward.
+
+---
+
 ## Status
 
 **Phase 5 v1.1** — complete codebase with:
