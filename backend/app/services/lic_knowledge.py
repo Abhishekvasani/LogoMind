@@ -22,14 +22,34 @@ not the whole 450-line LIC (~4500 tokens).
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, Optional, Tuple
 
-# 05_RS_LICs lives at the repo root, three parents up from this file:
+# 05_RS_LICs lives at the repo root in development:
 #   backend/app/services/lic_knowledge.py -> app -> backend -> repo root
-_LIC_DIR = Path(__file__).resolve().parents[3] / "05_RS_LICs"
+# In deployed bundles (Vercel services build from backend/ as the root) a copy
+# is placed INSIDE backend/ by the build step, so try both, plus an explicit
+# LOGOMIND_LIC_DIR override. First existing candidate wins.
+def _resolve_lic_dir() -> Path:
+    candidates = []
+    env = os.environ.get("LOGOMIND_LIC_DIR")
+    if env:
+        candidates.append(Path(env))
+    here = Path(__file__).resolve()
+    candidates.extend([
+        here.parents[3] / "05_RS_LICs",  # repo layout (local dev / repo checkout)
+        here.parents[2] / "05_RS_LICs",  # backend/05_RS_LICs (serverless bundle)
+    ])
+    for c in candidates:
+        if c.is_dir():
+            return c
+    return candidates[-1]  # keep the old graceful-degradation behaviour
+
+
+_LIC_DIR = _resolve_lic_dir()
 
 
 # ─── Slicers ────────────────────────────────────────────────────────────
