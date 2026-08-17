@@ -64,7 +64,11 @@ app.add_middleware(
 )
 
 # Mount all routes under /api
+# Mount the router twice so the backend answers on /api/* regardless of how
+# the hosting layer routes to it: directly (single-service deploys, dev) and
+# under the /api/backend service prefix (Vercel multi-service rewrites).
 app.include_router(router, prefix="/api", tags=["logomind"])
+app.include_router(router, prefix="/api/backend", tags=["logomind"], include_in_schema=False)
 
 
 @app.get("/")
