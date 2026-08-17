@@ -84,3 +84,17 @@ def _migrate_sqlite_columns(engine) -> None:
             if col not in existing:
                 conn.execute(text(f'ALTER TABLE projects ADD COLUMN "{col}" {col_type}'))
                 logging.getLogger("logomind").info("Migrated SQLite: added column projects.%s", col)
+
+    # Sketches gained DB-backed image storage (serverless-safe): backfill the
+    # columns for existing installs the same guarded way.
+    if "sketches" in insp.get_table_names():
+        sketch_cols = {c["name"] for c in insp.get_columns("sketches")}
+        sketch_needed = [
+            ("image_data", "BLOB"),
+            ("image_content_type", "VARCHAR(64)"),
+        ]
+        with engine.begin() as conn:
+            for col, col_type in sketch_needed:
+                if col not in sketch_cols:
+                    conn.execute(text(f'ALTER TABLE sketches ADD COLUMN "{col}" {col_type}'))
+                    logging.getLogger("logomind").info("Migrated SQLite: added column sketches.%s", col)

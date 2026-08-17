@@ -76,7 +76,7 @@ These features are required for LogoMind to deliver its core promise. Without th
 | 24+ | **Dark theme + toggle** (Claude-inspired, dark default) | All | Theme system | ✅ Shipped |
 | 24+ | **Backend test suite** (29 tests) | All | `backend/tests/` | ✅ Shipped |
 
-**Status notes on the original 23:** #7 (Brand DNA editing), #16 (SSB export to PDF/Markdown), #19 (Progressive Disclosure) and #22 (user accounts) remain open; #17 (sketch upload) is description-based pending file upload; the rest are implemented.
+**Status notes on the original 23:** #7 (Brand DNA editing), #16 (SSB export to PDF/Markdown) and #19 (Progressive Disclosure) remain open; #22 (user accounts) is **descoped by founder decision (2026-08-14) — LogoMind ships without sign-up/sign-in as a single shared workspace**; #17 (sketch upload) is now full image upload (multipart, DB-stored); the rest are implemented.
 
 ---
 

@@ -7,7 +7,7 @@ uvicorn[standard]>=0.24.0
 
 # Database
 sqlalchemy>=2.0.0
-# psycopg2-binary>=2.9.0  # PostgreSQL (uncomment for production)
+psycopg2-binary>=2.9.0  # PostgreSQL (production / Vercel + Neon)
 alembic>=1.12.0          # Database migrations
 
 # Validation (bundled with FastAPI, but explicit for clarity)

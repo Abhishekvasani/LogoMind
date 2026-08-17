@@ -232,13 +232,8 @@ def test_strategy_requires_confidence(client: TestClient):
     assert "Brand Confidence" in r.json()["detail"]
 
 
-def test_sketch_image_upload(client: TestClient, tmp_path, monkeypatch):
-    """Multipart sketch upload stores the image and serves it back (Stage 8)."""
-    import app.routers as routers
-
-    # Redirect storage into the test's tmp dir so the suite stays hermetic.
-    monkeypatch.setattr(routers, "_UPLOAD_DIR", tmp_path)
-
+def test_sketch_image_upload(client: TestClient):
+    """Multipart sketch upload stores the image in the DB and serves it back."""
     project = _create_project(client)
     pid = project["id"]
 
@@ -257,12 +252,11 @@ def test_sketch_image_upload(client: TestClient, tmp_path, monkeypatch):
     assert sketch["sketch_number"] == 1
     assert sketch["image_url"] == f"/api/projects/{pid}/sketches/{sketch['id']}/image"
 
-    # The stored file exists and the serving endpoint returns it.
-    stored = list((tmp_path / str(pid)).glob("sketch-*.png"))
-    assert len(stored) == 1 and stored[0].read_bytes() == png
+    # The serving endpoint returns the exact stored bytes with the right type.
     r = client.get(f"/api/projects/{pid}/sketches/{sketch['id']}/image")
     assert r.status_code == 200
     assert r.content == png
+    assert r.headers["content-type"].startswith("image/png")
 
     # It appears in the sketch list with feedback, and the stage advanced.
     r = client.get(f"/api/projects/{pid}/sketches")
@@ -272,11 +266,8 @@ def test_sketch_image_upload(client: TestClient, tmp_path, monkeypatch):
     assert listed[0]["coach_feedback"] is not None
 
 
-def test_sketch_image_upload_rejects_bad_type(client: TestClient, tmp_path, monkeypatch):
+def test_sketch_image_upload_rejects_bad_type(client: TestClient):
     """Non-image content types must be rejected with a clear 400."""
-    import app.routers as routers
-
-    monkeypatch.setattr(routers, "_UPLOAD_DIR", tmp_path)
     project = _create_project(client)
     pid = project["id"]
 

@@ -6,13 +6,12 @@ a stage of the user journey (PROD-JOURNEY-001) and calls the
 corresponding engine service.
 """
 
+import os as _os
 import secrets
-import uuid
-from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -685,12 +684,11 @@ async def compose_project_ssb(project_id: int, db: Session = Depends(get_db)):
     return result
 
 
-# Sketch image storage: local directory (dev/self-host). Override with
-# LOGOMIND_UPLOAD_DIR; files land in <upload_dir>/<project_id>/sketch-<n>-<uuid>.<ext>.
-import os as _os
-_UPLOAD_DIR = Path(_os.environ.get("LOGOMIND_UPLOAD_DIR", Path(__file__).resolve().parents[1] / "uploads"))
+# Sketch image uploads are stored IN THE DATABASE (bytes + content type) so the
+# app runs on hosts with no persistent filesystem (e.g. Vercel serverless).
+# The 3.5 MB cap sits under serverless request-body limits (Vercel: 4 MB).
 _ALLOWED_IMAGE_TYPES = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif", "image/svg+xml": ".svg"}
-_MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
+_MAX_IMAGE_BYTES = int(_os.environ.get("LOGOMIND_MAX_IMAGE_BYTES", 3500 * 1024))
 
 
 async def _persist_sketch_with_critique(
@@ -701,6 +699,8 @@ async def _persist_sketch_with_critique(
     linked_concept_family: str = None,
     image_url: str = None,
     image_path: str = None,
+    image_data: bytes = None,
+    image_content_type: str = None,
 ) -> SketchModel:
     """Shared Stage-8 flow: coach critique + sketch persistence (LOG-COACH-001)."""
     existing = db.query(SketchModel).filter(SketchModel.project_id == project.id).count()
@@ -725,6 +725,8 @@ async def _persist_sketch_with_critique(
         linked_concept_family=linked_concept_family,
         image_url=image_url,
         image_path=image_path,
+        image_data=image_data,
+        image_content_type=image_content_type,
         coach_feedback=feedback.model_dump(),
         coach_confidence=feedback.confidence.value,
     )
@@ -762,10 +764,10 @@ async def upload_sketch_image(
 ):
     """Upload a sketch IMAGE (multipart) and get Sketch Coach feedback.
 
-    The file is stored under the uploads directory (see LOGOMIND_UPLOAD_DIR)
-    and served back via GET /projects/{id}/sketches/{sketch_id}/image, so the
-    workspace can render it directly. Coach critique still reasons over the
-    description + intent; the image is the designer's record (Stage 8).
+    The image bytes are stored in the database (serverless-safe: no filesystem
+    needed) and served back via GET /projects/{id}/sketches/{sketch_id}/image,
+    so the workspace can render it directly. Coach critique still reasons over
+    the description + intent; the image is the designer's record (Stage 8).
     """
     project = _get_project(db, project_id)
 
@@ -777,22 +779,17 @@ async def upload_sketch_image(
         )
     data = await image.read()
     if len(data) > _MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=400, detail="Image exceeds the 10 MB limit.")
+        raise HTTPException(status_code=400, detail="Image exceeds the 3.5 MB upload limit.")
     if not data:
         raise HTTPException(status_code=400, detail="Empty image file.")
-
-    project_dir = _UPLOAD_DIR / str(project_id)
-    project_dir.mkdir(parents=True, exist_ok=True)
-    stored_name = f"sketch-{uuid.uuid4().hex[:8]}{ext}"
-    stored_path = project_dir / stored_name
-    stored_path.write_bytes(data)
 
     record = await _persist_sketch_with_critique(
         db, project,
         description=description,
         design_intent=design_intent,
         linked_concept_family=linked_concept_family,
-        image_path=str(stored_path),
+        image_data=data,
+        image_content_type=(image.content_type or "").lower(),
     )
     # Now that the record has an id, finalise the servable URL.
     record.image_url = f"/api/projects/{project_id}/sketches/{record.id}/image"
@@ -802,16 +799,16 @@ async def upload_sketch_image(
 
 @router.get("/projects/{project_id}/sketches/{sketch_id}/image")
 def get_sketch_image(project_id: int, sketch_id: int, db: Session = Depends(get_db)):
-    """Serve a stored sketch image (the workspace renders it directly)."""
+    """Serve a stored sketch image from the database (renders in the workspace)."""
     _get_project(db, project_id)
     sketch = (
         db.query(SketchModel)
         .filter(SketchModel.id == sketch_id, SketchModel.project_id == project_id)
         .first()
     )
-    if not sketch or not sketch.image_path or not Path(sketch.image_path).is_file():
+    if not sketch or not sketch.image_data:
         raise HTTPException(status_code=404, detail="Sketch image not found.")
-    return FileResponse(sketch.image_path, media_type="application/octet-stream", filename=Path(sketch.image_path).name)
+    return Response(content=sketch.image_data, media_type=sketch.image_content_type or "application/octet-stream")
 
 
 @router.get("/projects/{project_id}/sketches", response_model=List[SketchOut])

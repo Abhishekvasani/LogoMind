@@ -297,10 +297,10 @@ Brief Analysis → Discovery Workshop → Brand DNA → Insight Report
 - [x] API documented at `/docs` (Swagger/OpenAPI)
 
 ### Deferred to Phase 6 / Post-Launch
-- ⬜ Authentication (currently single demo user)
-- ⬜ File upload for sketches (currently description-based)
-- ⬜ Alembic migrations (using auto-create + runtime SQLite column migration for dev)
-- ⬜ Production deployment scripts
+- ❌ ~~Authentication~~ — **descoped by founder decision (2026-08-14):** no sign-up/sign-in; LogoMind ships as a single shared workspace. Revisit only if multi-user isolation becomes a real requirement.
+- ✅ ~~File upload for sketches~~ — shipped (multipart upload, images stored in the DB so serverless hosts work).
+- ✅ ~~Alembic migrations~~ — shipped (initial schema captured; `PHASE5_README.md` has the workflow).
+- ✅ ~~Production deployment~~ — Vercel-ready: see **`DEPLOYMENT.md`** (free tier: Vercel Hobby for API + Web, Neon free Postgres). Remaining: run the deploy once with the Vercel CLI.
 
 ---
 

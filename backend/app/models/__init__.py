@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import (
-    Column, String, Text, Integer, Float, DateTime, ForeignKey, JSON, Boolean, Enum
+    Column, String, Text, Integer, Float, DateTime, ForeignKey, JSON, Boolean, Enum, LargeBinary
 )
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -105,9 +105,13 @@ class Sketch(Base):
     design_intent = Column(Text, nullable=True)      # what they were exploring
     linked_concept_family = Column(String, nullable=True)
 
-    # Storage (in v1: URL to cloud storage; in dev: file path)
+    # Storage: image bytes live in the DB so the app runs anywhere — including
+    # serverless hosts (Vercel) with no persistent filesystem. image_path is
+    # kept for local-dev exports but is not required.
     image_url = Column(String, nullable=True)
     image_path = Column(String, nullable=True)
+    image_data = Column(LargeBinary, nullable=True)
+    image_content_type = Column(String, nullable=True)
 
     # Sketch Coach output (LOG-COACH-001)
     coach_feedback = Column(JSON, nullable=True)
