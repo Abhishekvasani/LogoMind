@@ -2,13 +2,17 @@
 
 No sign-up/sign-in by design (founder decision): the deployed app is a single shared workspace. Everything below fits the **free** tiers.
 
-**Shape:** two Vercel projects from this one repo —
-- **API** ← `backend/` (FastAPI as serverless Python functions, `backend/vercel.json`)
-- **Web** ← `frontend/` (Next.js) pointing at the API via `NEXT_PUBLIC_API_BASE`
+**Shape (as deployed):** ONE multi-service Vercel project — `logo-mind` — imported from the GitHub repo:
+- **frontend** ← `frontend/` (Next.js) — serves the UI at the project domain
+- **backend** ← `backend/` (FastAPI service, entrypoint `app/main.py`) — answers at `/api/*` (and `/api/backend/*`); the router is dual-mounted so both prefixes work
 
-**Database:** [Neon](https://neon.tech) free Postgres (the app already speaks Postgres via `DATABASE_URL`). Sketch images are stored **in the database**, so nothing depends on a persistent filesystem.
+**Database:** Neon free Postgres, created and connected through Vercel Storage (marketplace) — `DATABASE_URL` (pooled) is injected into the project. Sketch images are stored **in the database**; the LIC knowledge volumes are vendored at `backend/05_RS_LICs` (sync with `python scripts/sync_backend_lics.py` after editing LICs).
 
-**Long AI calls:** `backend/vercel.json` sets `maxDuration: 300` per function. Fluid Compute (Vercel's current default) allows this on the Hobby plan; if your project is on classic limits you may see 60s caps — the frontend already shows progress + retry for slow stages.
+**Long AI calls:** `maxDuration` defaults under Fluid Compute are sufficient; `/health` self-diagnoses (`db.scheme/ok`, `knowledge.available`).
+
+**Deploy hook:** pushes occasionally miss the Git webhook; the `zap-deploy` hook (project Settings → Git) triggers a production deploy of `main` on demand.
+
+**Live:** https://logo-mind-two.vercel.app — `/api/health` returns healthy + 24/24 knowledge extracts.
 
 ---
 
