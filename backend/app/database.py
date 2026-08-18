@@ -2,6 +2,7 @@
 Database configuration and session management.
 """
 
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -15,13 +16,25 @@ load_dotenv()
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL", "sqlite:///./logomind.db"
-)  # dev default; production: PostgreSQL
+)  # dev default; production: PostgreSQL (Neon)
+
+# Normalize legacy URL schemes SQLAlchemy 2.x rejects.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
+
+_is_sqlite = DATABASE_URL.startswith("sqlite")
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},  # SQLite dev only
+    connect_args={"check_same_thread": False} if _is_sqlite else {},
+    pool_pre_ping=not _is_sqlite,  # serverless DBs need liveness checks
     echo=False,
 )
+
+# Startup diagnostics (filled by init_db; surfaced by /health). The app must
+# never fail to boot because of the database — a broken DB becomes an
+# observable state instead of a black-hole 500.
+DB_STARTUP_ERROR: str | None = None
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -44,10 +57,16 @@ def init_db():
     concept_prompts column without a manual DB reset. Production (Postgres)
     should use Alembic migrations instead.
     """
+    global DB_STARTUP_ERROR
     # Import models so they register with Base.metadata before create_all.
     from . import models  # noqa: F401
 
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+        DB_STARTUP_ERROR = None
+    except Exception as exc:  # startup must survive a DB outage
+        DB_STARTUP_ERROR = f"{type(exc).__name__}: {exc}"
+        logging.getLogger("logomind").error("init_db failed: %s", DB_STARTUP_ERROR)
 
     # Dev-only: add columns the create_all path can't backfill onto an
     # existing SQLite table. Idempotent — checks PRAGMA first.

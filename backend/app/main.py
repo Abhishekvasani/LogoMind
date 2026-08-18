@@ -17,14 +17,19 @@ from fastapi.middleware.cors import CORSMiddleware
 # Load variables from backend/.env so configuration is honoured.
 load_dotenv()
 
-from .database import init_db
+from .database import DB_STARTUP_ERROR, DATABASE_URL, init_db
 from .routers import router
 from .services import lic_knowledge
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialise database and load LIC knowledge on startup."""
+    """Initialise database and load LIC knowledge on startup.
+
+    Both steps degrade to observable states instead of crashing the boot: a
+    DB failure surfaces via /health's `db` field, missing LIC extracts via
+    `knowledge.available`.
+    """
     init_db()
     lic_knowledge.load()  # cache curated operational extracts for the engines
     yield
@@ -84,7 +89,13 @@ async def root():
 @app.get("/health")
 async def health():
     return {
-        "status": "healthy",
+        "status": "healthy" if DB_STARTUP_ERROR is None else "degraded",
+        # Database: scheme only (never the credentials) + startup error if any.
+        "db": {
+            "scheme": DATABASE_URL.split("://", 1)[0],
+            "ok": DB_STARTUP_ERROR is None,
+            **({"error": DB_STARTUP_ERROR} if DB_STARTUP_ERROR else {}),
+        },
         # Which LIC knowledge extracts actually resolved — a silent empty
         # extract degrades engine grounding with no error, so surface it here.
         "knowledge": {
