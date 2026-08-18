@@ -87,6 +87,8 @@ async def root():
 
 
 @app.get("/health")
+@app.get("/api/health", include_in_schema=False)
+@app.get("/api/backend/health", include_in_schema=False)
 async def health():
     return {
         "status": "healthy" if DB_STARTUP_ERROR is None else "degraded",
